@@ -1,0 +1,19 @@
+type::{
+  regex: i::"hello",
+}
+valid::[
+  hello,
+  HellO,
+  "hello",
+  "HELLO",
+]
+invalid::[
+  null,
+  null.null,
+  null.string,
+  null.symbol,
+  null.bool,
+  '',
+  "",
+  'goodbye',
+]
