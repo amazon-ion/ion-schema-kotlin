@@ -13,10 +13,10 @@ internal class SchemaImpl(
         schemaContent: Iterator<IonValue>
     ): Schema {
 
-    private val types: Map<IonSymbol, Type>
+    private val types: Map<String, Type>
 
     init {
-        types = mutableMapOf<IonSymbol, Type>()
+        types = mutableMapOf<String, Type>()
         var foundHeader = false
         var foundFooter = false
 
@@ -46,7 +46,7 @@ internal class SchemaImpl(
         }
     }
 
-    private fun loadHeader(typeMap: MutableMap<IonSymbol, Type>, header: IonStruct) {
+    private fun loadHeader(typeMap: MutableMap<String, Type>, header: IonStruct) {
         (header.get("imports") as? IonList)?.forEach {
             if (it is IonStruct) {
                 val id = it.get("id") as IonSymbol
@@ -61,7 +61,7 @@ internal class SchemaImpl(
                         if (alias != null) {
                             newTypeName = alias
                         }
-                        addType(typeMap, newTypeName, newType)
+                        addType(typeMap, newTypeName.stringValue(), newType)
                     }
                 } else {
                     importedSchema.getTypes().forEach {
@@ -72,21 +72,21 @@ internal class SchemaImpl(
         }
     }
 
-    private fun addType(typeMap: MutableMap<IonSymbol, Type>, name: IonSymbol, type: Type) {
+    private fun addType(typeMap: MutableMap<String, Type>, name: String, type: Type) {
         if (getTypePrivate(name, false) != null) {
             throw InvalidSchemaException("Duplicate type name/alias encountered:  '$name'")
         }
         typeMap.put(name, type)
     }
 
-    override fun getType(name: String) = getType(ION.newSymbol(name))
+    override fun getType(name: String) = getType(schemaSystem.getIonSystem().newSymbol(name))
 
-    override fun getType(name: IonSymbol): Type? = getTypePrivate(name)
+    override fun getType(name: IonSymbol): Type? = getTypePrivate(name.stringValue())
 
-    private fun getTypePrivate(name: IonSymbol, throwIfNotFound: Boolean = true): Type? {
+    private fun getTypePrivate(name: String, throwIfNotFound: Boolean = true): Type? {
         var type = schemaCore.getType(name)
         if (type == null) {
-            type = types.get(name.withoutAnnotations())
+            type = types.get(name)
         }
 
         if (type == null && throwIfNotFound) {

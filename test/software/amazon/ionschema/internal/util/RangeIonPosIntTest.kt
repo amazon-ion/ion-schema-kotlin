@@ -2,10 +2,12 @@ package software.amazon.ionschema.internal.util
 
 import org.junit.Assert.fail
 import org.junit.Test
-import software.amazon.ionschema.internal.ION
+import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.InvalidSchemaException
 
 class RangeIonPosIntTest {
+    private val ION = IonSystemBuilder.standard().build()
+
     @Test
     fun invalidRanges() {
         testInvalidRange("[exclusive::1, 1]")
@@ -23,3 +25,4 @@ class RangeIonPosIntTest {
         }
     }
 }
+

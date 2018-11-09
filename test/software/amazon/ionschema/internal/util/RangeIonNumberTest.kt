@@ -3,11 +3,13 @@ package software.amazon.ionschema.internal.util
 import org.junit.Assert.fail
 import org.junit.Test
 import software.amazon.ion.IonList
-import software.amazon.ionschema.internal.ION
+import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.internal.util.Range
 
 class RangeIonNumberTest {
+    private val ION = IonSystemBuilder.standard().build()
+
     /*
     @Test
     fun range() {
@@ -60,3 +62,4 @@ class RangeIonNumberTest {
         }
     }
 }
+

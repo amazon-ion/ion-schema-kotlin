@@ -29,15 +29,15 @@ internal class RangeIonNumber(ion: IonList) : Range {
             throw InvalidSchemaException("Invalid range, size of list must be 2:  $ion")
         }
 
-        min = if (ion[0].equals(MIN)) {
-            Boundary(null, Infinity.NEGATIVE)
+        min = if (ion[0] is IonSymbol && (ion[0] as IonSymbol).stringValue().equals("min")) {
+                Boundary(null, Infinity.NEGATIVE)
             } else {
-            Boundary(ion[0], Infinity.NEGATIVE)
+                Boundary(ion[0], Infinity.NEGATIVE)
             }
-        max = if (ion[1].equals(MAX)) {
-            Boundary(null, Infinity.POSITIVE)
+        max= if (ion[1] is IonSymbol && (ion[1] as IonSymbol).stringValue().equals("max")) {
+                Boundary(null, Infinity.POSITIVE)
             } else {
-            Boundary(ion[1], Infinity.POSITIVE)
+                Boundary(ion[1], Infinity.POSITIVE)
             }
 
 
