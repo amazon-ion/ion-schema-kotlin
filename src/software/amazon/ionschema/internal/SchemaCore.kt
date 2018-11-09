@@ -80,17 +80,17 @@ internal class SchemaCore(
         """
     }
 
-    private val typeMap: Map<IonSymbol, Type>
+    private val typeMap: Map<String, Type>
 
     init {
         typeMap = listOf(CORE_TYPES, ION_TYPES)
             .flatten()
             .asSequence()
-            .associateBy({ ION.singleValue("$it") as IonSymbol }, { newType(it) })
+            .associateBy({ (schemaSystem.getIonSystem().singleValue("$it") as IonSymbol).stringValue() }, { newType(it) })
             .toMutableMap()
 
-        (ION.singleValue(ADDITIONAL_TYPE_DEFS) as IonStruct).forEach {
-            typeMap.put(ION.newSymbol(it.fieldName), TypeImpl(it as IonStruct, this, addDefaultTypeConstraint = false))
+        (schemaSystem.getIonSystem().singleValue(ADDITIONAL_TYPE_DEFS) as IonStruct).forEach {
+            typeMap.put(it.fieldName, TypeImpl(it as IonStruct, this, addDefaultTypeConstraint = false))
         }
     }
 
@@ -101,9 +101,9 @@ internal class SchemaCore(
             TypeCore(name)
         }
 
-    override fun getType(name: String): Type? = getType(ION.newSymbol(name))
+    override fun getType(name: String): Type? = typeMap.get(name)
 
-    override fun getType(name: IonSymbol): Type? = typeMap.get(name.withoutAnnotations())
+    override fun getType(name: IonSymbol): Type? = getType(name.stringValue())
 
     override fun getTypes() = typeMap.values.iterator()
 

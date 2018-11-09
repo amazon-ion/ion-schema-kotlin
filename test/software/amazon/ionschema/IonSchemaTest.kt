@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 import org.junit.runner.notification.Failure
 import org.junit.runners.Suite
 import software.amazon.ion.*
-import software.amazon.ionschema.internal.ION
+import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.internal.SchemaCore
 import software.amazon.ionschema.internal.SchemaImpl
 import software.amazon.ionschema.internal.TypeImpl
@@ -21,7 +21,8 @@ class IonSchemaTest(
         private val testClass: Class<Any>
     ) : Runner() {
 
-    private val schemaSystem = IonSchemaSystem.Builder.standard().build()
+    private val ION = IonSystemBuilder.standard().build()
+    private val schemaSystem = IonSchemaSystemBuilder.standard().build()
     private val schemaCore = SchemaCore(schemaSystem)
 
     override fun getDescription(): Description {

@@ -2,6 +2,7 @@ package software.amazon.ionschema.internal.util
 
 import software.amazon.ion.IonInt
 import software.amazon.ion.IonList
+import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import java.math.BigDecimal
@@ -11,12 +12,12 @@ internal class RangeIonPosInt(ion: IonList) : Range {
 
     init {
         if (!((ion[0] is IonInt && (ion[0] as IonInt).intValue() >= 0)
-                        || ion[0].equals(Range.MIN))) {
+                        || (ion[0] as? IonSymbol)?.stringValue().equals("min"))) {
             throw InvalidSchemaException("Invalid min boundary in positive int $ion")
         }
 
         if (!((ion[1] is IonInt && (ion[1] as IonInt).intValue() >= 0)
-                        || ion[1].equals(Range.MAX))) {
+                        || (ion[1] as? IonSymbol)?.stringValue().equals("max"))) {
             throw InvalidSchemaException("Invalid max boundary in positive int $ion")
         }
 
