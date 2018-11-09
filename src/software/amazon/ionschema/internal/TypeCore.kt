@@ -2,12 +2,15 @@ package software.amazon.ionschema.internal
 
 import software.amazon.ion.IonType
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.IonSchemaSystem
 
-internal class TypeCore(name: String) : TypeInternal {
-    private val typeName = ION.newSymbol(name)
+internal class TypeCore(
+        private val name: String
+    ) : TypeInternal {
+
     private val ionType = IonType.valueOf(name.toUpperCase())
 
-    override fun name() = typeName
+    override fun name() = name
 
     override fun isValid(value: IonValue) =
             !value.isNullValue

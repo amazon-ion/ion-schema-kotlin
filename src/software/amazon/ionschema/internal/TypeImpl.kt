@@ -1,6 +1,7 @@
 package software.amazon.ionschema.internal
 
 import software.amazon.ion.*
+import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.Constraint
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.constraint.TypeReference
@@ -12,6 +13,7 @@ internal class TypeImpl(
     ) : TypeInternal {
 
     private companion object {
+        private val ION = IonSystemBuilder.standard().build()
         private val ANY = ION.newSymbol("any")
     }
 
@@ -20,12 +22,12 @@ internal class TypeImpl(
     init {
         var foundTypeConstraint = false
         val tmpConstraints = ion
-                .filter { it.fieldName == null || schema.getSchemaSystem().isConstraint(it.fieldName) }
+                .filter { it.fieldName == null || (schema.getSchemaSystem() as IonSchemaSystemImpl).isConstraint(it.fieldName) }
                 .map {
                     if (it.fieldName.equals("type")) {
                         foundTypeConstraint = true
                     }
-                    schema.getSchemaSystem().constraintFor(it, schema, this)
+                    (schema.getSchemaSystem() as IonSchemaSystemImpl).constraintFor(it, schema, this)
                 }
                 .toMutableList()
 
@@ -37,7 +39,7 @@ internal class TypeImpl(
         constraints = tmpConstraints.toList()
     }
 
-    override fun name() = ion.get("name") as IonSymbol
+    override fun name() = (ion.get("name") as IonSymbol).stringValue()
 
     override fun isValid(value: IonValue): Boolean {
         constraints.forEach {

@@ -3,9 +3,9 @@ package software.amazon.ionschema.internal.constraint
 import software.amazon.ion.IonStruct
 import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
+import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
-import software.amazon.ionschema.internal.ION
 import software.amazon.ionschema.internal.util.Range
 
 internal class RecurringTypeReference(
@@ -15,6 +15,8 @@ internal class RecurringTypeReference(
     ) : ConstraintBase(ion) {
 
     companion object {
+        private val ION = IonSystemBuilder.standard().build()
+
         internal val OPTIONAL = Range.rangeOf(ION.singleValue("range::[0, 1]"),
                 Range.RangeType.POSITIVE_INTEGER)
         internal val REQUIRED = Range.rangeOf(ION.singleValue("range::[1, 1]"),

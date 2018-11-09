@@ -1,7 +1,7 @@
 package software.amazon.ionschema.internal.util
 
 import software.amazon.ion.*
-import software.amazon.ionschema.internal.ION
+import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.InvalidSchemaException
 
 internal interface Range {
@@ -11,6 +11,7 @@ internal interface Range {
     }
 
     companion object {
+        private val ION = IonSystemBuilder.standard().build()
         internal val MIN = ION.newSymbol("min")
         internal val MAX = ION.newSymbol("max")
 
@@ -29,7 +30,7 @@ internal interface Range {
             }
 
         private fun convertToRange(ion: IonValue): IonList {
-            val range = ION.newList(ion.clone(), ion.clone())
+            val range = ion.system.newList(ion.clone(), ion.clone())
             range.addTypeAnnotation("range")
             return range
         }
