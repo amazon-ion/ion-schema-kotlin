@@ -1,6 +1,6 @@
 ## Ion Schema Kotlin
 
-A reference implementation of the [Ion Schema Specification](https://github.com/amzn/ion-schema),
+A reference implementation of the [Ion Schema Specification](https://amzn.github.io/ion-schema/docs/spec.html),
 written in Kotlin.  All code currently resides on the alpha-0.5 branch.
 
 **This is currently alpha software and all aspects of it are subject
