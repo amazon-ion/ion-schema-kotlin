@@ -1,0 +1,31 @@
+buildscript {
+  ext.ion_version = "1.2.+"
+  ext.kotlin_version = "1.2.+"
+
+  dependencies {
+    repositories { mavenCentral() }
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  }
+}
+
+repositories { mavenCentral() }
+
+apply plugin: "kotlin"
+dependencies {
+  compile "software.amazon.ion:ion-java:$ion_version"
+  compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+  testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+}
+sourceSets {
+  main.java.srcDirs = ["src"]
+  main.kotlin.srcDirs = ["src"]
+  test.java.srcDirs = ["test"]
+  test.kotlin.srcDirs = ["test"]
+}
+
+apply plugin: "checkstyle"
+checkstyle {
+  sourceSets = [sourceSets.main]
+  ignoreFailures = false
+}
+
