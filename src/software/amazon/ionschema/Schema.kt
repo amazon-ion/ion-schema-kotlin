@@ -2,6 +2,8 @@ package software.amazon.ionschema
 
 import software.amazon.ion.IonSymbol
 
+/**
+ */
 interface Schema {
     fun getType(name: String): Type?
 
