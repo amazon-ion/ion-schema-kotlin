@@ -1,9 +1,9 @@
 ## Ion Schema Kotlin
 
 A reference implementation of the [Ion Schema Specification](https://amzn.github.io/ion-schema/docs/spec.html),
-written in Kotlin.  All code currently resides on the alpha-0.5 branch.
+written in Kotlin.
 
-[![Build Status](https://travis-ci.org/amzn/ion-schema-kotlin.svg?branch=alpha-0.5)](https://travis-ci.org/amzn/ion-schema-kotlin)
+[![Build Status](https://travis-ci.org/amzn/ion-schema-kotlin.svg)](https://travis-ci.org/amzn/ion-schema-kotlin)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/software.amazon.ion/ion-schema-kotlin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/software.amazon.ion/ion-schema-kotlin)
 [![Javadoc](https://javadoc-badge.appspot.com/software.amazon.ion/ion-schema-kotlin.svg?label=javadoc)](http://www.javadoc.io/doc/software.amazon.ion/ion-schema-kotlin)
 
