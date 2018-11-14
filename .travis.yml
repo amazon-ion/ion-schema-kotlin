@@ -8,7 +8,6 @@ cache:
     - $HOME/.gradle/wrapper/
 
 language: java
-install: true
 jdk:
   - openjdk8
   - openjdk9
@@ -17,4 +16,7 @@ jdk:
   - oraclejdk8
   - oraclejdk9
   - oraclejdk11
+
+script:
+  - ./gradlew build --scan -s
 
