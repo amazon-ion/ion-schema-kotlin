@@ -1,0 +1,19 @@
+type::{
+  type: $text,
+}
+valid::[
+  "",
+  "a",
+  "hello",
+  '',
+  'a',
+  hello,
+  null.string,
+  null.symbol,
+]
+invalid::[
+  null,
+  null.null,
+  null.int,
+  5,
+]
