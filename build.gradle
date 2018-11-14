@@ -1,5 +1,4 @@
 buildscript {
-  ext.ion_version = "1.2.+"
   ext.kotlin_version = "1.2.+"
 
   dependencies {
@@ -8,11 +7,14 @@ buildscript {
   }
 }
 
+group = "software.amazon.ion"
+version = "alpha-0.5-SNAPSHOT"
+
 repositories { mavenCentral() }
 
 apply plugin: "kotlin"
 dependencies {
-  compile "software.amazon.ion:ion-java:$ion_version"
+  compile "software.amazon.ion:ion-java:1.2.+"
   compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
   testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }
@@ -27,5 +29,68 @@ apply plugin: "checkstyle"
 checkstyle {
   sourceSets = [sourceSets.main]
   ignoreFailures = false
+}
+
+
+apply plugin: "maven-publish"
+task sourcesJar(type: Jar) {
+  from "src"
+  classifier = "sources"
+}
+task javadocJar(type: Jar) {
+  from javadoc
+  classifier = "javadoc"
+}
+publishing {
+  publications {
+    maven(MavenPublication) {
+      from components.java
+      artifact sourcesJar
+      artifact javadocJar
+
+      pom {
+        name = "Ion Schema Kotlin"
+        packaging = "jar"
+        url = "https://github.com/amzn/ion-schema-kotlin"
+        description = "Reference implementation of the Amazon Ion Schema Specification."
+        scm {
+          connection = "scm:git@github.com:amzn/ion-schema-kotlin.git"
+          developerConnection = "scm:git@github.com:amzn/ion-schema-kotlin.git"
+          url = "git@github.com:amzn/ion-schema-kotlin.git"
+        }
+        licenses {
+          license {
+            name = "The Apache License, Version 2.0"
+            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+          }
+        }
+        developers {
+          developer {
+            name = "Amazon Ion Team"
+            email = "ion-team@amazon.com"
+            organization = "Amazon"
+            organizationUrl = "https://github.com/amzn"
+          }
+        }
+      }
+    }
+  }
+  repositories {
+    mavenLocal()
+    /*
+    maven {
+      url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+      credentials {
+        username ossrhUsername
+        password ossrhPassword
+      }
+    }
+    */
+  }
+}
+
+apply plugin: "signing"
+signing {
+  sign publishing.publications.maven
 }
 
