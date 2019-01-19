@@ -1,5 +1,6 @@
 type::{
   valid_values: [
+    null,
     true,
     2,
     4e0,

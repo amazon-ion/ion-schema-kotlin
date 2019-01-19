@@ -5,6 +5,7 @@ type::{
     { type: symbol, occurs: range::[0, max] },
   ],
 }
+
 valid::[
   (1 2),
   (1 2 "a"),

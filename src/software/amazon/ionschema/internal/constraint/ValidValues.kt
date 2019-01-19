@@ -5,6 +5,9 @@ import software.amazon.ion.IonSequence
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.internal.util.Range
+import software.amazon.ionschema.internal.util.Violations
+import software.amazon.ionschema.internal.util.Violation
+import software.amazon.ionschema.internal.util.withoutTypeAnnotations
 
 internal class ValidValues(
         ion: IonValue
@@ -35,31 +38,22 @@ internal class ValidValues(
     }
 
     private fun checkValue(ion: IonValue) =
-        if (ion.isNullValue()) {
-            throw InvalidSchemaException("$ion is not allowed in valid_values")
-        } else if (ion.typeAnnotations.size > 0) {
+        if (ion.typeAnnotations.size > 0) {
             throw InvalidSchemaException("Annotations ($ion) are not allowed in valid_values")
         } else {
             true
         }
 
-    override fun isValid(value: IonValue): Boolean {
-        if (value.isNullValue) {
-            return true
-        }
-
+    override fun validate(value: IonValue, issues: Violations) {
         if (validRange != null) {
-            return validRange.contains(value)
-        }
-
-        val valueWithoutAnnotations =
-            if (value.typeAnnotations.size > 0) {
-                val v = value.clone()
-                v.clearTypeAnnotations()
-                v
-            } else {
-                value
+            if (!validRange.contains(value)) {
+                issues.add(Violation(ion, "invalid_value", "invalid value $value"))
             }
-        return validValues.contains(valueWithoutAnnotations)
+        } else {
+            val v = value.withoutTypeAnnotations()
+            if (!validValues.contains(v)) {
+                issues.add(Violation(ion, "invalid_value", "invalid value $v"))
+            }
+        }
     }
 }

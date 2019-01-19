@@ -3,6 +3,8 @@ package software.amazon.ionschema.internal.constraint
 import software.amazon.ion.IonList
 import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.internal.util.Violations
+import software.amazon.ionschema.internal.util.Violation
 
 internal class Annotations(
         ion: IonValue
@@ -28,7 +30,8 @@ internal class Annotations(
             Annotation((it as IonSymbol).stringValue(), required)
         }
 
-    override fun isValid(value: IonValue): Boolean {
+    override fun validate(value: IonValue, issues: Violations) {
+        val missingAnnotations = mutableListOf<Annotation>()
         if (ordered) {
             val valueAnnotations = value.typeAnnotations
             var valueAnnotationIndex = 0
@@ -42,17 +45,21 @@ internal class Annotations(
                         }
                     }
                     if (!found) {
-                        return false
+                        missingAnnotations.add(it)
                     }
                 }
             }
         } else {
             annotations.forEach {
                 if (it.isRequired && !value.hasTypeAnnotation(it.text)) {
-                    return false
+                    missingAnnotations.add(it)
                 }
             }
         }
-        return true
+
+        if (missingAnnotations.size > 0) {
+            issues.add(Violation(ion, "missing_annotation",
+                    "missing annotation(s): " + missingAnnotations.joinToString { it.text }))
+        }
     }
 }

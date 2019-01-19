@@ -12,8 +12,6 @@ internal interface Range {
 
     companion object {
         private val ION = IonSystemBuilder.standard().build()
-        internal val MIN = ION.newSymbol("min")
-        internal val MAX = ION.newSymbol("max")
 
         fun rangeOf(ion: IonValue, rangeType: RangeType): Range =
             when (rangeType) {
@@ -37,6 +35,10 @@ internal interface Range {
     }
 
     fun contains(value: Int): Boolean
+
     fun contains(value: IonValue): Boolean
+
     fun compareTo(value: Int): Int
+
+    fun isAtMax(value: Int): Boolean
 }

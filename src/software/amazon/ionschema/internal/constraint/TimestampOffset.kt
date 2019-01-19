@@ -1,12 +1,13 @@
 package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.internal.util.Violations
 
 internal class TimestampOffset(
-        private val ion: IonValue
+        ion: IonValue
     ) : ConstraintBase(ion) {
 
-    override fun isValid(value: IonValue): Boolean {
+    override fun validate(value: IonValue, issues: Violations) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

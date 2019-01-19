@@ -5,7 +5,6 @@ import software.amazon.ion.IonStruct
 import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.*
-import software.amazon.ionschema.internal.util.withoutAnnotations
 
 internal class SchemaImpl(
         private val schemaSystem: IonSchemaSystem,
@@ -97,7 +96,9 @@ internal class SchemaImpl(
     }
 
     override fun getTypes(): Iterator<Type> =
-            (schemaCore.getTypes().asSequence() + types.values.asSequence()).iterator()
+            (schemaCore.getTypes().asSequence() + types.values.asSequence())
+                    .filter { it is TypeNamed }
+                    .iterator()
 
     override fun getSchemaSystem() = schemaSystem
 }

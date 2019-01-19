@@ -7,8 +7,12 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import java.math.BigDecimal
 
-internal class RangeIonPosInt(ion: IonList) : Range {
-    private val delegate = RangeIonNumber(ion)
+internal class RangeIonPosInt private constructor (
+        private val ion: IonList,
+        delegate: RangeIonNumber
+) : Range by delegate {
+
+    constructor(ion: IonList) : this(ion, RangeIonNumber(ion))
 
     init {
         if (!((ion[0] is IonInt && (ion[0] as IonInt).intValue() >= 0)
@@ -36,7 +40,6 @@ internal class RangeIonPosInt(ion: IonList) : Range {
         }
     }
 
-    override fun contains(value: Int) = delegate.contains(value)
-    override fun contains(value: IonValue) = delegate.contains(value)
-    override fun compareTo(value: Int) = delegate.compareTo(value)
+    override fun toString() = ion.toString()
 }
+
