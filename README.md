@@ -52,23 +52,9 @@ public class IonSchemaGettingStarted {
 }
 ```
 
-## Helping out
+## Roadmap
 
-The issues identified below represent the next steps for this project.
-Most are relatively small and self-contained;  larger efforts are
-shown below in **bold**.
-
-- [ ] [#1](https://github.com/amzn/ion-schema-kotlin/issues/1) add/verify support for schema import
-- [x] [#2](https://github.com/amzn/ion-schema-kotlin/issues/2) **provide validation details when a value is invalid**
-- [ ] [#3](https://github.com/amzn/ion-schema-kotlin/issues/3) add support for open/closed content
-- [ ] [#4](https://github.com/amzn/ion-schema-kotlin/issues/4) implement the annotations constraint
-- [ ] [#5](https://github.com/amzn/ion-schema-kotlin/issues/5) implement the timestamp_offset constraint
-- [ ] [#6](https://github.com/amzn/ion-schema-kotlin/issues/6) implement the timestamp_precision constraint
-- [ ] [#7](https://github.com/amzn/ion-schema-kotlin/issues/7) verify the element constraint works for structs
-- [ ] [#8](https://github.com/amzn/ion-schema-kotlin/issues/8) update valid_values constraint to support timestamp ranges
-- [ ] [#9](https://github.com/amzn/ion-schema-kotlin/issues/9) **assert that constraints are compatible with the type on which they are specified**
-- [ ] [#10](https://github.com/amzn/ion-schema-kotlin/issues/10) define a schema for ISL
-- [ ] [#11](https://github.com/amzn/ion-schema-kotlin/issues/11) **add support for the document type**
+The roadmap is organized as a series of [milestones](https://github.com/amzn/ion-schema-kotlin/milestones?direction=asc&sort=due_date&state=open).
 
 ## License
 
