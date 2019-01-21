@@ -59,7 +59,7 @@ Most are relatively small and self-contained;  larger efforts are
 shown below in **bold**.
 
 - [ ] [#1](https://github.com/amzn/ion-schema-kotlin/issues/1) add/verify support for schema import
-- [ ] [#2](https://github.com/amzn/ion-schema-kotlin/issues/2) **provide validation details when a value is invalid**
+- [x] [#2](https://github.com/amzn/ion-schema-kotlin/issues/2) **provide validation details when a value is invalid**
 - [ ] [#3](https://github.com/amzn/ion-schema-kotlin/issues/3) add support for open/closed content
 - [ ] [#4](https://github.com/amzn/ion-schema-kotlin/issues/4) implement the annotations constraint
 - [ ] [#5](https://github.com/amzn/ion-schema-kotlin/issues/5) implement the timestamp_offset constraint
