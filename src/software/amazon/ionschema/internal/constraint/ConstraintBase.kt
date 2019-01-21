@@ -4,14 +4,14 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.Constraint
 
 internal abstract class ConstraintBase(
-        private val ion: IonValue
+        internal val ion: IonValue
     ) : Constraint {
 
     override fun name() = ion.fieldName
 
     override fun toString(): String {
         val sb = StringBuilder()
-        ion.fieldName?.let { sb.append(ion.fieldName).append(": ") }
+        //sb.append(name()).append(": ")
         sb.append(ion)
         return sb.toString()
     }

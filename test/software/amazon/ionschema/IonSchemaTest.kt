@@ -9,17 +9,24 @@ import org.junit.runner.notification.Failure
 import org.junit.runners.Suite
 import software.amazon.ion.*
 import software.amazon.ion.system.IonSystemBuilder
+import software.amazon.ion.system.IonTextWriterBuilder
 import software.amazon.ionschema.internal.SchemaCore
 import software.amazon.ionschema.internal.SchemaImpl
 import software.amazon.ionschema.internal.TypeImpl
+import software.amazon.ionschema.internal.util.*
 import java.io.File
 import java.io.FileReader
+import java.io.OutputStream
 
 @RunWith(IonSchemaTest::class)
 @Suite.SuiteClasses(IonSchemaTest::class)
 class IonSchemaTest(
         private val testClass: Class<Any>
     ) : Runner() {
+
+    companion object {
+        private val specialFieldNames = setOf("fields", "element")
+    }
 
     private val ION = IonSystemBuilder.standard().build()
     private val schemaSystem = IonSchemaSystemBuilder.standard().build()
@@ -33,7 +40,8 @@ class IonSchemaTest(
         val base = "data/test"
         File(base).walk()
             .filter { it.isFile }
-            .filter { !it.path.contains("constraints/annotations") }  // TBD remove
+            .filter { it.path != "data/test/constraints/annotations/ordered.isl" }  // TBD remove
+            .filter { it.path != "data/test/constraints/annotations/unordered.isl" }  // TBD remove
             .forEach { file ->
                 val testName = file.path.substring(base.length + 1, file.path.length - ".isl".length)
                 var schema: Schema? = null
@@ -56,12 +64,12 @@ class IonSchemaTest(
                             (ion as IonContainer).forEach {
                                 if (it.fieldName != null) {
                                     val testType = schema!!.getType(it.fieldName)
-                                    if (testType == null) {
-                                        throw Exception("Unrecognized type name '${it.fieldName}'")
-                                    }
+                                    testType ?: throw Exception("Unrecognized type name '${it.fieldName}'")
                                     (it as IonSequence).forEach {
                                         runTest(notifier, testName, it) {
-                                            assertEquals(expectValid, testType.isValid(it))
+                                            val violations = Validator.validate(testType, it)
+                                            println(violations)
+                                            assertEquals(expectValid, violations.isValid())
                                         }
                                     }
                                 } else {
@@ -69,7 +77,9 @@ class IonSchemaTest(
                                         throw Exception("No type defined for test $testName")
                                     }
                                     runTest(notifier, testName, it) {
-                                        assertEquals(expectValid, type!!.isValid(it))
+                                        val violations = Validator.validate(type!!, it)
+                                        println(violations)
+                                        assertEquals(expectValid, violations.isValid())
                                     }
                                 }
                             }
@@ -91,6 +101,39 @@ class IonSchemaTest(
                                     TypeImpl(ion as IonStruct, schemaCore)
                                     fail("Expected an InvalidSchemaException")
                                 } catch (e: InvalidSchemaException) {
+                                }
+                            }
+                        }
+
+                        "test_validation" -> {
+                            if (ion is IonStruct) {
+                                val validationType =
+                                    if (ion["type"] != null) {
+                                        schema!!.getType(ion["type"] as IonSymbol)
+                                    } else {
+                                        type
+                                    }
+
+                                val value = ion.get("value")
+                                val values = ion.get("values")
+                                if (value == null && values == null) {
+                                    throw Exception("Expected either 'value' or 'values' to be specified:  $ion")
+                                }
+
+                                val testValues = mutableListOf<IonValue>()
+                                value?.let { testValues.add(it) }
+                                values?.let { testValues.addAll(it as IonSequence) }
+
+                                testValues.forEach {
+                                    runTest(notifier, testName, it) {
+                                        val violations = Validator.validate(validationType!!, it)
+                                        if (!violations.isValid()) {
+                                            println(violations)
+                                            val writer = IonTextWriterBuilder.pretty().build(System.out as OutputStream)
+                                            violations.toIon().writeTo(writer)
+                                        }
+                                        assertEquals(ion.get("violations"), violations.toIon())
+                                    }
                                 }
                             }
                         }
@@ -119,5 +162,70 @@ class IonSchemaTest(
         } finally {
             notifier.fireTestFinished(desc)
         }
+    }
+
+    private fun Violations.toIon(): IonList {
+        val list = ION.newEmptyList()
+        if (size > 0) {
+            this.forEach {
+                list.add(it.toIon())
+            }
+        }
+        return list
+    }
+
+    private fun addNestedData(struct: IonStruct, violation: Violations) {
+        if (violation.violations.size > 0) {
+            val violationList = ION.newEmptyList()
+            violation.violations.forEach {
+                violationList.add(it.toIon())
+            }
+            struct.put("violations", violationList)
+        }
+
+        if (violation.children.size > 0) {
+            val childList = ION.newEmptyList()
+            violation.children.forEach {
+                childList.add(it.toIon())
+            }
+            struct.put("children", childList)
+        }
+    }
+
+    private fun Violation.toIon(): IonStruct {
+        val struct = ION.newEmptyStruct()
+        if (constraint != null) {
+            val constr = constraint as IonValue
+            if (constr is IonStruct
+                    && !specialFieldNames.contains(constr.fieldName)) {
+                struct.put("constraint", constr.clone())
+            } else {
+                val constraintStruct = ION.newEmptyStruct()
+                constraintStruct.put(
+                        constr.fieldName ?: "type",
+                        constr.clone())
+                struct.put("constraint", constraintStruct)
+            }
+        }
+        if (code != null) {
+            struct.put("code", ION.newSymbol(code))
+        }
+        addNestedData(struct, this)
+        return struct
+    }
+
+    private fun ViolationChild.toIon(): IonStruct {
+        val struct = ION.newEmptyStruct()
+        if (path != null && !path.equals("")) {
+            struct.put("path", ION.newString(path))
+        }
+        if (index != null) {
+            struct.put("index", ION.newInt(index as Int))
+        }
+        if (value != null && value != null) {
+            struct.put("value", (value as IonValue).clone())
+        }
+        addNestedData(struct, this)
+        return struct
     }
 }

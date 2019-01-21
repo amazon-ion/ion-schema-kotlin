@@ -3,6 +3,7 @@ package software.amazon.ionschema.internal.constraint
 import software.amazon.ion.IonTimestamp
 import software.amazon.ion.IonValue
 import software.amazon.ion.Timestamp
+import software.amazon.ionschema.internal.util.Violations
 
 internal class TimestampPrecision(
         ion: IonValue
@@ -10,10 +11,16 @@ internal class TimestampPrecision(
 
     private val range = TimestampPrecisionRange(ion)
 
-    override fun isValid(value: IonValue)
-            = value is IonTimestamp
-                && !value.isNullValue
-                && range.contains(Precision.precisionOf(value))
+    /*
+     override fun isValid(value: IonValue, violations: MutableList<Violation>)
+             = value is IonTimestamp
+                 && !value.isNullValue
+                 && range.contains(Precision.precisionOf(value))
+                 */
+
+    override fun validate(value: IonValue, issues: Violations) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     private enum class Precision {
         year,

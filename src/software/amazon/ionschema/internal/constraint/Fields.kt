@@ -5,51 +5,61 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.Constraint
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
-import software.amazon.ionschema.internal.constraint.RecurringTypeReference.Companion.OPTIONAL
+import software.amazon.ionschema.internal.constraint.Occurs.Companion.OPTIONAL
+import software.amazon.ionschema.internal.util.ViolationChild
+import software.amazon.ionschema.internal.util.Violations
+import software.amazon.ionschema.internal.util.Violation
+import software.amazon.ionschema.internal.util.CommonViolations
 
 internal class Fields(
         ionValue: IonValue,
         private val schema: Schema
     ) : ConstraintBase(ionValue), Constraint {
 
-    private val ion: IonStruct
+    private val ionStruct: IonStruct
 
     init {
-        if (ionValue.isNullValue || !(ionValue is IonStruct) || ionValue.size() == 0) {
+        if (ionValue.isNullValue || ionValue !is IonStruct || ionValue.size() == 0) {
             throw InvalidSchemaException(
                 "fields must be a struct that defines at least one field ($ionValue)")
         }
-        ion = ionValue
-        ion.associateBy(
+        ionStruct = ionValue
+        ionStruct.associateBy(
                 { it.fieldName },
-                { RecurringTypeReference(it, schema, OPTIONAL) })
+                { Occurs(it, schema, OPTIONAL) })
     }
 
-    override fun isValid(value: IonValue): Boolean {
-        val fieldConstraints = ion.associateBy(
-                { it.fieldName },
-                { RecurringTypeReference(it, schema, OPTIONAL) })
+    override fun validate(value: IonValue, issues: Violations) {
+        if (value !is IonStruct) {
+            issues.add(CommonViolations.INVALID_TYPE(ion, value))
+        } else if (value.isNullValue) {
+            issues.add(CommonViolations.NULL_VALUE(ion))
+        } else {
+            val fieldIssues = Violation(ion, "fields_mismatch", "one or more fields don't match expectations")
+            val fieldConstraints = ionStruct.associateBy(
+                    { it.fieldName },
+                    { Pair(Occurs(it, schema, OPTIONAL, isField = true),
+                           ViolationChild(path = it.fieldName))
+                    })
 
-        if (value is IonStruct && !value.isNullValue) {
             value.iterator().forEach {
-                val rtr = fieldConstraints.get(it.fieldName)
-                if (rtr != null) {
-                    rtr.isValid(it)
+                val pair = fieldConstraints[it.fieldName]
+                if (pair != null) {
+                    pair.first.validate(it, pair.second)
                 } else {
-                    // invalid if OC is false
+                    // invalid if open content is false
                 }
             }
 
-            var isValid = true
-            fieldConstraints.values.forEach {
-                if (!it.isValid()) {
-                    if (isValid) {
-                        isValid = false
-                    }
+            fieldConstraints.values.forEach { pair ->
+                pair.first.validateAttempts(pair.second)
+                if (!pair.second.isValid()) {
+                    fieldIssues.add(pair.second)
                 }
             }
-            return isValid
+            if (!fieldIssues.isValid()) {
+                issues.add(fieldIssues)
+            }
         }
-        return false
     }
 }

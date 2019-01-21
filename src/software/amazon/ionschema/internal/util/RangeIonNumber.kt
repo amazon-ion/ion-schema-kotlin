@@ -2,11 +2,9 @@ package software.amazon.ionschema.internal.util
 
 import software.amazon.ion.*
 import software.amazon.ionschema.InvalidSchemaException
-import software.amazon.ionschema.internal.util.Range.Companion.MAX
-import software.amazon.ionschema.internal.util.Range.Companion.MIN
 import java.math.BigDecimal
 
-internal class RangeIonNumber(ion: IonList) : Range {
+internal class RangeIonNumber(private val ion: IonList) : Range {
     companion object {
         private fun toBigDecimal(ion: IonValue) =
             when (ion) {
@@ -54,12 +52,22 @@ internal class RangeIonNumber(ion: IonList) : Range {
 
     override fun contains(value: Int) = contains(BigDecimal(value))
 
-    override fun contains(value: IonValue) = contains(toBigDecimal(value))
+    override fun contains(value: IonValue) =
+            try {
+                val bigDecimal = toBigDecimal(value)
+                contains(bigDecimal)
+            } catch(e: InvalidSchemaException) {
+                false
+            }
 
     private fun contains(value: BigDecimal) =
             min.compareTo(value) <= 0 && max.compareTo(value) >= 0
 
     override fun compareTo(value: Int) = -max.compareTo(BigDecimal(value))
+
+    override fun isAtMax(value: Int) = max.compareTo(BigDecimal(value)) == 0
+
+    override fun toString() = ion.toString()
 
     internal enum class Infinity(val sign: Int) {
         NEGATIVE(-1),

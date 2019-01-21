@@ -4,6 +4,9 @@ import software.amazon.ion.IonString
 import software.amazon.ion.IonText
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
+import software.amazon.ionschema.internal.util.Violations
+import software.amazon.ionschema.internal.util.Violation
+import software.amazon.ionschema.internal.util.CommonViolations
 import javax.script.ScriptEngineManager
 
 internal class Regex(
@@ -29,12 +32,19 @@ internal class Regex(
         flags = sb.toString()
     }
 
-    override fun isValid(value: IonValue): Boolean {
-        if (value is IonText && !value.isNullValue) {
+    override fun validate(value: IonValue, issues: Violations) {
+        if (value !is IonText) {
+            issues.add(CommonViolations.INVALID_TYPE(ion, value))
+        } else if (value.isNullValue) {
+            issues.add(CommonViolations.NULL_VALUE(ion))
+        } else {
             val string = value.stringValue().replace("\"", "\\\"")
             val expr = "(/$regex/$flags).test(\"" + string + "\")"
-            return scriptEngine.eval(expr) as Boolean
+            val result = scriptEngine.eval(expr) as Boolean
+
+            if (!result) {
+                issues.add(Violation(ion, "regex_mismatch", "value doesn't match regex"))
+            }
         }
-        return false
     }
 }
