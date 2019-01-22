@@ -2,18 +2,26 @@ package software.amazon.ionschema.internal.util
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import software.amazon.ion.IonValue
 import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.Authority
+import software.amazon.ionschema.IonSchemaSystem
 import software.amazon.ionschema.IonSchemaSystemBuilder
 import software.amazon.ionschema.Type
+import software.amazon.ionschema.util.CloseableIterator
 import java.io.StringReader
 
 class ValidatorTest {
     private val ION = IonSystemBuilder.standard().build()
     private val ISS = IonSchemaSystemBuilder.standard().addAuthority(
-            object : Authority {
-                override fun readerFor(id: String) = StringReader(id)
+        object : Authority {
+            override fun iteratorFor(iss: IonSchemaSystem, id: String) = object : CloseableIterator<IonValue> {
+                private val iter = ION.iterate(StringReader(id))
+                override fun hasNext() = iter.hasNext()
+                override fun next() = iter.next()
+                override fun close() { }
             }
+        }
     ).build()
 
     @Test
