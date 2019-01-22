@@ -97,7 +97,7 @@ internal class SchemaImpl(
 
     override fun getTypes(): Iterator<Type> =
             (schemaCore.getTypes().asSequence() + types.values.asSequence())
-                    .filter { it is TypeNamed }
+                    .filter { it is TypeNamed || it is TypeImpl }
                     .iterator()
 
     override fun getSchemaSystem() = schemaSystem

@@ -24,12 +24,12 @@ internal class IonSchemaSystemImpl(
         var exceptions = mutableListOf<Exception>()
         authorities.forEach { authority ->
             try {
-                val reader = authority.readerFor(id)
-                reader?.use {
-                    val iterator = ION.iterate(reader)
-                    val schema = SchemaImpl(this, schemaCore, iterator)
-                    schemaCache.put(id, schema)
-                    return schema
+                authority.iteratorFor(this, id).use {
+                    if (it.hasNext()) {
+                        val schema = SchemaImpl(this, schemaCore, it)
+                        schemaCache.put(id, schema)
+                        return schema
+                    }
                 }
             } catch (e: Exception) {
                 exceptions.add(e)
