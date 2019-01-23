@@ -1,6 +1,7 @@
 package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonStruct
+import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.Constraint
 import software.amazon.ionschema.InvalidSchemaException
@@ -17,6 +18,8 @@ internal class Fields(
     ) : ConstraintBase(ionValue), Constraint {
 
     private val ionStruct: IonStruct
+    private val contentConstraintIon: IonValue?
+    private val contentClosed: Boolean
 
     init {
         if (ionValue.isNullValue || ionValue !is IonStruct || ionValue.size() == 0) {
@@ -27,6 +30,9 @@ internal class Fields(
         ionStruct.associateBy(
                 { it.fieldName },
                 { Occurs(it, schema, OPTIONAL) })
+
+        contentConstraintIon = (ionStruct.container as? IonStruct)?.get("content") as? IonSymbol
+        contentClosed = contentConstraintIon?.stringValue().equals("closed")
     }
 
     override fun validate(value: IonValue, issues: Violations) {
@@ -41,13 +47,19 @@ internal class Fields(
                     { Pair(Occurs(it, schema, OPTIONAL, isField = true),
                            ViolationChild(path = it.fieldName))
                     })
+            var closedContentIssues: Violation? = null
 
             value.iterator().forEach {
                 val pair = fieldConstraints[it.fieldName]
                 if (pair != null) {
                     pair.first.validate(it, pair.second)
-                } else {
-                    // invalid if open content is false
+                } else if (contentClosed) {
+                    if (closedContentIssues == null) {
+                        closedContentIssues = Violation(contentConstraintIon,
+                                "unexpected_content", "found one or more unexpected fields")
+                        issues.add(closedContentIssues!!)
+                    }
+                    closedContentIssues!!.add(ViolationChild(it.fieldName, value = it))
                 }
             }
 
@@ -63,3 +75,4 @@ internal class Fields(
         }
     }
 }
+
