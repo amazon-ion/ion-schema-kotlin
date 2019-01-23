@@ -7,7 +7,7 @@ type::{
   fields: {
     firstName: { type: string, occurs: required },
     middleName: string,
-    lastName: { type: string, occurs: required },
+    lastName: { type: string, codepoint_length: range::[min, 7], occurs: required },
   }
 }
 
