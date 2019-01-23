@@ -12,7 +12,7 @@ import software.amazon.ionschema.internal.*
 //     refactor it out?
 internal class TypeReference private constructor (
         ion: IonValue,
-        type: TypeInternal
+        private var type: TypeInternal
 ) : TypeInternal by type, ConstraintBase(ion) {
 
     constructor(ion: IonValue, schema: Schema, isField: Boolean = false) : this(ion, delegate(ion, schema, isField))
@@ -67,4 +67,7 @@ internal class TypeReference private constructor (
             return tmpType as TypeInternal
         }
     }
+
+    override fun name() = type.name()
 }
+

@@ -16,4 +16,6 @@ internal class TypeNullable(
             type.validate(value, issues)
         }
     }
+
+    override fun name() = type.name()
 }
