@@ -135,7 +135,7 @@ class IonSchemaTest(
                                             violations.toIon().writeTo(writer)
                                         }
                                         assertEquals(ion.get("violations"), violations.toIon())
-                                        assertFalse(Validator.isValid(validationType!!, it))
+                                        assertFalse(Validator.isValid(validationType, it))
                                     }
                                 }
                             }
