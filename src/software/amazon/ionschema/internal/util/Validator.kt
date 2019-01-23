@@ -70,15 +70,6 @@ open class Violations (
         //if (shortCircuit) throw ShortCircuitValidationException()
     }
 
-    fun removeChild(element: Int) {
-        val iter = children.iterator()
-        for (child in iter) {
-            if (child.index == element) {
-                iter.remove()
-            }
-        }
-    }
-
     internal inner class Checkpoint(
             val violationCount: Int,
             val childCount: Int

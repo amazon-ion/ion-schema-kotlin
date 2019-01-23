@@ -5,7 +5,6 @@ type::{
     { type: symbol, occurs: range::[0, max] },
   ],
 }
-
 valid::[
   (1 2),
   (1 2 "a"),
@@ -25,3 +24,23 @@ invalid::[
   (1 "a" w),
   (1 2 "a" "b" "c" "d"),
 ]
+
+type::{
+  ordered_elements: [
+    { type: bool, occurs: required },
+    { type: int, occurs: optional },
+    { type: decimal, occurs: optional },
+    { type: float, occurs: optional },
+    { type: symbol, occurs: required },
+    { type: bool, occurs: required },
+  ],
+}
+valid::[
+  (true hello false),
+]
+invalid::[
+  (true hello),
+  (true {}),
+  (true {} true),
+]
+

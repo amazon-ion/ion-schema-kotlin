@@ -40,6 +40,8 @@ internal class OrderedElements(
         val violation = Violation(ion, "ordered_elements_mismatch",
                 "one or more ordered elements don't match specification")
 
+        var elementValidation = newViolationChild(elementIdx, elements)
+
         while (true) {
             if (typeIdx == types.size) {
                 // we've exhausted the types, have we exhausted the elements?
@@ -61,11 +63,12 @@ internal class OrderedElements(
             if (elementIdx == elements.size) {
                 // we've exhausted the elements, did we meet the type's "occurs" requirements?
                 if (!type.isValidCountWithinRange()) {
-                    val elementValidation = ViolationChild(index = elementIdx)
+                    elementValidation = newViolationChild(elementIdx, elements)
                     elementValidation.add(
                             Violation(type.occursIon,
-                                "occurs_mismatch",
-                                "expected %s occurrences, found %s".format(type.range, type.validCount)))
+                                    "occurs_mismatch",
+                                    "expected %s occurrences, found %s".format(type.range, type.validCount)))
+
                     violation.add(elementValidation)
                 }
 
@@ -73,30 +76,36 @@ internal class OrderedElements(
                 typeIdx++
 
             } else {
-                val elementValidation = ViolationChild(index = elementIdx, value = elements[elementIdx])
+                val checkpoint = elementValidation.checkpoint()
                 type.validate(elements[elementIdx], elementValidation)
-
-                if (elementValidation.isValid()) {
-                    violation.removeChild(elementIdx)  // TBD only call this if necessary!
+                if (checkpoint.isValid()) {
                     if (!type.canConsumeMore()) {
                         typeIdx++
                     }
                     elementIdx++
+                    elementValidation = newViolationChild(elementIdx, elements)
                 } else {
                     if (!type.canConsumeMore()) {
                         typeIdx++
-                        if (!type.isValidCountWithinRange()) {
-                            elementIdx++
+                        if (!type.range.contains(0)) {
                             violation.add(elementValidation)
+                            elementIdx++
+                            elementValidation = newViolationChild(elementIdx, elements)
                         }
                     } else if (type.attemptsSatisfyOccurrences()) {
                         typeIdx++
                         type.validateValidCount(issues)
-                        violation.add(elementValidation)
                     }
                 }
             }
         }
     }
+
+    private fun newViolationChild(idx: Int, elements: IonSequence) =
+        if (idx < elements.size) {
+            ViolationChild(index = idx, value = elements[idx])
+        } else {
+            ViolationChild(index = idx)
+        }
 }
 
