@@ -26,30 +26,50 @@ import software.amazon.ion.IonValue;
 import software.amazon.ion.system.IonSystemBuilder;
 import software.amazon.ionschema.AuthorityFilesystem;
 import software.amazon.ionschema.IonSchemaSystem;
+import software.amazon.ionschema.IonSchemaSystemBuilder;
 import software.amazon.ionschema.Schema;
 import software.amazon.ionschema.Type;
+import software.amazon.ionschema.internal.util.Violations;
 
 public class IonSchemaGettingStarted {
     private static IonSystem ION = IonSystemBuilder.standard().build();
 
     public static void main(String[] args) {
-        IonSchemaSystem iss = IonSchemaSystem.Builder.standard()
+        IonSchemaSystem iss = IonSchemaSystemBuilder.standard()
                 .withAuthority(new AuthorityFilesystem("<base_path>/data/test"))
                 .build();
 
         Schema schema = iss.loadSchema("/schema/Customer.isl");
         Type type = schema.getType("Customer");
 
-        checkValue(type, "{ firstName: \"Susie\", }");
         checkValue(type, "{ firstName: \"Susie\", lastName: \"Smith\" }");
-        checkValue(type, "{ firstName: \"Susie\", middleName: \"B\", lastName: \"Smith\" }");
+        checkValue(type, "{ firstName: \"Susie\", middleNmae: \"B\", lastName: \"Smith\" }");
+        checkValue(type, "{ middleName: B, lastName: Washington }");
     }
 
     private static void checkValue(Type type, String str) {
         IonValue value = ION.singleValue(str);
-        System.out.println(str + ": " + type.isValid(value));
+        Violations violations = type.validate(value);
+        if (!violations.isValid()) {
+            System.out.println(str);
+            System.out.println(violations);
+        }
     }
 }
+```
+
+When run, the code above produces the following output:
+```
+{ middleName: B, lastName: Washington }
+Validation failed:
+- one or more fields don't match expectations
+  - firstName
+    - expected range::[1,1] occurrences, found 0
+  - middleName: B
+    - expected type string, found symbol
+  - lastName: Washington
+    - expected type string, found symbol
+    - invalid codepoint length 10, expected range::[min,7]
 ```
 
 ## Roadmap
