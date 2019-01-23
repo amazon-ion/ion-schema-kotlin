@@ -6,7 +6,6 @@ type::{
     string,
   ],
 }
-
 test_validation::{
   value: [true, 5, hello],
   violations: [
@@ -48,7 +47,6 @@ test_validation::{
     },
   ],
 }
-
 test_validation::{
   value: [5, 5.0, "hi", extra_content, more_extra_content],
   violations: [
@@ -58,6 +56,61 @@ test_validation::{
       children: [
         { index: 3, value: extra_content },
         { index: 4, value: more_extra_content },
+      ],
+    },
+  ],
+}
+
+type::{
+  ordered_elements: [
+    { type: bool,    occurs: required },
+    { type: int,     occurs: optional },
+    { type: decimal, occurs: optional },
+    { type: float,   occurs: optional },
+    { type: symbol,  occurs: required },
+    { type: bool,    occurs: required },
+    { type: string,  occurs: required },
+  ],
+}
+test_validation::{
+  value: (true {}),
+  violations: [
+    {
+      constraint: {
+        ordered_elements: [
+          { type: bool,    occurs: required },
+          { type: int,     occurs: optional },
+          { type: decimal, occurs: optional },
+          { type: float,   occurs: optional },
+          { type: symbol,  occurs: required },
+          { type: bool,    occurs: required },
+          { type: string,  occurs: required },
+        ],
+      },
+      code: ordered_elements_mismatch,
+      children: [
+        {
+          index: 1,
+          value: {},
+          violations: [
+            { constraint: { type: int }, code: type_mismatch },
+            { constraint: { type: decimal }, code: type_mismatch },
+            { constraint: { type: float }, code: type_mismatch },
+            { constraint: { type: symbol }, code: type_mismatch },
+          ],
+        },
+        {
+          index: 2,
+          violations: [
+            { constraint: { occurs: required }, code: occurs_mismatch },
+          ],
+        },
+        {
+          index: 2,
+          violations: [
+            { constraint: { occurs: required }, code: occurs_mismatch },
+          ],
+        },
       ],
     },
   ],
