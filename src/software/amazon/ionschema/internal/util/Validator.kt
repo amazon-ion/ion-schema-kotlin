@@ -4,7 +4,6 @@ import software.amazon.ion.IonStruct
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.Type
 import software.amazon.ionschema.internal.TypeInternal
-import java.util.Collections.addAll
 
 internal class Validator {
     companion object {
@@ -57,7 +56,7 @@ open class Violations (
     fun add(violation: Violation): Boolean {
         (violation as Violations).shortCircuit = shortCircuit
         violations.add(violation)
-        //if (shortCircuit) throw ShortCircuitValidationException()
+        if (shortCircuit) throw ShortCircuitValidationException()
         return true
     }
 
@@ -67,12 +66,12 @@ open class Violations (
         }
         (child as Violations).shortCircuit = shortCircuit
         children.add(child)
-        //if (shortCircuit) throw ShortCircuitValidationException()
+        if (shortCircuit) throw ShortCircuitValidationException()
     }
 
     internal inner class Checkpoint(
-            val violationCount: Int,
-            val childCount: Int
+            private val violationCount: Int,
+            private val childCount: Int
     ) {
         fun isValid() = this@Violations.violations.size == violationCount
                         && this@Violations.children.size == childCount
@@ -137,3 +136,4 @@ class ViolationChild internal constructor (
 }
 
 internal class ShortCircuitValidationException : Exception()
+

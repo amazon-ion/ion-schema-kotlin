@@ -70,6 +70,7 @@ class IonSchemaTest(
                                             val violations = Validator.validate(testType, it)
                                             println(violations)
                                             assertEquals(expectValid, violations.isValid())
+                                            assertEquals(expectValid, Validator.isValid(testType, it))
                                         }
                                     }
                                 } else {
@@ -80,6 +81,7 @@ class IonSchemaTest(
                                         val violations = Validator.validate(type!!, it)
                                         println(violations)
                                         assertEquals(expectValid, violations.isValid())
+                                        assertEquals(expectValid, Validator.isValid(type!!, it))
                                     }
                                 }
                             }
@@ -133,6 +135,7 @@ class IonSchemaTest(
                                             violations.toIon().writeTo(writer)
                                         }
                                         assertEquals(ion.get("violations"), violations.toIon())
+                                        assertFalse(Validator.isValid(validationType!!, it))
                                     }
                                 }
                             }
