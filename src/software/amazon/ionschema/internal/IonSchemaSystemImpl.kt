@@ -39,11 +39,6 @@ internal class IonSchemaSystemImpl(
         throw IonSchemaException("Unable to resolve schema id '$id' ($exceptions)")
     }
 
-    override fun loadSchema(reader: Reader): Schema {
-        val iterator = ION.iterate(reader)
-        return SchemaImpl(this, schemaCore, iterator)
-    }
-
     internal fun isConstraint(name: String)
             = constraintFactory.isConstraint(name)
 

@@ -1,10 +1,8 @@
 package software.amazon.ionschema
 
 import software.amazon.ion.IonSystem
-import software.amazon.ion.IonValue
 import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.internal.*
-import java.io.Reader
 
 class IonSchemaSystemBuilder private constructor() {
     companion object {
@@ -47,3 +45,4 @@ class IonSchemaSystemBuilder private constructor() {
 
     fun build(): IonSchemaSystem = IonSchemaSystemImpl(ionSystem, authorities)
 }
+
