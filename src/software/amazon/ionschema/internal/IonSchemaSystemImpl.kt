@@ -43,6 +43,6 @@ internal class IonSchemaSystemImpl(
     internal fun constraintFor(ion: IonValue, schema: Schema, type: Type?)
             = constraintFactory.constraintFor(ion, schema, type)
 
-    override fun getIonSystem() = ION
+    internal fun getIonSystem() = ION
 }
 

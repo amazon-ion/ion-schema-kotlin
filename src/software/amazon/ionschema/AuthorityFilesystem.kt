@@ -1,6 +1,7 @@
 package software.amazon.ionschema
 
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.internal.IonSchemaSystemImpl
 import software.amazon.ionschema.util.CloseableIterator
 import java.io.File
 import java.io.FileReader
@@ -12,7 +13,7 @@ class AuthorityFilesystem(private val basePath: String) : Authority {
         if (file.exists() && file.canRead()) {
             return object : CloseableIterator<IonValue> {
                 private var reader: FileReader? = FileReader(file)
-                private val iter = iss.getIonSystem().iterate(reader)
+                private val iter = (iss as IonSchemaSystemImpl).getIonSystem().iterate(reader)
 
                 override fun hasNext() = iter.hasNext()
                 override fun next() = iter.next()

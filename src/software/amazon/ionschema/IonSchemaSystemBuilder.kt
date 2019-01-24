@@ -2,14 +2,15 @@ package software.amazon.ionschema
 
 import software.amazon.ion.IonSystem
 import software.amazon.ion.system.IonSystemBuilder
-import software.amazon.ionschema.internal.*
+import software.amazon.ionschema.internal.ConstraintFactoryDefault
+import software.amazon.ionschema.internal.IonSchemaSystemImpl
 
 class IonSchemaSystemBuilder private constructor() {
     companion object {
         @JvmStatic
         fun standard() = IonSchemaSystemBuilder()
 
-        private val defaultConstraintFactory: ConstraintFactory = ConstraintFactoryDefault()
+        private val defaultConstraintFactory = ConstraintFactoryDefault()
     }
 
     private var authorities = mutableListOf<Authority>()

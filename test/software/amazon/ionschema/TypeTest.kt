@@ -1,17 +1,13 @@
-package software.amazon.ionschema.internal.util
+package software.amazon.ionschema
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import software.amazon.ion.IonValue
 import software.amazon.ion.system.IonSystemBuilder
-import software.amazon.ionschema.Authority
-import software.amazon.ionschema.IonSchemaSystem
-import software.amazon.ionschema.IonSchemaSystemBuilder
-import software.amazon.ionschema.Type
 import software.amazon.ionschema.util.CloseableIterator
 import java.io.StringReader
 
-class ValidatorTest {
+class TypeTest {
     private val ION = IonSystemBuilder.standard().build()
     private val ISS = IonSchemaSystemBuilder.standard().addAuthority(
         object : Authority {

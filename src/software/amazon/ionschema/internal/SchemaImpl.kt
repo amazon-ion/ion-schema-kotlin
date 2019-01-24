@@ -78,7 +78,8 @@ internal class SchemaImpl(
         typeMap.put(name, type)
     }
 
-    override fun getType(name: String) = getType(schemaSystem.getIonSystem().newSymbol(name))
+    override fun getType(name: String)
+            = getType((schemaSystem as IonSchemaSystemImpl).getIonSystem().newSymbol(name))
 
     override fun getType(name: IonSymbol): Type? = getTypePrivate(name.stringValue())
 

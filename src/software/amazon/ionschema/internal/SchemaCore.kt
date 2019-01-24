@@ -80,13 +80,14 @@ internal class SchemaCore(
     private val typeMap: Map<String, Type>
 
     init {
-        typeMap = schemaSystem.getIonSystem().iterate(CORE_TYPES + ION_TYPES)
+        val ION = (schemaSystem as IonSchemaSystemImpl).getIonSystem()
+        typeMap = ION.iterate(CORE_TYPES + ION_TYPES)
             .asSequence()
             .map { (it as IonStruct).first() as IonSymbol }
             .associateBy({ it.stringValue() }, { newType(it) })
             .toMutableMap()
 
-        schemaSystem.getIonSystem().iterate(ADDITIONAL_TYPE_DEFS)
+        ION.iterate(ADDITIONAL_TYPE_DEFS)
             .asSequence()
             .map { (it as IonStruct).first() }
             .forEach {
