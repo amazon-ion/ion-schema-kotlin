@@ -28,7 +28,7 @@ internal class TypeReference private constructor (
                         // import
                         val newSchema = schema.getSchemaSystem().loadSchema(id.stringValue())
                         val typeName = tmpIon.get("type") as IonSymbol
-                        newSchema.getType(typeName)
+                        newSchema.getType(typeName.stringValue())
 
                     } else {
                         if (isField) {
@@ -46,7 +46,7 @@ internal class TypeReference private constructor (
                 }
 
                 is IonSymbol -> {
-                    val t = schema.getType(ion) as TypeInternal
+                    val t = schema.getType(ion.stringValue()) as TypeInternal
                     if (t is TypeBuiltin) {
                         t
                     } else {

@@ -104,8 +104,6 @@ internal class SchemaCore(
 
     override fun getType(name: String): Type? = typeMap[name]
 
-    override fun getType(name: IonSymbol): Type? = getType(name.stringValue())
-
     override fun getTypes() = typeMap.values.iterator()
 
     override fun getSchemaSystem() = schemaSystem

@@ -20,7 +20,7 @@ class CommonViolations private constructor() {
     }
 }
 
-open class Violations (
+open class Violations internal constructor (
         private var shortCircuit: Boolean = false,
         private val childrenAllowed: Boolean = true,
         val violations: MutableList<Violation> = mutableListOf()

@@ -8,6 +8,12 @@ import java.io.FileReader
 import java.io.Reader
 
 class AuthorityFilesystem(private val basePath: String) : Authority {
+    init {
+        if (!File(basePath).exists()) {
+            throw IllegalArgumentException("Path '$basePath' does not exist")
+        }
+    }
+
     override fun iteratorFor(iss: IonSchemaSystem, id: String): CloseableIterator<IonValue> {
         val file = File(basePath, id)
         if (file.exists() && file.canRead()) {

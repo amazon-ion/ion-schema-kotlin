@@ -17,9 +17,9 @@ import java.io.File
 import java.io.FileReader
 import java.io.OutputStream
 
-@RunWith(IonSchemaTest::class)
-@Suite.SuiteClasses(IonSchemaTest::class)
-class IonSchemaTest(
+@RunWith(IonSchemaTestSuite::class)
+@Suite.SuiteClasses(IonSchemaTestSuite::class)
+class IonSchemaTestSuite(
         private val testClass: Class<Any>
     ) : Runner() {
 
@@ -110,7 +110,7 @@ class IonSchemaTest(
                             if (ion is IonStruct) {
                                 val validationType =
                                     if (ion["type"] != null) {
-                                        schema!!.getType(ion["type"] as IonSymbol)
+                                        schema!!.getType((ion["type"] as IonSymbol).stringValue())
                                     } else {
                                         type
                                     }

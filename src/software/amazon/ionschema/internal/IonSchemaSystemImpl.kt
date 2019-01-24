@@ -2,7 +2,12 @@ package software.amazon.ionschema.internal
 
 import software.amazon.ion.IonSystem
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.*
+import software.amazon.ionschema.Authority
+import software.amazon.ionschema.ConstraintFactory
+import software.amazon.ionschema.IonSchemaException
+import software.amazon.ionschema.IonSchemaSystem
+import software.amazon.ionschema.Schema
+import software.amazon.ionschema.Type
 
 internal class IonSchemaSystemImpl(
         private val ION: IonSystem,

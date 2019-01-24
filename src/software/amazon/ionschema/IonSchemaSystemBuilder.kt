@@ -27,7 +27,7 @@ class IonSchemaSystemBuilder private constructor() {
         return this
     }
 
-    fun withAuthorities(authorities: MutableList<Authority>): IonSchemaSystemBuilder {
+    fun withAuthorities(authorities: List<Authority>): IonSchemaSystemBuilder {
         this.authorities = mutableListOf<Authority>().apply { addAll(authorities) }
         return this
     }

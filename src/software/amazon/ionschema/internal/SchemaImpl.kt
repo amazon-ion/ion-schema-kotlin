@@ -10,19 +10,19 @@ internal class SchemaImpl(
         private val schemaSystem: IonSchemaSystem,
         private val schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>
-    ): Schema {
+) : Schema {
 
     private val types: Map<String, Type>
 
     init {
-        types = mutableMapOf<String, Type>()
+        types = mutableMapOf()
         var foundHeader = false
         var foundFooter = false
 
         while (schemaContent.hasNext() && !foundFooter) {
             val it = schemaContent.next()
 
-            if (it.equals("\$ion_schema_1_0")) {
+            if (it is IonSymbol && it.stringValue() == "\$ion_schema_1_0") {
                 // TBD
 
             } else if (it.hasTypeAnnotation("schema_header")) {
@@ -30,7 +30,7 @@ internal class SchemaImpl(
                 foundHeader = true
 
             } else if (it.hasTypeAnnotation("type") && it is IonStruct) {
-                var newType = TypeImpl(it, this)
+                val newType = TypeImpl(it, this)
                 addType(types, newType.name(), newType)
             } else if (it.hasTypeAnnotation("schema_footer")) {
                 foundFooter = true
@@ -53,7 +53,7 @@ internal class SchemaImpl(
 
                 val typeName = it.get("type") as? IonSymbol
                 if (typeName != null) {
-                    val newType = importedSchema.getType(typeName)
+                    val newType = importedSchema.getType(typeName.stringValue())
                     if (newType != null) {
                         var newTypeName = typeName
                         val alias = it.get("as") as? IonSymbol
@@ -72,29 +72,13 @@ internal class SchemaImpl(
     }
 
     private fun addType(typeMap: MutableMap<String, Type>, name: String, type: Type) {
-        if (getTypePrivate(name, false) != null) {
+        if (getType(name) != null) {
             throw InvalidSchemaException("Duplicate type name/alias encountered:  '$name'")
         }
-        typeMap.put(name, type)
+        typeMap[name] = type
     }
 
-    override fun getType(name: String)
-            = getType((schemaSystem as IonSchemaSystemImpl).getIonSystem().newSymbol(name))
-
-    override fun getType(name: IonSymbol): Type? = getTypePrivate(name.stringValue())
-
-    private fun getTypePrivate(name: String, throwIfNotFound: Boolean = true): Type? {
-        var type = schemaCore.getType(name)
-        if (type == null) {
-            type = types.get(name)
-        }
-
-        if (type == null && throwIfNotFound) {
-            throw IonSchemaException("Type '$name' is not recognized")
-        }
-
-        return type
-    }
+    override fun getType(name: String) = schemaCore.getType(name) ?: types[name]
 
     override fun getTypes(): Iterator<Type> =
             (schemaCore.getTypes().asSequence() + types.values.asSequence())
@@ -103,3 +87,4 @@ internal class SchemaImpl(
 
     override fun getSchemaSystem() = schemaSystem
 }
+
