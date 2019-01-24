@@ -5,8 +5,8 @@ import software.amazon.ion.IonSequence
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.internal.util.Range
-import software.amazon.ionschema.internal.util.Violations
-import software.amazon.ionschema.internal.util.Violation
+import software.amazon.ionschema.Violations
+import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.util.withoutTypeAnnotations
 
 internal class ValidValues(

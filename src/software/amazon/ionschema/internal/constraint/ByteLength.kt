@@ -3,9 +3,9 @@ package software.amazon.ionschema.internal.constraint
 import software.amazon.ion.IonLob
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.internal.util.Range
-import software.amazon.ionschema.internal.util.Violations
-import software.amazon.ionschema.internal.util.Violation
-import software.amazon.ionschema.internal.util.CommonViolations
+import software.amazon.ionschema.Violations
+import software.amazon.ionschema.Violation
+import software.amazon.ionschema.CommonViolations
 
 internal class ByteLength(
         ion: IonValue

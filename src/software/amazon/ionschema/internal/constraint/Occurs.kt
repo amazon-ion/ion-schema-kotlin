@@ -7,9 +7,9 @@ import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.util.Range
-import software.amazon.ionschema.internal.util.ViolationChild
-import software.amazon.ionschema.internal.util.Violations
-import software.amazon.ionschema.internal.util.Violation
+import software.amazon.ionschema.ViolationChild
+import software.amazon.ionschema.Violations
+import software.amazon.ionschema.Violation
 
 internal class Occurs(
         ion: IonValue,

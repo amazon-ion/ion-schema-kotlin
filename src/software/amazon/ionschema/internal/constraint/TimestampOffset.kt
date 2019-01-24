@@ -1,7 +1,7 @@
 package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.internal.util.Violations
+import software.amazon.ionschema.Violations
 
 internal class TimestampOffset(
         ion: IonValue

@@ -29,7 +29,7 @@ import software.amazon.ionschema.IonSchemaSystem;
 import software.amazon.ionschema.IonSchemaSystemBuilder;
 import software.amazon.ionschema.Schema;
 import software.amazon.ionschema.Type;
-import software.amazon.ionschema.internal.util.Violations;
+import software.amazon.ionschema.Violations;
 
 public class IonSchemaGettingStarted {
     private static IonSystem ION = IonSystemBuilder.standard().build();

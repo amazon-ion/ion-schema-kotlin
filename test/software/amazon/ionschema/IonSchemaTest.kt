@@ -13,7 +13,6 @@ import software.amazon.ion.system.IonTextWriterBuilder
 import software.amazon.ionschema.internal.SchemaCore
 import software.amazon.ionschema.internal.SchemaImpl
 import software.amazon.ionschema.internal.TypeImpl
-import software.amazon.ionschema.internal.util.*
 import java.io.File
 import java.io.FileReader
 import java.io.OutputStream
@@ -67,10 +66,10 @@ class IonSchemaTest(
                                     testType ?: throw Exception("Unrecognized type name '${it.fieldName}'")
                                     (it as IonSequence).forEach {
                                         runTest(notifier, testName, it) {
-                                            val violations = Validator.validate(testType, it)
+                                            val violations = testType.validate(it)
                                             println(violations)
                                             assertEquals(expectValid, violations.isValid())
-                                            assertEquals(expectValid, Validator.isValid(testType, it))
+                                            assertEquals(expectValid, testType.isValid(it))
                                         }
                                     }
                                 } else {
@@ -78,10 +77,10 @@ class IonSchemaTest(
                                         throw Exception("No type defined for test $testName")
                                     }
                                     runTest(notifier, testName, it) {
-                                        val violations = Validator.validate(type!!, it)
+                                        val violations = type!!.validate(it)
                                         println(violations)
                                         assertEquals(expectValid, violations.isValid())
-                                        assertEquals(expectValid, Validator.isValid(type!!, it))
+                                        assertEquals(expectValid, type!!.isValid(it))
                                     }
                                 }
                             }
@@ -128,14 +127,14 @@ class IonSchemaTest(
 
                                 testValues.forEach {
                                     runTest(notifier, testName, it) {
-                                        val violations = Validator.validate(validationType!!, it)
+                                        val violations = validationType!!.validate(it)
                                         if (!violations.isValid()) {
                                             println(violations)
                                             val writer = IonTextWriterBuilder.pretty().build(System.out as OutputStream)
                                             violations.toIon().writeTo(writer)
                                         }
                                         assertEquals(ion.get("violations"), violations.toIon())
-                                        assertFalse(Validator.isValid(validationType, it))
+                                        assertFalse(validationType.isValid(it))
                                     }
                                 }
                             }
@@ -169,10 +168,8 @@ class IonSchemaTest(
 
     private fun Violations.toIon(): IonList {
         val list = ION.newEmptyList()
-        if (size > 0) {
-            this.forEach {
-                list.add(it.toIon())
-            }
+        this.forEach {
+            list.add(it.toIon())
         }
         return list
     }

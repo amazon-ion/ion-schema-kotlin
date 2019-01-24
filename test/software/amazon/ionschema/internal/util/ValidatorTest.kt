@@ -84,7 +84,7 @@ class ValidatorTest {
     private fun validate(type: Type, ionValue: String, valid: Boolean) {
         print(ionValue)
         val ion = ION.singleValue(ionValue)
-        val violations = Validator.validate(type, ion)
+        val violations = type.validate(ion)
 
         print(violations)
         assertEquals(valid, violations.isValid())

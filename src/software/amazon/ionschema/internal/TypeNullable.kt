@@ -3,7 +3,7 @@ package software.amazon.ionschema.internal
 import software.amazon.ion.IonType
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.internal.constraint.ConstraintBase
-import software.amazon.ionschema.internal.util.Violations
+import software.amazon.ionschema.Violations
 
 internal class TypeNullable(
         ion: IonValue,

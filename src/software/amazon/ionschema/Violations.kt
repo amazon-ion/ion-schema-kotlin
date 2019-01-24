@@ -1,31 +1,8 @@
-package software.amazon.ionschema.internal.util
+package software.amazon.ionschema
 
 import software.amazon.ion.IonStruct
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.Type
-import software.amazon.ionschema.internal.TypeInternal
-
-internal class Validator {
-    companion object {
-        @JvmStatic
-        internal fun isValid(type: Type, value: IonValue) = validate(type, value, true).isValid()
-
-        @JvmStatic
-        internal fun validate(type: Type, value: IonValue) = validate(type, value, false)
-
-        private fun validate(type: Type, value: IonValue, shortCircuit: Boolean): Violations {
-            val violations = Violations(
-                    shortCircuit = shortCircuit,
-                    childrenAllowed = false)
-            try {
-                (type as TypeInternal).validate(value, violations)
-            } catch (e: ShortCircuitValidationException) {
-                // short-circuit validation winds up here, safe to ignore
-            }
-            return violations
-        }
-    }
-}
+import software.amazon.ionschema.internal.util.truncate
 
 class CommonViolations private constructor() {
     companion object {
@@ -47,20 +24,20 @@ open class Violations (
         private var shortCircuit: Boolean = false,
         private val childrenAllowed: Boolean = true,
         val violations: MutableList<Violation> = mutableListOf()
-) : List<Violation> by violations {
+) : Iterable<Violation> by violations {
 
     val children: MutableList<ViolationChild> = mutableListOf()
 
     fun isValid() = violations.isEmpty() && children.isEmpty()
 
-    fun add(violation: Violation): Boolean {
+    internal fun add(violation: Violation): Boolean {
         (violation as Violations).shortCircuit = shortCircuit
         violations.add(violation)
         if (shortCircuit) throw ShortCircuitValidationException()
         return true
     }
 
-    fun add(child: ViolationChild) {
+    internal fun add(child: ViolationChild) {
         if (!childrenAllowed) {
             throw IllegalArgumentException("Children cannot be added to this object")
         }

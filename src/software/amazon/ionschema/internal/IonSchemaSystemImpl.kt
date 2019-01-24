@@ -3,15 +3,13 @@ package software.amazon.ionschema.internal
 import software.amazon.ion.IonSystem
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.*
-import java.io.Reader
 
 internal class IonSchemaSystemImpl(
-        private val ionSystem: IonSystem,
-        private val authorities: List<Authority>
+        private val ION: IonSystem,
+        private val authorities: List<Authority>,
+        private val constraintFactory: ConstraintFactory
     ) : IonSchemaSystem {
 
-    private val ION = ionSystem
-    private val constraintFactory = ConstraintFactoryDefault()
     private val schemaCore = SchemaCore(this)
     private val schemaCache = mutableMapOf<String, Schema>()
 
@@ -47,3 +45,4 @@ internal class IonSchemaSystemImpl(
 
     override fun getIonSystem() = ION
 }
+

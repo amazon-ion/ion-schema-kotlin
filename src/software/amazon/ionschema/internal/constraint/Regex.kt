@@ -4,9 +4,9 @@ import software.amazon.ion.IonString
 import software.amazon.ion.IonText
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
-import software.amazon.ionschema.internal.util.Violations
-import software.amazon.ionschema.internal.util.Violation
-import software.amazon.ionschema.internal.util.CommonViolations
+import software.amazon.ionschema.Violations
+import software.amazon.ionschema.Violation
+import software.amazon.ionschema.CommonViolations
 import javax.script.ScriptEngineManager
 
 internal class Regex(

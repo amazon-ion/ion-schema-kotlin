@@ -4,8 +4,8 @@ import software.amazon.ion.IonList
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
-import software.amazon.ionschema.internal.util.Violations
-import software.amazon.ionschema.internal.util.Violation
+import software.amazon.ionschema.Violations
+import software.amazon.ionschema.Violation
 
 internal abstract class LogicConstraints(
         ion: IonValue,

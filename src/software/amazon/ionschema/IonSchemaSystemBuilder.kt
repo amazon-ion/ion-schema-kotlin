@@ -27,7 +27,7 @@ class IonSchemaSystemBuilder private constructor() {
     }
 
     fun withAuthorities(authorities: MutableList<Authority>): IonSchemaSystemBuilder {
-        this.authorities = authorities  // TBD clone
+        this.authorities = mutableListOf<Authority>().apply { addAll(authorities) }
         return this
     }
 
@@ -43,6 +43,10 @@ class IonSchemaSystemBuilder private constructor() {
     }
     */
 
-    fun build(): IonSchemaSystem = IonSchemaSystemImpl(ionSystem, authorities)
+    fun build(): IonSchemaSystem = IonSchemaSystemImpl(
+            ionSystem,
+            authorities,
+            constraintFactory
+    )
 }
 

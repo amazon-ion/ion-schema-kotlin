@@ -3,8 +3,8 @@ package software.amazon.ionschema.internal
 import software.amazon.ion.IonStruct
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.Schema
-import software.amazon.ionschema.internal.util.Violations
-import software.amazon.ionschema.internal.util.Violation
+import software.amazon.ionschema.Violations
+import software.amazon.ionschema.Violation
 
 internal class TypeInline private constructor (
         private val ionStruct: IonStruct,

@@ -6,7 +6,7 @@ import software.amazon.ionschema.Constraint
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.constraint.ConstraintBase
 import software.amazon.ionschema.internal.constraint.TypeReference
-import software.amazon.ionschema.internal.util.Violations
+import software.amazon.ionschema.Violations
 
 internal class TypeImpl(
         private val ionStruct: IonStruct,

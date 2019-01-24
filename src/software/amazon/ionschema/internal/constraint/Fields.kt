@@ -7,10 +7,10 @@ import software.amazon.ionschema.Constraint
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.constraint.Occurs.Companion.OPTIONAL
-import software.amazon.ionschema.internal.util.ViolationChild
-import software.amazon.ionschema.internal.util.Violations
-import software.amazon.ionschema.internal.util.Violation
-import software.amazon.ionschema.internal.util.CommonViolations
+import software.amazon.ionschema.ViolationChild
+import software.amazon.ionschema.Violations
+import software.amazon.ionschema.Violation
+import software.amazon.ionschema.CommonViolations
 
 internal class Fields(
         ionValue: IonValue,
@@ -45,7 +45,7 @@ internal class Fields(
             val fieldConstraints = ionStruct.associateBy(
                     { it.fieldName },
                     { Pair(Occurs(it, schema, OPTIONAL, isField = true),
-                           ViolationChild(path = it.fieldName))
+                            ViolationChild(path = it.fieldName))
                     })
             var closedContentIssues: Violation? = null
 
