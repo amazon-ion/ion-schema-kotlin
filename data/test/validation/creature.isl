@@ -95,7 +95,7 @@ test_validation::{
               code: fields_mismatch,
               children: [
                 {
-                  path: "appendage_count",
+                  fieldName: "appendage_count",
                   value: 4,
                   violations: [ { constraint: { valid_values: [2] }, code: invalid_value } ],
                 },
@@ -118,7 +118,7 @@ test_validation::{
               code: fields_mismatch,
               children: [
                 {
-                  path: "class",
+                  fieldName: "class",
                   value: mammal,
                   violations: [ { constraint: { valid_values: [reptile] }, code: invalid_value } ],
                 },
@@ -141,12 +141,12 @@ test_validation::{
               code: fields_mismatch,
               children: [
                 {
-                  path: "class",
+                  fieldName: "class",
                   value: mammal,
                   violations: [ { constraint: { valid_values: [cephalopod] }, code: invalid_value } ],
                 },
                 {
-                  path: "tentacle_count",
+                  fieldName: "tentacle_count",
                   violations: [ { constraint: { occurs: required }, code: occurs_mismatch } ],
                 },
               ],
@@ -167,7 +167,7 @@ test_validation::{
               code: fields_mismatch,
               children: [
                 {
-                  path: "class",
+                  fieldName: "class",
                   value: mammal,
                   violations: [ { constraint: { valid_values: [reptile] }, code: invalid_value } ],
                 },
@@ -184,7 +184,7 @@ test_validation::{
               code: fields_mismatch,
               children: [
                 {
-                  path: "appendage_count",
+                  fieldName: "appendage_count",
                   value: 4,
                   violations: [
                     { constraint: { valid_values: [5] }, code: invalid_value },

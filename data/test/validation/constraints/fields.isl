@@ -27,7 +27,7 @@ test_validation::{
       code: fields_mismatch,
       children: [
         {
-          path: "one",
+          fieldName: "one",
           value: 1.0,
           violations: [ { constraint: { type: int }, code: type_mismatch } ],
         },
@@ -55,7 +55,7 @@ test_validation::{
       code: fields_mismatch,
       children: [
         {
-          path: "one",
+          fieldName: "one",
           value: { two: 2.0 },
           violations: [
             {
@@ -63,7 +63,7 @@ test_validation::{
               code: fields_mismatch,
               children: [
                 {
-                  path: "two",
+                  fieldName: "two",
                   value: 2.0,
                   violations: [
                     { constraint: { type: int }, code: type_mismatch },
@@ -102,21 +102,21 @@ test_validation::{
       code: fields_mismatch,
       children: [
         {
-          path: "one",
+          fieldName: "one",
           value: 1.0,
           violations: [
             { constraint: { type: int }, code: type_mismatch },
           ],
         },
         {
-          path: "two",
+          fieldName: "two",
           value: "hi",
           violations: [
             { constraint: { type: symbol }, code: type_mismatch },
           ],
         },
         {
-          path: "three",
+          fieldName: "three",
           value: "hello world",
           violations: [
             { constraint: { type: symbol }, code: type_mismatch },
@@ -124,7 +124,7 @@ test_validation::{
           ],
         },
         {
-          path: "four",
+          fieldName: "four",
           violations: [
             { constraint: { occurs: required }, code: occurs_mismatch },
           ],
@@ -176,7 +176,7 @@ test_validation::{
       code: fields_mismatch,
       children: [
         {
-          path: "favoriteBook",
+          fieldName: "favoriteBook",
           value: {
             pretitle: blah,
             title: "The Title of this Book is Too Long",
@@ -200,7 +200,7 @@ test_validation::{
                   code: fields_mismatch,
                   children: [
                     {
-                      path: "pretitle",
+                      fieldName: "pretitle",
                       value: blah,
                       violations: [
                         {
@@ -210,7 +210,7 @@ test_validation::{
                       ],
                     },
                     {
-                      path: "title",
+                      fieldName: "title",
                       value: "The Title of this Book is Too Long",
                       violations: [
                         {
@@ -226,7 +226,7 @@ test_validation::{
                       ],
                     },
                     {
-                      path: "subtitle",
+                      fieldName: "subtitle",
                       value: "abc",
                       violations: [
                         {
@@ -236,7 +236,7 @@ test_validation::{
                       ],
                     },
                     {
-                      path: "subsubtitle",
+                      fieldName: "subsubtitle",
                       value: "xyz",
                       violations: [
                         {

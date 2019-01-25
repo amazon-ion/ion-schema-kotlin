@@ -142,7 +142,7 @@ test_validation::{
               code: fields_mismatch,
               children: [
                 {
-                  path: "b",
+                  fieldName: "b",
                   value: "hi",
                   violations: [
                     {
@@ -167,14 +167,14 @@ test_validation::{
               code: fields_mismatch,
               children: [
                 {
-                  path: "a",
+                  fieldName: "a",
                   value: true,
                   violations: [
                     { constraint: { type: int }, code: type_mismatch },
                   ],
                 },
                 {
-                  path: "b",
+                  fieldName: "b",
                   value: hi,
                   violations: [
                     {

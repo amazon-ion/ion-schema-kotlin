@@ -23,7 +23,7 @@ test_validation::{
       code: fields_mismatch,
       children: [
         {
-          path: "a",
+          fieldName: "a",
           value: { a: 1, a: 2 },
           violations: [
             {
@@ -33,7 +33,7 @@ test_validation::{
           ],
         },
         {
-          path: "b",
+          fieldName: "b",
           violations: [
             {
               constraint: { occurs: range::[1, 1] },
@@ -42,7 +42,7 @@ test_validation::{
           ],
         },
         {
-          path: "c",
+          fieldName: "c",
           value: { c: 1, c: 2, c: 3, c: 4 },
           violations: [
             {

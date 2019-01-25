@@ -45,7 +45,7 @@ internal class Fields(
             val fieldConstraints = ionStruct.associateBy(
                     { it.fieldName },
                     { Pair(Occurs(it, schema, OPTIONAL, isField = true),
-                            ViolationChild(path = it.fieldName))
+                            ViolationChild(fieldName = it.fieldName))
                     })
             var closedContentIssues: Violation? = null
 

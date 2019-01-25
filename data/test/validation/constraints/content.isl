@@ -15,11 +15,11 @@ test_validation::{
       constraint: { content: closed },
       code: unexpected_content,
       children: [
-        { path: "w", value: 0 },
-        { path: "x", value: 1 },
-        { path: "y", value: 2 },
-        { path: "z", value: 3 },
-        { path: "z", value: 4 },
+        { fieldName: "w", value: 0 },
+        { fieldName: "x", value: 1 },
+        { fieldName: "y", value: 2 },
+        { fieldName: "z", value: 3 },
+        { fieldName: "z", value: 4 },
       ],
     },
   ],
@@ -53,7 +53,7 @@ test_validation::{
       constraint: { content: closed },
       code: unexpected_content,
       children: [
-        { path: "d", value: d },
+        { fieldName: "d", value: d },
       ],
     },
     {
@@ -78,14 +78,14 @@ test_validation::{
       code: fields_mismatch,
       children: [
         {
-          path: "c",
+          fieldName: "c",
           value: { z: z },
           violations: [
             {
               constraint: { content: closed },
               code: unexpected_content,
               children: [
-                { path: "z", value: z },
+                { fieldName: "z", value: z },
               ],
             },
           ],

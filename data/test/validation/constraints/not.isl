@@ -12,7 +12,7 @@ test_validation::{
       code: fields_mismatch,
       children: [
         {
-          path: "one",
+          fieldName: "one",
           value: "hi",
           violations: [
             {

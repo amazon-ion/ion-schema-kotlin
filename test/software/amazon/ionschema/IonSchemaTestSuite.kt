@@ -216,8 +216,8 @@ class IonSchemaTestSuite(
 
     private fun ViolationChild.toIon(): IonStruct {
         val struct = ION.newEmptyStruct()
-        if (path != null && !path.equals("")) {
-            struct.put("path", ION.newString(path))
+        if (fieldName != null && !fieldName.equals("")) {
+            struct.put("fieldName", ION.newString(fieldName))
         }
         if (index != null) {
             struct.put("index", ION.newInt(index as Int))

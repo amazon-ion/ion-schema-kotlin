@@ -92,7 +92,7 @@ open class Violations internal constructor (
         children.forEach {
             sb.append(" ".repeat(2 * depth))
             sb.append("- ")
-            it.path?.let { sb.append(it) }
+            it.fieldName?.let { sb.append(it) }
             it.index?.let { sb.append("[").append(it).append("]") }
             it.value?.let { sb.append(": ").append(it.toString().truncate(20)) }
             sb.appendln()
@@ -111,11 +111,11 @@ class Violation(
 ) : Violations()
 
 /**
- * References a specific path (struct field) or index of a list/sexp/document
+ * References a specific struct fieldName or index into a list/sexp/document
  * within a hierarchical Violations object.
  */
 class ViolationChild internal constructor (
-        val path: String? = null,
+        val fieldName: String? = null,
         val index: Int? = null,
         var value: IonValue? = null
 ) : Violations() {
