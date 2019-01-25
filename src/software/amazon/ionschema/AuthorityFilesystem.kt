@@ -7,6 +7,13 @@ import java.io.File
 import java.io.FileReader
 import java.io.Reader
 
+/**
+ * An Authority implementation that resolves schema identifiers to files.
+ * Each schema identifier is expected to correspond with a file path relative
+ * to [basePath].
+ *
+ * @property[basePath] the base path in the filesystem in which to resolve schema identifiers
+ */
 class AuthorityFilesystem(private val basePath: String) : Authority {
     init {
         if (!File(basePath).exists()) {
