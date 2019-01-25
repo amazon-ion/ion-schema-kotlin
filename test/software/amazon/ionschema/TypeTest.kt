@@ -23,9 +23,7 @@ class TypeTest {
     private val type = iss.loadSchema("type::{ name: a, type: string }").getType("a")!!
 
     @Test
-    fun name() {
-        assertEquals("a", type.name())
-    }
+    fun name() = assertEquals("a", type.name())
 
     @Test
     fun isValid_true() = assertTrue(type.isValid(ION.singleValue("\"hello\"")))

@@ -1,28 +1,41 @@
 package software.amazon.ionschema.internal.util
 
-import org.junit.Assert.fail
 import org.junit.Test
-import software.amazon.ion.system.IonSystemBuilder
-import software.amazon.ionschema.InvalidSchemaException
 
-class RangeIonPosIntTest {
-    private val ION = IonSystemBuilder.standard().build()
-
+internal class RangeIonPosIntTest
+    : AbstractRangeTest(Range.RangeType.POSITIVE_INTEGER)
+{
     @Test
-    fun invalidRanges() {
-        testInvalidRange("[exclusive::1, 1]")
-        testInvalidRange("[1, exclusive::1]")
-
-        testInvalidRange("[0, exclusive::1]")
-        testInvalidRange("[exclusive::0, 1]")
+    fun range_int_inclusive() {
+        assertValidRangeAndValues(
+                "range::[0, 100]",
+                listOf("0", "100"),
+                listOf("-1", "101"))
     }
 
-    private fun testInvalidRange(rangeDef: String) {
-        try {
-            Range.rangeOf(ION.singleValue(rangeDef), Range.RangeType.POSITIVE_INTEGER)
-            fail("Expected InvalidSchemaException for RangeIonPosInt($rangeDef)")
-        } catch (e: InvalidSchemaException) {
-        }
+    @Test
+    fun range_int_exclusive() {
+        assertValidRangeAndValues(
+                "range::[exclusive::0, exclusive::100]",
+                listOf("1", "99"),
+                listOf("0", "100"))
+    }
+
+    @Test
+    fun range_invalid() {
+        assertInvalidRange("range::[-1, 0]")
+        assertInvalidRange("range::[0, -1]")
+
+        assertInvalidRange("range::[exclusive::1, 1]")
+        assertInvalidRange("range::[1, exclusive::1]")
+
+        assertInvalidRange("range::[0, exclusive::1]")
+        assertInvalidRange("range::[exclusive::0, 1]")
+
+        assertInvalidRange("range::[0d0, 1]")
+        assertInvalidRange("range::[0, 1d0]")
+        assertInvalidRange("range::[0e0, 1]")
+        assertInvalidRange("range::[0, 1e0]")
     }
 }
 
