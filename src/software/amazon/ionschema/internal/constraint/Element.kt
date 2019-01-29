@@ -23,7 +23,11 @@ internal class Element(
         } else {
             val elementIssues = Violation(ion, "element_mismatch", "one or more elements don't match expectations")
             value.forEachIndexed { idx, it ->
-                val elementValidation = ViolationChild(index = idx, value = it)
+                val elementValidation = if (it.fieldName == null) {
+                        ViolationChild(index = idx, value = it)
+                    } else {
+                        ViolationChild(fieldName = it.fieldName, value = it)
+                    }
                 typeReference.validate(it, elementValidation)
                 if (!elementValidation.isValid()) {
                     elementIssues.add(elementValidation)

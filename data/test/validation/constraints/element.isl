@@ -18,7 +18,7 @@ test_validation::{
 }
 
 test_validation::{
-  values: (("a" 5 b) ["a", 5, b] {a: "a", b: 5, c: b}),
+  values: (("a" 5 b) ["a", 5, b]),
   violations: [
     {
       constraint: { element: int },
@@ -33,6 +33,32 @@ test_validation::{
         },
         {
           index: 2,
+          value: b,
+          violations: [
+            { constraint: { type: int }, code: type_mismatch },
+          ],
+        },
+      ],
+    },
+  ],
+}
+
+test_validation::{
+  value: {a: "a", b: 5, c: b},
+  violations: [
+    {
+      constraint: { element: int },
+      code: element_mismatch,
+      children: [
+        {
+          fieldName: "a",
+          value: "a",
+          violations: [
+            { constraint: { type: int }, code: type_mismatch },
+          ],
+        },
+        {
+          fieldName: "c",
           value: b,
           violations: [
             { constraint: { type: int }, code: type_mismatch },

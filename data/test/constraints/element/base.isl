@@ -14,6 +14,9 @@ valid::[
 invalid::[
   [1.],
   [1e0],
+  [1, 2, null.int],
   (1 2 3 true 4),
   { a: 1, b: 2, c: true },
+  { a: 1, b: 2, c: null.int },
 ]
+
