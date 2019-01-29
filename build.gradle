@@ -7,12 +7,16 @@ buildscript {
   }
 }
 
+apply plugin: "kotlin"
+apply plugin: "checkstyle"
+apply plugin: "maven-publish"
+apply plugin: "signing"
+
 group = "software.amazon.ion"
 version = "0.7.0-SNAPSHOT"
 
 repositories { mavenCentral() }
 
-apply plugin: "kotlin"
 dependencies {
   compile "software.amazon.ion:ion-java:[1.2,)"
   compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -25,14 +29,12 @@ sourceSets {
   test.kotlin.srcDirs = ["test"]
 }
 
-apply plugin: "checkstyle"
 checkstyle {
   sourceSets = [sourceSets.main]
   ignoreFailures = false
 }
 
 
-apply plugin: "maven-publish"
 task sourcesJar(type: Jar) {
   from "src"
   classifier = "sources"
@@ -44,6 +46,8 @@ task javadocJar(type: Jar) {
 publishing {
   publications {
     maven(MavenPublication) {
+      artifactId = "ion-schema-kotlin"
+
       from components.java
       artifact sourcesJar
       artifact javadocJar
@@ -76,8 +80,6 @@ publishing {
     }
   }
   repositories {
-    mavenLocal()
-    /*
     maven {
       url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
       credentials {
@@ -85,11 +87,9 @@ publishing {
         password ossrhPassword
       }
     }
-    */
   }
 }
 
-apply plugin: "signing"
 signing {
   sign publishing.publications.maven
 }
