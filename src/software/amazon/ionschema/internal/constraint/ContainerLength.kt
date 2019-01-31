@@ -2,16 +2,17 @@ package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonContainer
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.internal.util.Range
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.CommonViolations
+import software.amazon.ionschema.internal.util.RangeFactory
+import software.amazon.ionschema.internal.util.RangeType
 
 internal class ContainerLength(
         ion: IonValue
     ) : ConstraintBase(ion) {
 
-    private val range = Range.rangeOf(ion, Range.RangeType.POSITIVE_INTEGER)
+    private val range = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE)
 
     override fun validate(value: IonValue, issues: Violations) {
         if (value !is IonContainer) {

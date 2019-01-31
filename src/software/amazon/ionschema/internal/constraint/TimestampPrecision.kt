@@ -1,62 +1,32 @@
 package software.amazon.ionschema.internal.constraint
 
+import software.amazon.ion.IonTimestamp
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.CommonViolations
+import software.amazon.ionschema.Violation
 import software.amazon.ionschema.Violations
+import software.amazon.ionschema.internal.util.RangeFactory
+import software.amazon.ionschema.internal.util.RangeType
+import software.amazon.ionschema.internal.util.IonTimestampPrecision
 
 internal class TimestampPrecision(
         ion: IonValue
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
-    //private val range = TimestampPrecisionRange(ion)
-
-    /*
-     override fun isValid(value: IonValue, violations: MutableList<Violation>)
-             = value is IonTimestamp
-                 && !value.isNullValue
-                 && range.contains(Precision.precisionOf(value))
-                 */
+    private val range = RangeFactory.rangeOf<IonTimestamp>(ion, RangeType.ION_TIMESTAMP_PRECISION)
 
     override fun validate(value: IonValue, issues: Violations) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    /*
-    private enum class Precision {
-        year,
-        month,
-        day,
-        minute,
-        second,
-        millisecond,
-        microsecond,
-        nanosecond;
-
-        companion object {
-            fun precisionOf(ion: IonTimestamp): Precision =
-                when (ion.timestampValue().precision) {
-                    Timestamp.Precision.YEAR -> year
-                    Timestamp.Precision.MONTH -> month
-                    Timestamp.Precision.DAY -> day
-                    Timestamp.Precision.MINUTE -> minute
-                    Timestamp.Precision.SECOND -> {
-                        when (ion.timestampValue().decimalMillis.precision()) {
-                            0 -> second
-                            3 -> millisecond
-                            6 -> microsecond
-                            9 -> nanosecond
-                            else -> throw RuntimeException("Precision of timestamp '$ion' is not supported")
-                        }
-                    }
-                }
+        if (value !is IonTimestamp) {
+            issues.add(CommonViolations.INVALID_TYPE(ion, value))
+        } else if (value.isNullValue) {
+            issues.add(CommonViolations.NULL_VALUE(ion))
+        } else {
+            if (!range.contains(value)) {
+                val actualPrecision = IonTimestampPrecision.toInt(value)
+                issues.add(Violation(ion, "invalid_timestamp_precision",
+                        "invalid timestamp precision %s, expected %s".format(actualPrecision, ion)))
+            }
         }
     }
-
-    private class TimestampPrecisionRange(ion: IonValue) {
-        //RangeBoundaryType
-
-        fun contains(value: Precision): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-    }
-    */
 }
+

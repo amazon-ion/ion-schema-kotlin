@@ -7,19 +7,21 @@ import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.internal.util.Range
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
+import software.amazon.ionschema.internal.util.RangeFactory
+import software.amazon.ionschema.internal.util.RangeType
 import software.amazon.ionschema.internal.util.withoutTypeAnnotations
 
 internal class ValidValues(
         ion: IonValue
     ) : ConstraintBase(ion) {
 
-    private val validRange: Range?
+    private val validRange: Range<IonValue>?
     private val validValues: Set<IonValue>
 
     init {
         validRange =
             if (ion is IonList && ion.hasTypeAnnotation("range")) {
-                Range.rangeOf(ion, Range.RangeType.NUMBER)
+                RangeFactory.rangeOf<IonValue>(ion, RangeType.ION_NUMBER)
             } else {
                 null
             }
@@ -57,3 +59,4 @@ internal class ValidValues(
         }
     }
 }
+
