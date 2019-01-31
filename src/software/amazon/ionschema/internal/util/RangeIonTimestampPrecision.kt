@@ -54,7 +54,7 @@ internal class RangeIonTimestampPrecision (
                 } else {
                     "upper"
                 }
-                throw InvalidSchemaException("Invalid timestamp range $end boundary:  $ionValue")
+                throw InvalidSchemaException("Invalid timestamp range $end bound:  $ionValue")
             }
         }
         delegate = RangeFactory.rangeOf<Int>(intRangeIon, RangeType.INT)

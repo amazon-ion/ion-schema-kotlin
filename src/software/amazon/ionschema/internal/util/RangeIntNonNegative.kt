@@ -13,26 +13,15 @@ internal class RangeIntNonNegative (
     init {
         if (!((ion[0] is IonInt && (ion[0] as IonInt).intValue() >= 0)
                         || (ion[0] as? IonSymbol)?.stringValue().equals("min"))) {
-            throw InvalidSchemaException("Invalid lower boundary in positive int $ion")
+            throw InvalidSchemaException("Invalid lower bound in positive int $ion")
         }
 
         if (!((ion[1] is IonInt && (ion[1] as IonInt).intValue() >= 0)
                         || (ion[1] as? IonSymbol)?.stringValue().equals("max"))) {
-            throw InvalidSchemaException("Invalid upper boundary in positive int $ion")
+            throw InvalidSchemaException("Invalid upper bound in positive int $ion")
         }
-
-        /*
-        if ((delegate.min.value != null && delegate.min.value < BigDecimal.ZERO)
-                || (delegate.max.value != null && delegate.max.value < BigDecimal.ZERO)) {
-            throw InvalidSchemaException("Invalid int range $ion")
-        }
-        */
     }
 
-    //override fun contains(value: Int) = delegate.contains(value.toBigDecimal())
-
     internal fun isAtMax(value: Int) = delegate.isAtMax(value)
-
-    //override fun toString() = ion.toString()
 }
 

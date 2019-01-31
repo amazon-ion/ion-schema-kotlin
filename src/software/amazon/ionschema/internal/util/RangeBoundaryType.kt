@@ -13,7 +13,7 @@ internal enum class RangeBoundaryType {
             val isExclusive = ion.hasTypeAnnotation("exclusive")
             return if (ion is IonSymbol && (ion.stringValue() == "min" || ion.stringValue() == "max")) {
                        if (isExclusive) {
-                           throw InvalidSchemaException("Invalid range boundary '$ion'")
+                           throw InvalidSchemaException("Invalid range bound '$ion'")
                        }
                        INCLUSIVE
                    } else if (isExclusive) {
