@@ -23,6 +23,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         precision,
         regex,
         scale,
+        timestamp_precision,
         type,
         valid_values,
     }
@@ -52,7 +53,9 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
             Constraints.precision           -> Precision(ion)
             Constraints.regex               -> Regex(ion)
             Constraints.scale               -> Scale(ion)
+            Constraints.timestamp_precision -> TimestampPrecision(ion)
             Constraints.type                -> TypeReference(ion, schema)
             Constraints.valid_values        -> ValidValues(ion)
         }
 }
+

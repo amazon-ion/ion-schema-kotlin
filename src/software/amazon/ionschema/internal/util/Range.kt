@@ -1,44 +1,39 @@
 package software.amazon.ionschema.internal.util
 
-import software.amazon.ion.*
-import software.amazon.ion.system.IonSystemBuilder
-import software.amazon.ionschema.InvalidSchemaException
+import software.amazon.ion.IonList
+import software.amazon.ion.IonValue
 
-internal interface Range {
-    enum class RangeType {
-        NUMBER,
-        POSITIVE_INTEGER,
-    }
+enum class RangeType {
+    INT,
+    INT_NON_NEGATIVE,
+    ION_NUMBER,
+    ION_TIMESTAMP_PRECISION,
+}
 
+internal interface Range<in T : Any> {
+    fun contains(value: T): Boolean
+}
+
+internal class RangeFactory {
     companion object {
-        private val ION = IonSystemBuilder.standard().build()
-
-        fun rangeOf(ion: IonValue, rangeType: RangeType): Range =
-            when (rangeType) {
-                RangeType.NUMBER -> when (ion) {
-                    is IonList -> RangeIonNumber(ion)
-                    is IonDecimal, is IonFloat, is IonInt -> RangeIonNumber(convertToRange(ion))
-                    else -> throw InvalidSchemaException("Invalid numeric range: $ion")
+        @JvmStatic
+        fun <T : Any> rangeOf(ion: IonValue, rangeType: RangeType): Range<T> {
+            val ionList = if (ion !is IonList) {
+                    val range = ion.system.newList(ion.clone(), ion.clone())
+                    range.addTypeAnnotation("range")
+                    range
+                } else {
+                    ion
                 }
-                RangeType.POSITIVE_INTEGER -> when (ion) {
-                    is IonList -> RangeIonPosInt(ion)
-                    is IonDecimal, is IonFloat, is IonInt -> RangeIonPosInt(convertToRange(ion))
-                    else -> throw InvalidSchemaException("Invalid numeric range: $ion")
-                }
-            }
 
-        private fun convertToRange(ion: IonValue): IonList {
-            val range = ion.system.newList(ion.clone(), ion.clone())
-            range.addTypeAnnotation("range")
-            return range
+            @Suppress("UNCHECKED_CAST")
+            return when (rangeType) {
+                    RangeType.INT                     -> RangeInt(ionList)
+                    RangeType.INT_NON_NEGATIVE        -> RangeIntNonNegative(ionList)
+                    RangeType.ION_NUMBER              -> RangeIonNumber(ionList)
+                    RangeType.ION_TIMESTAMP_PRECISION -> RangeIonTimestampPrecision(ionList)
+                } as Range<T>
         }
     }
-
-    fun contains(value: Int): Boolean
-
-    fun contains(value: IonValue): Boolean
-
-    fun compareTo(value: Int): Int
-
-    fun isAtMax(value: Int): Boolean
 }
+

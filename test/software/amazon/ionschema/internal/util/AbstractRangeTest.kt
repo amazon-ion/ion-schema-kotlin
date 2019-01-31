@@ -7,32 +7,42 @@ import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.InvalidSchemaException
 
 internal abstract class AbstractRangeTest(
-        private val rangeType: Range.RangeType
+        private val rangeType: RangeType
 ) {
     private val ION = IonSystemBuilder.standard().build()
 
+    abstract fun <T : Any> rangeOf(ion: IonList): Range<T>
+
     fun assertValidRangeAndValues(
             rangeDef: String,
-            validValues: List<String>,
-            invalidValues: List<String>) {
+            validValues: List<Any>,
+            invalidValues: List<Any>) {
 
-        val range = Range.rangeOf(ION.singleValue(rangeDef), rangeType)
+        val range = rangeOf<Any>(ION.singleValue(rangeDef) as IonList)
         validValues.forEach {
             Assert.assertTrue("Expected $it to be within $rangeDef",
-                    range.contains(ION.singleValue(it)))
+                    range.contains(it))
         }
         invalidValues.forEach {
             Assert.assertFalse("Didn't expect $it to be within $rangeDef",
-                    range.contains(ION.singleValue(it)))
+                    range.contains(it))
         }
     }
 
     fun assertInvalidRange(rangeDef: String) {
         try {
-            Range.rangeOf(ION.singleValue(rangeDef) as IonList, rangeType)
-            fail("Expected InvalidSchemaException for RangeIonNumber($rangeDef)")
+            rangeOf<Any>(ION.singleValue(rangeDef) as IonList)
+            fail("Expected InvalidSchemaException for $rangeDef")
         } catch (e: InvalidSchemaException) {
         }
+    }
+
+    fun ionListOf(vararg items: String): IonList {
+        val ionList = ION.newEmptyList()
+        items.forEach {
+            ionList.add(ION.singleValue(it))
+        }
+        return ionList
     }
 }
 

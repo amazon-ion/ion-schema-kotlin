@@ -6,31 +6,34 @@ import software.amazon.ion.IonValue
 import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
-import software.amazon.ionschema.internal.util.Range
 import software.amazon.ionschema.ViolationChild
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
+import software.amazon.ionschema.internal.util.Range
+import software.amazon.ionschema.internal.util.RangeFactory
+import software.amazon.ionschema.internal.util.RangeIntNonNegative
+import software.amazon.ionschema.internal.util.RangeType
 
 internal class Occurs(
         ion: IonValue,
         schema: Schema,
-        defaultRange: Range,
+        defaultRange: Range<Int>,
         isField: Boolean = false
     ) : ConstraintBase(ion) {
 
     companion object {
         private val ION = IonSystemBuilder.standard().build()
 
-        internal val OPTIONAL = Range.rangeOf(ION.singleValue("range::[0, 1]"),
-                Range.RangeType.POSITIVE_INTEGER)
-        internal val REQUIRED = Range.rangeOf(ION.singleValue("range::[1, 1]"),
-                Range.RangeType.POSITIVE_INTEGER)
+        internal val OPTIONAL = RangeFactory.rangeOf<Int>(ION.singleValue("range::[0, 1]"),
+                RangeType.INT_NON_NEGATIVE)
+        internal val REQUIRED = RangeFactory.rangeOf<Int>(ION.singleValue("range::[1, 1]"),
+                RangeType.INT_NON_NEGATIVE)
 
         private val OPTIONAL_ION = (ION.singleValue("{ occurs: optional } ") as IonStruct).get("occurs")
         private val REQUIRED_ION = (ION.singleValue("{ occurs: required } ") as IonStruct).get("occurs")
     }
 
-    internal val range: Range
+    internal val range: Range<Int>
     internal val occursIon: IonValue
     private val typeReference: TypeReference
     private var attempts = 0
@@ -51,7 +54,7 @@ internal class Occurs(
                             else -> throw IllegalArgumentException("Unrecognized occurs constraint value '$occurs'")
                         }
                     } else {
-                        Range.rangeOf(occurs, Range.RangeType.POSITIVE_INTEGER)
+                        RangeFactory.rangeOf<Int>(occurs, RangeType.INT_NON_NEGATIVE)
                     }
             }
         }
@@ -105,5 +108,6 @@ internal class Occurs(
     internal fun isValidCountWithinRange() = range.contains(validCount)
 
     internal fun attemptsSatisfyOccurrences() = range.contains(attempts)
-    internal fun canConsumeMore() = !range.isAtMax(attempts)
+    internal fun canConsumeMore() = !(range as RangeIntNonNegative).isAtMax(attempts)
 }
+
