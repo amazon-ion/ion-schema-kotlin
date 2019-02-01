@@ -51,7 +51,7 @@ internal class Occurs(
                         when (occurs.stringValue()) {
                             "optional" -> OPTIONAL
                             "required" -> REQUIRED
-                            else -> throw IllegalArgumentException("Unrecognized occurs constraint value '$occurs'")
+                            else -> throw InvalidSchemaException("Unrecognized occurs constraint value '$occurs'")
                         }
                     } else {
                         RangeFactory.rangeOf<Int>(occurs, RangeType.INT_NON_NEGATIVE)
@@ -76,7 +76,7 @@ internal class Occurs(
                 when (range) {
                     OPTIONAL -> OPTIONAL_ION
                     REQUIRED -> REQUIRED_ION
-                    else -> throw IllegalArgumentException("Unrecognized occurs constraint value '$range'")
+                    else -> throw InvalidSchemaException("Unrecognized occurs constraint value '$range'")
                 }
             }
     }
