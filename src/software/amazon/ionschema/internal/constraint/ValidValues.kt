@@ -2,6 +2,9 @@ package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonList
 import software.amazon.ion.IonSequence
+import software.amazon.ion.IonSymbol
+import software.amazon.ion.IonTimestamp
+import software.amazon.ion.IonType
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.internal.util.Range
@@ -13,20 +16,22 @@ import software.amazon.ionschema.internal.util.withoutTypeAnnotations
 
 internal class ValidValues(
         ion: IonValue
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
-    private val validRange: Range<IonValue>?
-    private val validValues: Set<IonValue>
-
-    init {
-        validRange =
+    private val validRange =
             if (ion is IonList && ion.hasTypeAnnotation("range")) {
-                RangeFactory.rangeOf<IonValue>(ion, RangeType.ION_NUMBER)
+                if (ion[0] is IonTimestamp || ion[1] is IonTimestamp) {
+                    @Suppress("UNCHECKED_CAST")
+                    RangeFactory.rangeOf<IonTimestamp>(ion, RangeType.ION_TIMESTAMP) as Range<IonValue>
+                } else {
+                    RangeFactory.rangeOf<IonValue>(ion, RangeType.ION_NUMBER)
+                }
             } else {
                 null
             }
 
-        validValues = if (validRange != null) {
+    private val validValues =
+            if (validRange != null) {
                 setOf()
             } else {
                 when (ion) {
@@ -37,7 +42,6 @@ internal class ValidValues(
                     }
                 }
             }
-    }
 
     private fun checkValue(ion: IonValue) =
         if (ion.typeAnnotations.size > 0) {
@@ -48,6 +52,11 @@ internal class ValidValues(
 
     override fun validate(value: IonValue, issues: Violations) {
         if (validRange != null) {
+            if (value is IonTimestamp && value.localOffset == null) {
+                issues.add(Violation(ion, "unknown_local_offset",
+                        "unable to compare timestamp with unknown local offset"))
+                return
+            }
             if (!validRange.contains(value)) {
                 issues.add(Violation(ion, "invalid_value", "invalid value $value"))
             }
