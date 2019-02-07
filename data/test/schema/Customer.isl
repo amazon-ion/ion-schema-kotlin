@@ -11,7 +11,7 @@ type::{
     firstName: { type: string, occurs: required },
     middleName: string,
     lastName: { type: string, codepoint_length: range::[min, 7], occurs: required },
-    age: { type: positive_int, occurs: optional },
+    age: { type: positive_int },
   }
 }
 

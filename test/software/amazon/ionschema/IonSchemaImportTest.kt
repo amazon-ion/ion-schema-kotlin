@@ -26,18 +26,4 @@ class IonSchemaImportTest {
         assertTrue(types.contains("positive_int"))
     }
 
-    @Test
-    fun validateType() {
-        val type = iss.loadSchema("schema/Customer.isl").getType("Customer")!!
-        assertTrue(type.isValid(ION.singleValue("{ firstName: \"Phil\", lastName: \"Collins\" }")))
-        assertFalse(type.isValid(ION.singleValue("{ firstName: \"Phil\", middleName: \"Billy\" }")))
-    }
-
-    @Test
-    fun validateAgainstImportedType() {
-        val type = iss.loadSchema("schema/Customer.isl").getType("Customer")!!
-        assertTrue(type.isValid(ION.singleValue("{ firstName: \"Phil\", lastName: \"Collins\", age: 68}")))
-        assertFalse(type.isValid(ION.singleValue("{ firstName: \"Phil\", lastName: \"Collins\", age: -1}")))
-    }
-
 }
