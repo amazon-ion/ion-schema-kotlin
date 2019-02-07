@@ -28,7 +28,7 @@ class IonSchemaTestSuite(
     }
 
     private val ION = IonSystemBuilder.standard().build()
-    private val schemaSystem = IonSchemaSystemBuilder.standard().build()
+    private val schemaSystem = IonSchemaSystemBuilder.standard().withAuthority(AuthorityFilesystem("data/test")).build()
     private val schemaCore = SchemaCore(schemaSystem)
 
     override fun getDescription(): Description {
