@@ -39,8 +39,6 @@ class IonSchemaTestSuite(
         val base = "data/test"
         File(base).walk()
             .filter { it.isFile }
-            .filter { it.path != "data/test/constraints/annotations/ordered.isl" }  // TBD remove
-            .filter { it.path != "data/test/constraints/annotations/unordered.isl" }  // TBD remove
             .forEach { file ->
                 val testName = file.path.substring(base.length + 1, file.path.length - ".isl".length)
                 var schema: Schema? = null

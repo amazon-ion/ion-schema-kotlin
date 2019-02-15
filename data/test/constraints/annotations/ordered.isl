@@ -15,13 +15,16 @@ valid::[
   a::b::c::5,
   a::b::c::d::5,
   open_content::a::open_content::b::open_content::c::open_content::d::open_content::5,
-]
-invalid::[
+
+  // optional annotations behave like open content, so the following are all valid:
   b::a::c::d::5,
   a::c::b::d::5,
   a::b::d::c::5,
   d::c::b::a::5,
   open_content::d::open_content::c::open_content::b::open_content::a::open_content::5,
+]
+invalid::[
+  // anything goes
 ]
 
 type::{
@@ -61,10 +64,13 @@ valid::[
   a::b::   d::5,
      b::c::d::5,
   a::b::c::d::5,
+     b::a::d::5,    // 'a' is treated as open content
+  c::b::d::5,       // 'c' is treated as open content
+  c::b::a::d::5,    // 'a' and 'c' are treated as open content
 ]
 invalid::[
+  b::5,
+  d::5,
   d::b::5,
-  b::a::d::5,
-  c::b::d::5,
-  c::b::a::d::5,
 ]
+
