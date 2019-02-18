@@ -1,11 +1,10 @@
 package software.amazon.ionschema
 
-import org.junit.Assert.*
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import software.amazon.ion.system.IonSystemBuilder
 
 class IonSchemaImportTest {
-    private val ION = IonSystemBuilder.standard().build()
     private val iss = IonSchemaSystemBuilder.standard()
             .addAuthority(AuthorityFilesystem("data/test"))
             .build()
