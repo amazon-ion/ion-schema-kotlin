@@ -1,9 +1,6 @@
 package software.amazon.ionschema.internal
 
-import software.amazon.ion.IonList
-import software.amazon.ion.IonStruct
-import software.amazon.ion.IonSymbol
-import software.amazon.ion.IonValue
+import software.amazon.ion.*
 import software.amazon.ionschema.*
 
 internal class SchemaImpl(
@@ -48,7 +45,7 @@ internal class SchemaImpl(
     private fun loadHeader(typeMap: MutableMap<String, Type>, header: IonStruct) {
         (header.get("imports") as? IonList)?.forEach {
             if (it is IonStruct) {
-                val id = it.get("id") as IonSymbol
+                val id = it.get("id") as IonString
                 val importedSchema = schemaSystem.loadSchema(id.stringValue())
 
                 val typeName = it.get("type") as? IonSymbol
