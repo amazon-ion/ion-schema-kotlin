@@ -42,6 +42,12 @@ internal class IonSchemaSystemImpl(
         throw IonSchemaException("Unable to resolve schema id '$id' ($exceptions)")
     }
 
+    override fun newSchema() = newSchema("")
+
+    override fun newSchema(isl: String) = newSchema(ION.iterate(isl))
+
+    override fun newSchema(isl: Iterator<IonValue>) = SchemaImpl(this, schemaCore, isl)
+
     internal fun isConstraint(name: String)
             = constraintFactory.isConstraint(name)
 
