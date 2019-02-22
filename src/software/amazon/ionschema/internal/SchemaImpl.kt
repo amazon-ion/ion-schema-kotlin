@@ -82,6 +82,11 @@ internal class SchemaImpl(
                     .filter { it is TypeNamed || it is TypeImpl }
                     .iterator()
 
+    override fun newType(isl: String) = newType(
+            (schemaSystem as IonSchemaSystemImpl).getIonSystem().singleValue(isl) as IonStruct)
+
+    override fun newType(isl: IonStruct) = TypeImpl(isl, this)
+
     override fun getSchemaSystem() = schemaSystem
 }
 

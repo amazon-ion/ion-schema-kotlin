@@ -107,4 +107,9 @@ internal class SchemaCore(
     override fun getTypes() = typeMap.values.iterator()
 
     override fun getSchemaSystem() = schemaSystem
+
+    override fun newType(isl: String) = throw UnsupportedOperationException()
+
+    override fun newType(isl: IonStruct) = throw UnsupportedOperationException()
 }
+
