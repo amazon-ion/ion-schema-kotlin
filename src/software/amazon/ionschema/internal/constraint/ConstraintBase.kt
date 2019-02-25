@@ -1,18 +1,14 @@
 package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.Constraint
+import software.amazon.ionschema.internal.ConstraintInternal
 
 internal abstract class ConstraintBase(
-        internal val ion: IonValue
-    ) : Constraint {
+        override val ion: IonValue
+) : ConstraintInternal {
 
     override fun name() = ion.fieldName
 
-    override fun toString(): String {
-        val sb = StringBuilder()
-        //sb.append(name()).append(": ")
-        sb.append(ion)
-        return sb.toString()
-    }
+    override fun toString() = ion.toString()
 }
+

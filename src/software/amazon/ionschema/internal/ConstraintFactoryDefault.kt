@@ -56,7 +56,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
             Constraints.scale               -> Scale(ion)
             Constraints.timestamp_offset    -> TimestampOffset(ion)
             Constraints.timestamp_precision -> TimestampPrecision(ion)
-            Constraints.type                -> TypeReference(ion, schema)
+            Constraints.type                -> TypeReference.create(ion, schema)
             Constraints.valid_values        -> ValidValues(ion)
         }
 }

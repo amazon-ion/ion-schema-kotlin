@@ -8,38 +8,28 @@ import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.*
 
-// TBD this class doesn't provide any functionality other than type/delegate construction;
-//     refactor it out?
-internal class TypeReference private constructor (
-        ion: IonValue,
-        private var type: TypeInternal
-) : TypeInternal by type, ConstraintBase(ion) {
-
-    constructor(ion: IonValue, schema: Schema, isField: Boolean = false) : this(ion, delegate(ion, schema, isField))
-
+internal class TypeReference private constructor() {
     companion object {
-        private fun delegate(ion: IonValue, schema: Schema, isField: Boolean): TypeInternal {
+        fun create(ion: IonValue, schema: Schema, isField: Boolean = false): TypeInternal {
             var tmpType = when (ion) {
                 is IonStruct -> {
-                    val tmpIon = ion.cloneAndRemove("occurs")
-
-                    val id = tmpIon.get("id") as? IonText
+                    val id = ion.get("id") as? IonText
                     if (id != null) {
                         // import
                         val newSchema = schema.getSchemaSystem().loadSchema(id.stringValue())
-                        val typeName = tmpIon.get("type") as IonSymbol
+                        val typeName = ion.get("type") as IonSymbol
                         newSchema.getType(typeName.stringValue())
 
                     } else {
                         if (isField) {
-                            TypeImpl(tmpIon, schema)
+                            TypeImpl(ion, schema)
                         } else {
-                            if (tmpIon.size() == 1 && tmpIon.get("type") != null) {
+                            if (ion.size() == 1 && ion.get("type") != null) {
                                 // elide inline types defined as "{ type: X }" to TypeImpl;
                                 // this avoids creating a nested, redundant validation structure
-                                TypeImpl(tmpIon, schema)
+                                TypeImpl(ion, schema)
                             } else {
-                                TypeInline(tmpIon, schema)
+                                TypeInline(ion, schema)
                             }
                         }
                     }
@@ -67,7 +57,5 @@ internal class TypeReference private constructor (
             return tmpType as TypeInternal
         }
     }
-
-    override fun name() = type.name()
 }
 

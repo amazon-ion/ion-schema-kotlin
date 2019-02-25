@@ -7,13 +7,14 @@ import software.amazon.ionschema.ViolationChild
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.CommonViolations
+import software.amazon.ionschema.internal.ConstraintInternal
 
 internal class Element(
         ion: IonValue,
         schema: Schema
     ) : ConstraintBase(ion) {
 
-    private val typeReference = TypeReference(ion, schema, isField = true)
+    private val typeReference = TypeReference.create(ion, schema, isField = true)
 
     override fun validate(value: IonValue, issues: Violations) {
         if (value !is IonContainer) {
@@ -28,7 +29,7 @@ internal class Element(
                     } else {
                         ViolationChild(fieldName = it.fieldName, value = it)
                     }
-                typeReference.validate(it, elementValidation)
+                (typeReference as ConstraintInternal).validate(it, elementValidation)
                 if (!elementValidation.isValid()) {
                     elementIssues.add(elementValidation)
                 }
