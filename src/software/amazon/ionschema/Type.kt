@@ -1,19 +1,19 @@
 package software.amazon.ionschema
 
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.internal.TypeInternal
+import software.amazon.ionschema.internal.ConstraintInternal
 
 /**
  * An Ion Schema Type is defined by an optional name and zero or more
  * [Constraints].  Unless otherwise specified, the constraint `type: any`
  * is automatically applied.
  */
-interface Type {
+interface Type : Constraint {
     /**
      * Returns the name of the type;  if the type has no name, a string representing
      * the definition of the type is returned.
      */
-    fun name(): String
+    override fun name(): String
 
     /**
      * If the specified value violates one or more of this type's constraints,
@@ -33,10 +33,11 @@ interface Type {
                 shortCircuit = shortCircuit,
                 childrenAllowed = false)
         try {
-            (type as TypeInternal).validate(value, violations)
+            (type as ConstraintInternal).validate(value, violations)
         } catch (e: ShortCircuitValidationException) {
             // short-circuit validation winds up here, safe to ignore
         }
         return violations
     }
 }
+

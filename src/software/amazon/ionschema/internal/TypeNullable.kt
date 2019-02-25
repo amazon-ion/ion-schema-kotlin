@@ -13,7 +13,7 @@ internal class TypeNullable(
     override fun validate(value: IonValue, issues: Violations) {
         if (!(value.isNullValue
                     && (value.type == IonType.NULL || type.isValidForBaseType(value)))) {
-            type.validate(value, issues)
+            (type as ConstraintInternal).validate(value, issues)
         }
     }
 

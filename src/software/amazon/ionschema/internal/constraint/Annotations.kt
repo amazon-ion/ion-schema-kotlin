@@ -3,20 +3,20 @@ package software.amazon.ionschema.internal.constraint
 import software.amazon.ion.IonList
 import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.Constraint
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
+import software.amazon.ionschema.internal.ConstraintInternal
 import software.amazon.ionschema.internal.util.withoutTypeAnnotations
 
 internal class Annotations private constructor(
-        ion: IonValue,
-        private val delegate: Constraint
-) : ConstraintBase(ion), Constraint by delegate {
+        override val ion: IonValue,
+        private val delegate: ConstraintInternal
+) : ConstraintBase(ion), ConstraintInternal by delegate {
 
     constructor(ion: IonValue) : this(ion, delegate(ion))
 
     companion object {
-        private fun delegate(ion: IonValue): Constraint {
+        private fun delegate(ion: IonValue): ConstraintInternal {
             val requiredByDefault = ion.hasTypeAnnotation("required")
             val annotations = (ion as IonList).map {
                 Annotation(it as IonSymbol, requiredByDefault)

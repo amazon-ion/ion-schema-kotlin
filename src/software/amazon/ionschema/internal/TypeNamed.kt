@@ -15,7 +15,7 @@ internal class TypeNamed(
         val struct = ion.system.newEmptyStruct()
         struct.put("type", ion.clone())
         val violation = Violation(struct, "type_mismatch")
-        type.validate(value, violation)
+        (type as ConstraintInternal).validate(value, violation)
         if (!violation.isValid()) {
             violation.message = "expected type %s".format(name())
             issues.add(violation)

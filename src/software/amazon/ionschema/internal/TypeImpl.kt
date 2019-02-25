@@ -35,7 +35,7 @@ internal class TypeImpl(
 
         if (!foundTypeConstraint && addDefaultTypeConstraint) {
             // default type is 'any':
-            tmpConstraints.add(TypeReference(ANY, schema))
+            tmpConstraints.add(TypeReference.create(ANY, schema))
         }
 
         constraints = tmpConstraints.toList()
@@ -57,7 +57,7 @@ internal class TypeImpl(
 
     override fun validate(value: IonValue, issues: Violations) {
         constraints.forEach {
-            it.validate(value, issues)
+            (it as ConstraintInternal).validate(value, issues)
         }
     }
 }
