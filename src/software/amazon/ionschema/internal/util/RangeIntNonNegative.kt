@@ -23,5 +23,7 @@ internal class RangeIntNonNegative (
     }
 
     internal fun isAtMax(value: Int) = delegate.isAtMax(value)
+
+    override fun toString() = delegate.toString()
 }
 
