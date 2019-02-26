@@ -13,7 +13,7 @@ apply plugin: "maven-publish"
 apply plugin: "signing"
 
 group = "software.amazon.ion"
-version = "0.7.0"
+version = "0.8.0-SNAPSHOT"
 
 repositories { mavenCentral() }
 
