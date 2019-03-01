@@ -59,22 +59,23 @@ class IonSchemaTestSuite(
                         "valid", "invalid" -> {
                             val expectValid = annotation == "valid"
                             (ion as IonContainer).forEach {
-                                val value = prepareValue(it)
-                                if (value.fieldName != null) {
-                                    val testType = schema!!.getType(value.fieldName)
-                                    testType ?: throw Exception("Unrecognized type name '${value.fieldName}'")
-                                    (value as IonSequence).forEach {
-                                        runTest(notifier, testName, it) {
-                                            val violations = testType.validate(it)
+                                if (it.fieldName != null) {
+                                    val testType = schema!!.getType(it.fieldName)
+                                    testType ?: throw Exception("Unrecognized type name '${it.fieldName}'")
+                                    (it as IonSequence).forEach {
+                                        val value = prepareValue(it)
+                                        runTest(notifier, testName, value) {
+                                            val violations = testType.validate(value)
                                             println(violations)
                                             assertEquals(expectValid, violations.isValid())
-                                            assertEquals(expectValid, testType.isValid(it))
+                                            assertEquals(expectValid, testType.isValid(value))
                                         }
                                     }
                                 } else {
                                     if (type == null) {
                                         throw Exception("No type defined for test $testName")
                                     }
+                                    val value = prepareValue(it)
                                     runTest(notifier, testName, value) {
                                         val violations = type!!.validate(value)
                                         println(violations)
@@ -88,7 +89,8 @@ class IonSchemaTestSuite(
                         "invalid_schema" -> {
                             runTest(notifier, testName, ion) {
                                 try {
-                                    SchemaImpl(schemaSystem, schemaCore, (ion as IonSequence).iterator())
+                                    SchemaImpl(schemaSystem, schemaCore,
+                                            (prepareValue(ion) as IonSequence).iterator())
                                     fail("Expected an InvalidSchemaException")
                                 } catch (e: InvalidSchemaException) {
                                 }
