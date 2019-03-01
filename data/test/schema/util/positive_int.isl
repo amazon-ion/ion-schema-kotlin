@@ -1,11 +1,9 @@
 schema_header::{}
-
 type::{
   name: positive_int,
   type: int,
   valid_values: range::[1, max]
 }
-
 schema_footer::{}
 
 valid::{

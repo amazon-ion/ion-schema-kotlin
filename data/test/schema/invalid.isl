@@ -1,7 +1,10 @@
-invalid_schema::(
+// missing schema_footer:
+invalid_schema::document::'''
   schema_header::{}
-)
+'''
 
-invalid_schema::(
+// missing schema_header:
+invalid_schema::document::'''
   schema_footer::{}
-)
+'''
+

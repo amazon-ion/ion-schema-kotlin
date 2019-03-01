@@ -1,9 +1,8 @@
 schema_header::{
-    imports: [
-        { id: "schema/CommonTypes.isl", type: positive_int }
-    ],
+  imports: [
+    { id: "schema/util/positive_int.isl", type: positive_int }
+  ],
 }
-
 type::{
   name: Customer,
   type: struct,
@@ -14,7 +13,6 @@ type::{
     age: { type: positive_int },
   }
 }
-
 schema_footer::{
 }
 
@@ -32,3 +30,4 @@ invalid::{
     { firstName: "Phil", lastName: "Collins", age: -1 },
   ],
 }
+
