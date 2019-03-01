@@ -15,6 +15,7 @@ internal class SchemaCore(
             { type: bool }
             { type: clob }
             { type: decimal }
+            { type: document }
             { type: float }
             { type: int }
             { type: string }
@@ -48,8 +49,8 @@ internal class SchemaCore(
 
             { text:   type::{ one_of: [ string, symbol ] } }
 
-            { any:    type::{ one_of: [ blob, bool, clob, decimal, float,
-                                        int, string, symbol, timestamp,
+            { any:    type::{ one_of: [ blob, bool, clob, decimal, document,
+                                        float, int, string, symbol, timestamp,
                                         list, sexp, struct ] } }
 
             { '${'$'}lob':    type::{ one_of: [ '${'$'}blob', '${'$'}clob' ] } }
@@ -71,6 +72,7 @@ internal class SchemaCore(
                                                 '${'$'}list',
                                                 '${'$'}sexp',
                                                 '${'$'}struct',
+                                                document,
                                               ] } }
 
             { nothing:        type::{ not: ${'$'}any } }

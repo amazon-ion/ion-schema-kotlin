@@ -1,3 +1,3 @@
 package software.amazon.ionschema.internal
 
-internal interface TypeBuiltin
+internal interface TypeBuiltin : TypeInternal

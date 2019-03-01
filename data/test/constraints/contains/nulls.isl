@@ -3,6 +3,7 @@ type::{
 }
 valid::[
   [null.int, null.null, null.bool, null.string],
+  document::"null.bool null.null null.string null.int",
 ]
 invalid::[
   null,
@@ -11,6 +12,7 @@ invalid::[
   null.string,
   [],
   (),
+  document::"null.int null.null null.string",
 ]
 
 type::{
@@ -19,8 +21,11 @@ type::{
 valid::[
   [null],
   (null),
+  document::"null",
 ]
 invalid::[
   [],
   (),
+  document::"",
 ]
+

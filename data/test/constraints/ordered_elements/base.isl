@@ -4,6 +4,7 @@ type::{
 valid::[
   [0, "a", b],
   (1  "b"  c),
+  document::"2 \"a\" b",
 ]
 invalid::[
   null,
@@ -16,4 +17,6 @@ invalid::[
   [1, "a", "b"],
   ["a", "b", c],
   [1, "a", b, null],
+  document::'''1 "a" b null''',
 ]
+

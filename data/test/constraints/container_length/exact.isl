@@ -6,6 +6,7 @@ valid::[
   (a a a),
   (null null null),
   { a: 1, b: 2, c: 3 },
+  document::"[] () {}",
 ]
 invalid::[
   null,
@@ -20,4 +21,6 @@ invalid::[
   (a a a a),
   { a: 1, b: 2 },
   { a: 1, b: 2, c: 3, d: 4 },
+  document::"[] ()",
+  document::"[] () {} null",
 ]

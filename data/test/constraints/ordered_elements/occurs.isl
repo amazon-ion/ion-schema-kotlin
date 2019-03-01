@@ -13,6 +13,7 @@ valid::[
   (1 2 "a" "b" "c" w x y z),
   (1 2 w),
   (1 2 w x y z),
+  document::"1 2 w x y z",
 ]
 invalid::[
   null,
@@ -23,6 +24,7 @@ invalid::[
   (1),
   (1 "a" w),
   (1 2 "a" "b" "c" "d"),
+  document::'''1 2 "a" "b" "c" "d"''',
 ]
 
 type::{
@@ -37,10 +39,12 @@ type::{
 }
 valid::[
   (true hello false),
+  document::"true hello false",
 ]
 invalid::[
   (true hello),
   (true {}),
   (true {} true),
+  document::"true hello",
 ]
 

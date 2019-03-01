@@ -2,9 +2,7 @@ package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonList
 import software.amazon.ion.IonSequence
-import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonTimestamp
-import software.amazon.ion.IonType
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.internal.util.Range
