@@ -18,13 +18,14 @@ test_validation::{
       code: type_mismatch,
       violations: [
         {
-          constraint: { one_of: [blob, bool, clob, decimal, float, int, string, symbol, timestamp, list, sexp, struct] },
+          constraint: { one_of: [blob, bool, clob, decimal, document, float, int, string, symbol, timestamp, list, sexp, struct] },
           code: no_types_matched,
           violations: [
             { constraint: { type: blob },      code: type_mismatch },
             { constraint: { type: bool },      code: type_mismatch },
             { constraint: { type: clob },      code: type_mismatch },
             { constraint: { type: decimal },   code: type_mismatch },
+            { constraint: { type: document },  code: type_mismatch },
             { constraint: { type: float },     code: type_mismatch },
             { constraint: { type: int },       code: type_mismatch },
             { constraint: { type: string },    code: type_mismatch },
@@ -39,3 +40,4 @@ test_validation::{
     },
   ],
 }
+

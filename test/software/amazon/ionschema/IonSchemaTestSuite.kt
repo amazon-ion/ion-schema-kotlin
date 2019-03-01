@@ -59,10 +59,11 @@ class IonSchemaTestSuite(
                         "valid", "invalid" -> {
                             val expectValid = annotation == "valid"
                             (ion as IonContainer).forEach {
-                                if (it.fieldName != null) {
-                                    val testType = schema!!.getType(it.fieldName)
-                                    testType ?: throw Exception("Unrecognized type name '${it.fieldName}'")
-                                    (it as IonSequence).forEach {
+                                val value = prepareValue(it)
+                                if (value.fieldName != null) {
+                                    val testType = schema!!.getType(value.fieldName)
+                                    testType ?: throw Exception("Unrecognized type name '${value.fieldName}'")
+                                    (value as IonSequence).forEach {
                                         runTest(notifier, testName, it) {
                                             val violations = testType.validate(it)
                                             println(violations)
@@ -74,11 +75,11 @@ class IonSchemaTestSuite(
                                     if (type == null) {
                                         throw Exception("No type defined for test $testName")
                                     }
-                                    runTest(notifier, testName, it) {
-                                        val violations = type!!.validate(it)
+                                    runTest(notifier, testName, value) {
+                                        val violations = type!!.validate(value)
                                         println(violations)
                                         assertEquals(expectValid, violations.isValid())
-                                        assertEquals(expectValid, type!!.isValid(it))
+                                        assertEquals(expectValid, type!!.isValid(value))
                                     }
                                 }
                             }
@@ -113,26 +114,27 @@ class IonSchemaTestSuite(
                                         type
                                     }
 
-                                val value = ion.get("value")
-                                val values = ion.get("values")
-                                if (value == null && values == null) {
+                                val theValue = ion.get("value")
+                                val theValues = ion.get("values")
+                                if (theValue == null && theValues == null) {
                                     throw Exception("Expected either 'value' or 'values' to be specified:  $ion")
                                 }
 
                                 val testValues = mutableListOf<IonValue>()
-                                value?.let { testValues.add(it) }
-                                values?.let { testValues.addAll(it as IonSequence) }
+                                theValue?.let { testValues.add(it) }
+                                theValues?.let { testValues.addAll(it as IonSequence) }
 
                                 testValues.forEach {
-                                    runTest(notifier, testName, it) {
-                                        val violations = validationType!!.validate(it)
+                                    val value = prepareValue(it)
+                                    runTest(notifier, testName, value) {
+                                        val violations = validationType!!.validate(value)
                                         if (!violations.isValid()) {
                                             println(violations)
                                             val writer = IonTextWriterBuilder.pretty().build(System.out as OutputStream)
                                             violations.toIon().writeTo(writer)
                                         }
                                         assertEquals(ion.get("violations"), violations.toIon())
-                                        assertFalse(validationType.isValid(it))
+                                        assertFalse(validationType.isValid(value))
                                     }
                                 }
                             }
@@ -163,6 +165,13 @@ class IonSchemaTestSuite(
             notifier.fireTestFinished(desc)
         }
     }
+
+    private fun prepareValue(ion: IonValue) =
+        if (ion.hasTypeAnnotation("document") && ion is IonString) {
+            ION.loader.load(ion.stringValue())
+        } else {
+            ion
+        }
 
     private fun Violations.toIon(): IonList {
         val list = ION.newEmptyList()

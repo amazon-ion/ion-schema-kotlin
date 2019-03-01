@@ -18,8 +18,9 @@ test_validation::{
 }
 
 test_validation::{
-  values: ([] () {}),
+  values: ([] () {} document::""),
   violations: [
     { constraint: { contains: [a, b, c] }, code: missing_values },
   ],
 }
+

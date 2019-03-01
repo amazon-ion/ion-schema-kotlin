@@ -52,7 +52,7 @@ internal class TypeReference private constructor() {
             }
 
             if (ion.hasTypeAnnotation("nullable")) {
-                tmpType = TypeNullable(ion, tmpType as TypeInternal)
+                tmpType = TypeNullable(ion, tmpType as TypeInternal, schema)
             }
             return tmpType as TypeInternal
         }

@@ -64,7 +64,7 @@ type::{
 }
 
 test_validation::{
-  value: [ 1 ],
+  values: ([ 1 ] document::"1"),
   violations: [
     {
       constraint: {
@@ -98,7 +98,7 @@ type::{
 }
 
 test_validation::{
-  value: [ 1, hello ],
+  values: ([ 1, hello ] document::"1 hello"),
   violations: [
     {
       constraint: {
@@ -135,7 +135,7 @@ test_validation::{
 }
 
 test_validation::{
-  value: [ 1, 2, hello, "1", "2", "3", "4", "5" ],
+  values: ([ 1, 2, hello, "1", "2", "3", "4", "5" ] document::'''1 2 hello "1" "2" "3" "4" "5"'''),
   violations: [
     {
       constraint: {

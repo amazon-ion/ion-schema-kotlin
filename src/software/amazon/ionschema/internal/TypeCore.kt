@@ -9,12 +9,23 @@ import software.amazon.ionschema.Violation
 import software.amazon.ionschema.CommonViolations
 
 internal class TypeCore(
-        private val name: IonSymbol
+        name: IonSymbol
     ) : TypeInternal, ConstraintBase(name), TypeBuiltin {
 
-    private val ionType = IonType.valueOf(name.stringValue().toUpperCase())
+    private val ionType: IonType
+    private val ionTypeName: String
 
-    override fun name() = name.stringValue()
+    init {
+        ionType = when (name.stringValue().toUpperCase()) {
+                "DOCUMENT" -> IonType.DATAGRAM
+                else -> IonType.valueOf(name.stringValue().toUpperCase())
+            }
+        ionTypeName = ionType.schemaTypeName()
+    }
+
+    override fun name() = ionTypeName
+
+    override fun getBaseType() = this
 
     override fun isValidForBaseType(value: IonValue) = ionType.equals(value.type)
 
@@ -22,10 +33,16 @@ internal class TypeCore(
         if (!ionType.equals(value.type)) {
             issues.add(Violation(ion, "type_mismatch",
                     "expected type %s, found %s".format(
-                            ionType.toString().toLowerCase(),
-                            value.type.toString().toLowerCase())))
+                            ionTypeName,
+                            value.type.schemaTypeName())))
         } else if (value.isNullValue) {
             issues.add(CommonViolations.NULL_VALUE(ion))
         }
     }
 }
+
+internal fun IonType.schemaTypeName() = when (this) {
+        IonType.DATAGRAM -> "document"
+        else -> this.toString().toLowerCase()
+    }
+

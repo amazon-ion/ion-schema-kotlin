@@ -43,17 +43,20 @@ internal class TypeImpl(
 
     override fun name() = (ionStruct.get("name") as? IonSymbol)?.stringValue() ?: ionStruct.toString()
 
-    override fun isValidForBaseType(value: IonValue): Boolean {
+    override fun getBaseType(): TypeBuiltin {
         val type = ionStruct.get("type")
-        if (type != null && type is IonText) {
-            val baseTypeName = type.stringValue()
-            val baseType = schema.getType(baseTypeName)
-            if (baseType != null) {
-                return (baseType as TypeInternal).isValidForBaseType(value)
+        type?.let {
+            if (type is IonSymbol) {
+                val parentType = schema.getType(type.stringValue())
+                parentType?.let {
+                    return (parentType as TypeInternal).getBaseType()
+                }
             }
         }
-        return (schema.getType("any")!! as TypeInternal).isValidForBaseType(value)
+        return schema.getType("any")!! as TypeBuiltin
     }
+
+    override fun isValidForBaseType(value: IonValue) = getBaseType().isValidForBaseType(value)
 
     override fun validate(value: IonValue, issues: Violations) {
         constraints.forEach {

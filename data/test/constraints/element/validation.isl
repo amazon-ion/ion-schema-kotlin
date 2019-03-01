@@ -18,7 +18,7 @@ test_validation::{
 }
 
 test_validation::{
-  values: (("a" 5 b) ["a", 5, b]),
+  values: (("a" 5 b) ["a", 5, b] document::'''"a" 5 b'''),
   violations: [
     {
       constraint: { element: int },
@@ -69,25 +69,6 @@ test_validation::{
   ],
 }
 
-test_validation::{
-  value: (0 5.0),
-  violations: [
-    {
-      constraint: { element: int },
-      code: element_mismatch,
-      children: [
-        {
-          index: 1,
-          value: 5.0,
-          violations: [
-            { constraint: { type: int }, code: type_mismatch },
-          ],
-        },
-      ],
-    },
-  ],
-}
-
 
 schema_header::{}
 type::{
@@ -101,7 +82,7 @@ type::{
 schema_footer::{}
 
 test_validation::{
-  value: (0 1.0),
+  values: ((0 1.0) document::"0 1.0"),
   type: CollectionOfCustomInt,
   violations: [
     {

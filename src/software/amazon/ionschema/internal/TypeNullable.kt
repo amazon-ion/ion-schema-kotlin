@@ -2,13 +2,22 @@ package software.amazon.ionschema.internal
 
 import software.amazon.ion.IonType
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.InvalidSchemaException
+import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.constraint.ConstraintBase
 import software.amazon.ionschema.Violations
 
 internal class TypeNullable(
         ion: IonValue,
-        private val type: TypeInternal
+        private val type: TypeInternal,
+        schema: Schema
 ) : TypeInternal by type, ConstraintBase(ion) {
+
+    init {
+        if (type.getBaseType() == schema.getType("document")) {
+            throw InvalidSchemaException("The 'document' type is not nullable")
+        }
+    }
 
     override fun validate(value: IonValue, issues: Violations) {
         if (!(value.isNullValue

@@ -1,5 +1,4 @@
 type::{
-  type: list,
   ordered_elements: [
     int,
     decimal,
@@ -7,7 +6,10 @@ type::{
   ],
 }
 test_validation::{
-  value: [true, 5, hello],
+  values: [
+    [true, 5, hello],
+    document::"true 5 hello",
+  ],
   violations: [
     {
       constraint: { ordered_elements: [int, decimal, string] },
@@ -48,7 +50,10 @@ test_validation::{
   ],
 }
 test_validation::{
-  value: [5, 5.0, "hi", extra_content, more_extra_content],
+  values: [
+    [5, 5.0, "hi", extra_content, more_extra_content],
+    document::'''5 5.0 "hi" extra_content more_extra_content''',
+  ],
   violations: [
     {
       constraint: { ordered_elements: [ int, decimal, string ] },
@@ -73,7 +78,10 @@ type::{
   ],
 }
 test_validation::{
-  value: (true {}),
+  values: [
+    (true {}),
+    document::"true {}",
+  ],
   violations: [
     {
       constraint: {

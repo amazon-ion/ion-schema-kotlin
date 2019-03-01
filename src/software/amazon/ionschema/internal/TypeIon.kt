@@ -15,6 +15,8 @@ internal class TypeIon(
 
     override fun name() = name.stringValue()
 
+    override fun getBaseType() = this
+
     override fun isValidForBaseType(value: IonValue) = ionType.equals(value.type)
 
     override fun validate(value: IonValue, issues: Violations) {

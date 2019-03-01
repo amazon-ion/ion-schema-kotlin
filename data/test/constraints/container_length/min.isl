@@ -8,6 +8,8 @@ valid::[
   (null null),
   { a: 1 },
   { a: 1, b: 2 },
+  document::"1",
+  document::"1 2",
 ]
 invalid::[
   null,
@@ -20,6 +22,7 @@ invalid::[
   (),
   {},
   5,
+  document::"",
 ]
 
 type::{
@@ -27,4 +30,5 @@ type::{
 }
 valid::[
   { a: 1, a: 1 },
+  document::"1 2",
 ]

@@ -18,7 +18,7 @@ test_validation::{
 }
 
 test_validation::{
-  values: ([] () {} [1,2,3,4] (1 2 3 4) {a:1, b:2, c:3, d:4}),
+  values: ([] () {} [1,2,3,4] (1 2 3 4) {a:1, b:2, c:3, d:4} document::"" document::"1 2 3 4"),
   violations: [
     { constraint: { container_length: range::[1, 3] }, code: invalid_container_length },
   ],
