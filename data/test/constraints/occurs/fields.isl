@@ -1,4 +1,4 @@
-// default behavior is:
+// default 'occurs' behavior for fields is:
 //   occurs: optional
 //
 type::{ fields: { a: string } }
