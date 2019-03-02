@@ -7,7 +7,7 @@ import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 
 internal class TypeNamed(
-        ion: IonSymbol,
+        override val ion: IonSymbol,
         internal val type: TypeInternal
 ) : TypeInternal by type, ConstraintBase(ion) {
 
@@ -22,5 +22,5 @@ internal class TypeNamed(
         }
     }
 
-    override fun name() = (ion as IonSymbol).stringValue()
+    override fun name() = ion.stringValue()
 }

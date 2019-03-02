@@ -7,7 +7,6 @@ import software.amazon.ionschema.ViolationChild
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.CommonViolations
-import software.amazon.ionschema.internal.ConstraintInternal
 
 internal class Element(
         ion: IonValue,
@@ -29,7 +28,7 @@ internal class Element(
                     } else {
                         ViolationChild(fieldName = it.fieldName, value = it)
                     }
-                (typeReference as ConstraintInternal).validate(it, elementValidation)
+                typeReference().validate(it, elementValidation)
                 if (!elementValidation.isValid()) {
                     elementIssues.add(elementValidation)
                 }
