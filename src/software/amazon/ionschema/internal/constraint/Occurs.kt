@@ -9,7 +9,6 @@ import software.amazon.ionschema.Schema
 import software.amazon.ionschema.ViolationChild
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
-import software.amazon.ionschema.internal.ConstraintInternal
 import software.amazon.ionschema.internal.TypeInternal
 import software.amazon.ionschema.internal.util.Range
 import software.amazon.ionschema.internal.util.RangeFactory
@@ -37,7 +36,7 @@ internal class Occurs(
 
     internal val range: Range<Int>
     internal val occursIon: IonValue
-    private val typeReference: TypeInternal
+    private val typeReference: () -> TypeInternal
     private var attempts = 0
     internal var validCount = 0
     private val values = ion.system.newEmptyList()
@@ -86,7 +85,7 @@ internal class Occurs(
     override fun validate(value: IonValue, issues: Violations) {
         attempts++
 
-        (typeReference as ConstraintInternal).validate(value, issues)
+        typeReference().validate(value, issues)
         validCount = attempts - issues.violations.size
         (issues as ViolationChild).addValue(value)
 

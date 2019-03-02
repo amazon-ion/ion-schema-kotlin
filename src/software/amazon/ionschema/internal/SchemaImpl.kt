@@ -1,7 +1,16 @@
 package software.amazon.ionschema.internal
 
-import software.amazon.ion.*
-import software.amazon.ionschema.*
+import software.amazon.ion.IonList
+import software.amazon.ion.IonString
+import software.amazon.ion.IonStruct
+import software.amazon.ion.IonSymbol
+import software.amazon.ion.IonValue
+import software.amazon.ionschema.InvalidSchemaException
+import software.amazon.ionschema.IonSchemaException
+import software.amazon.ionschema.IonSchemaSystem
+import software.amazon.ionschema.Schema
+import software.amazon.ionschema.Type
+import software.amazon.ionschema.internal.constraint.TypeReferenceDeferred
 
 internal class SchemaImpl(
         private val schemaSystem: IonSchemaSystem,
@@ -10,6 +19,7 @@ internal class SchemaImpl(
 ) : Schema {
 
     private val types: Map<String, Type>
+    private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
 
     init {
         types = mutableMapOf()
@@ -40,6 +50,8 @@ internal class SchemaImpl(
         if (!foundHeader && foundFooter) {
             throw InvalidSchemaException("Found a schema_footer, but not a schema_header")
         }
+
+        resolveDeferredType()
     }
 
     private fun loadHeader(typeMap: MutableMap<String, Type>, header: IonStruct) {
@@ -88,5 +100,27 @@ internal class SchemaImpl(
     override fun newType(isl: IonStruct) = TypeImpl(isl, this)
 
     override fun getSchemaSystem() = schemaSystem
+
+    internal fun addDeferredType(typeRef: TypeReferenceDeferred) {
+        deferredTypeReferences.add(typeRef)
+    }
+
+    private fun resolveDeferredType() {
+        do {
+            var resolvedSomething = false
+            val iter = deferredTypeReferences.listIterator()
+            while (iter.hasNext()) {
+                val it = iter.next()
+                if (it.attemptToResolve()) {
+                    iter.remove()
+                    resolvedSomething = true
+                }
+            }
+        } while (resolvedSomething)
+
+        if (deferredTypeReferences.size > 0) {
+            throw InvalidSchemaException("Unable to resolve type references: " + deferredTypeReferences)
+        }
+    }
 }
 

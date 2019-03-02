@@ -19,9 +19,9 @@ internal abstract class LogicConstraints(
         val validTypes = mutableListOf<Type>()
         types.forEach {
             val checkpoint = issues.checkpoint()
-            (it as ConstraintInternal).validate(value, issues)
+            it().validate(value, issues)
             if (checkpoint.isValid()) {
-                validTypes.add(it)
+                validTypes.add(it())
             }
         }
         return validTypes
@@ -79,7 +79,7 @@ internal class Not(ion: IonValue, schema: Schema) : ConstraintBase(ion) {
 
     override fun validate(value: IonValue, issues: Violations) {
         val child = Violation(ion, "type_matched", "value unexpectedly matches type")
-        (type as ConstraintInternal).validate(value, child)
+        type().validate(value, child)
         if (child.isValid()) {
             issues.add(child)
         }

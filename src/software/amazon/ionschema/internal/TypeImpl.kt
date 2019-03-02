@@ -35,7 +35,7 @@ internal class TypeImpl(
 
         if (!foundTypeConstraint && addDefaultTypeConstraint) {
             // default type is 'any':
-            tmpConstraints.add(TypeReference.create(ANY, schema))
+            tmpConstraints.add(TypeReference.create(ANY, schema)())
         }
 
         constraints = tmpConstraints.toList()
