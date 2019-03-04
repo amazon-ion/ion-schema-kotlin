@@ -30,11 +30,13 @@ type::{
 }
 
 type::{
-  name: Schema,
+  name: schema,
   type: document,
   ordered_elements: [
     { type: schema_header, occurs: optional },
-    { type: type_definition, occurs: range::[0, max] },
+    { type: $any, occurs: range::[0, max] },
+    { type: type, occurs: range::[0, max] },
+    { type: $any, occurs: range::[0, max] },
     { type: schema_footer, occurs: optional },
   ],
 }

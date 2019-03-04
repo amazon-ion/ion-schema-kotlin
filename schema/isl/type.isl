@@ -50,7 +50,7 @@ type::{
 }
 
 type::{
-  name: type_definition,
+  name: type,
   type: type_inline,
   annotations: required::[type],
   fields: {

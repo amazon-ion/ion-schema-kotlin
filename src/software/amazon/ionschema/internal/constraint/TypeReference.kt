@@ -85,5 +85,7 @@ internal class TypeReferenceDeferred(
     }
 
     fun resolve(): TypeInternal = type!!
+
+    override fun toString() = ion.stringValue()
 }
 
