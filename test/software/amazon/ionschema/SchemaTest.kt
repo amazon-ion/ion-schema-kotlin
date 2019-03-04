@@ -19,7 +19,7 @@ class SchemaTest {
 
     @Test
     fun getType_unknownType() {
-        assertNull(iss.loadSchema("schema/Customer.isl").getType("unknownType"))
+        assertNull(iss.loadSchema("schema/Customer.isl").getType("unknown_type"))
     }
 
     @Test
@@ -62,6 +62,11 @@ class SchemaTest {
         val type = schema.newType("type::{ fields: { a: positive_int } }")
         assertTrue (type.isValid(ION.singleValue("{ a: 1 }")))
         assertFalse(type.isValid(ION.singleValue("{ a: -1 }")))
+    }
+
+    @Test(expected = InvalidSchemaException::class)
+    fun unrecognized_type_reference() {
+        iss.newSchema().newType("type::{ type: unknown_type }")
     }
 }
 
