@@ -1,14 +1,15 @@
 package software.amazon.ionschema
 
 import org.junit.Assert.*
-import org.junit.runner.Description
-import org.junit.runner.Runner
 import org.junit.runner.notification.RunNotifier
 import org.junit.runner.RunWith
-import org.junit.runner.notification.Failure
 import org.junit.runners.Suite
-import software.amazon.ion.*
-import software.amazon.ion.system.IonSystemBuilder
+import software.amazon.ion.IonContainer
+import software.amazon.ion.IonList
+import software.amazon.ion.IonSequence
+import software.amazon.ion.IonStruct
+import software.amazon.ion.IonSymbol
+import software.amazon.ion.IonValue
 import software.amazon.ion.system.IonTextWriterBuilder
 import software.amazon.ionschema.internal.SchemaCore
 import software.amazon.ionschema.internal.SchemaImpl
@@ -17,23 +18,22 @@ import java.io.File
 import java.io.FileReader
 import java.io.OutputStream
 
-@RunWith(IonSchemaTestSuite::class)
-@Suite.SuiteClasses(IonSchemaTestSuite::class)
-class IonSchemaTestSuite(
-        private val testClass: Class<Any>
-    ) : Runner() {
+/**
+ * Primary test runner for the file-based test suite.
+ */
+@RunWith(IonSchemaTestRunner::class)
+@Suite.SuiteClasses(IonSchemaTestRunner::class)
+class IonSchemaTestRunner(
+        testClass: Class<Any>
+) : AbstractTestRunner(testClass) {
 
-    companion object {
-        private val specialFieldNames = setOf("fields", "element")
-    }
+    private val schemaSystem = IonSchemaSystemBuilder.standard()
+            .withAuthority(AuthorityFilesystem("data/test"))
+            .build()
 
-    private val ION = IonSystemBuilder.standard().build()
-    private val schemaSystem = IonSchemaSystemBuilder.standard().withAuthority(AuthorityFilesystem("data/test")).build()
     private val schemaCore = SchemaCore(schemaSystem)
 
-    override fun getDescription(): Description {
-        return Description.createSuiteDescription(testClass)
-    }
+    private val specialFieldNames = setOf("fields", "element")
 
     override fun run(notifier: RunNotifier) {
         val base = "data/test"
@@ -149,32 +149,6 @@ class IonSchemaTestSuite(
             }
     }
 
-    private fun runTest(
-            notifier: RunNotifier,
-            testName: String,
-            ion: IonValue,
-            test: () -> Unit) {
-
-        val desc = Description.createTestDescription(testName, ion.toString())
-        try {
-            notifier.fireTestStarted(desc)
-            test()
-        } catch (ae: AssertionError) {
-            notifier.fireTestFailure(Failure(desc, ae))
-        } catch (e: Exception) {
-            notifier.fireTestFailure(Failure(desc, e))
-        } finally {
-            notifier.fireTestFinished(desc)
-        }
-    }
-
-    private fun prepareValue(ion: IonValue) =
-        if (ion.hasTypeAnnotation("document") && ion is IonString) {
-            ION.loader.load(ion.stringValue())
-        } else {
-            ion
-        }
-
     private fun Violations.toIon(): IonList {
         val list = ION.newEmptyList()
         this.forEach {
@@ -238,3 +212,4 @@ class IonSchemaTestSuite(
         return struct
     }
 }
+

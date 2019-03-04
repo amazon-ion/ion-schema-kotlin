@@ -119,7 +119,7 @@ internal class SchemaImpl(
         } while (resolvedSomething)
 
         if (deferredTypeReferences.size > 0) {
-            throw InvalidSchemaException("Unable to resolve type references: " + deferredTypeReferences)
+            throw InvalidSchemaException("Unable to resolve type references: $deferredTypeReferences")
         }
     }
 }
