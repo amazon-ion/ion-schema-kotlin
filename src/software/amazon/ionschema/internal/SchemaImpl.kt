@@ -6,7 +6,6 @@ import software.amazon.ion.IonStruct
 import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
-import software.amazon.ionschema.IonSchemaException
 import software.amazon.ionschema.IonSchemaSystem
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
@@ -51,7 +50,7 @@ internal class SchemaImpl(
             throw InvalidSchemaException("Found a schema_footer, but not a schema_header")
         }
 
-        resolveDeferredType()
+        resolveDeferredTypeReferences()
     }
 
     private fun loadHeader(typeMap: MutableMap<String, Type>, header: IonStruct) {
@@ -97,7 +96,11 @@ internal class SchemaImpl(
     override fun newType(isl: String) = newType(
             (schemaSystem as IonSchemaSystemImpl).getIonSystem().singleValue(isl) as IonStruct)
 
-    override fun newType(isl: IonStruct) = TypeImpl(isl, this)
+    override fun newType(isl: IonStruct): Type {
+        val type = TypeImpl(isl, this)
+        resolveDeferredTypeReferences()
+        return type
+    }
 
     override fun getSchemaSystem() = schemaSystem
 
@@ -105,7 +108,7 @@ internal class SchemaImpl(
         deferredTypeReferences.add(typeRef)
     }
 
-    private fun resolveDeferredType() {
+    private fun resolveDeferredTypeReferences() {
         do {
             var resolvedSomething = false
             val iter = deferredTypeReferences.listIterator()
@@ -119,7 +122,7 @@ internal class SchemaImpl(
         } while (resolvedSomething)
 
         if (deferredTypeReferences.size > 0) {
-            throw InvalidSchemaException("Unable to resolve type references: $deferredTypeReferences")
+            throw InvalidSchemaException("Unable to resolve type reference(s): $deferredTypeReferences")
         }
     }
 }
