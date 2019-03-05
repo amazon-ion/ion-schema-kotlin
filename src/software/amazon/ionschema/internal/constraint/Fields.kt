@@ -10,7 +10,7 @@ import software.amazon.ionschema.internal.constraint.Occurs.Companion.OPTIONAL
 import software.amazon.ionschema.ViolationChild
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
-import software.amazon.ionschema.CommonViolations
+import software.amazon.ionschema.internal.CommonViolations
 
 internal class Fields(
         ionValue: IonValue,

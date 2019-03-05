@@ -2,7 +2,7 @@ package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonTimestamp
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.CommonViolations
+import software.amazon.ionschema.internal.CommonViolations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.internal.util.RangeFactory

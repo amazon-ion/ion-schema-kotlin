@@ -4,7 +4,7 @@ import software.amazon.ion.IonList
 import software.amazon.ion.IonString
 import software.amazon.ion.IonTimestamp
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.CommonViolations
+import software.amazon.ionschema.internal.CommonViolations
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.Violations
