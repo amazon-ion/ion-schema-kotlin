@@ -8,7 +8,7 @@ import software.amazon.ionschema.internal.constraint.ConstraintBase
 import software.amazon.ionschema.Violations
 
 internal class TypeNullable(
-        ion: IonValue,
+        override val ion: IonValue,
         private val type: TypeInternal,
         schema: Schema
 ) : TypeInternal by type, ConstraintBase(ion) {

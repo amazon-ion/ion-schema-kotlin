@@ -8,9 +8,9 @@ import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.constraint.ConstraintBase
 
 internal class TypeInline private constructor (
-        private val ionStruct: IonStruct,
+        override val ion: IonStruct,
         private val type: TypeInternal
-) : ConstraintBase(ionStruct), TypeInternal by type {
+) : ConstraintBase(ion), TypeInternal by type {
 
     constructor(ionStruct: IonStruct, schema: Schema)
             : this(ionStruct, TypeImpl(ionStruct, schema))
@@ -18,7 +18,7 @@ internal class TypeInline private constructor (
     override fun name() = type.name()
 
     override fun validate(value: IonValue, issues: Violations) {
-        val violation = Violation(ionStruct, "type_mismatch")
+        val violation = Violation(ion, "type_mismatch")
         (type as ConstraintInternal).validate(value, violation)
         if (!violation.isValid()) {
             violation.message = "expected type %s".format(name())

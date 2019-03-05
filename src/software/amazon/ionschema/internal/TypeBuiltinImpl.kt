@@ -9,14 +9,14 @@ import software.amazon.ionschema.internal.constraint.ConstraintBase
 
 // represents built-in types that are defined in terms of other built-in types
 internal class TypeBuiltinImpl private constructor(
-        private val ionStruct: IonStruct,
+        override val ion : IonStruct,
         private val delegate: TypeInternal
-) : TypeInternal by delegate, ConstraintBase(ionStruct), TypeBuiltin {
+) : TypeInternal by delegate, ConstraintBase(ion), TypeBuiltin {
 
     constructor (ionStruct: IonStruct, schema: Schema)
             : this(ionStruct, TypeImpl(ionStruct, schema, addDefaultTypeConstraint = false))
 
-    override fun name() = ionStruct.fieldName
+    override fun name(): String = ion.fieldName
 
     override fun validate(value: IonValue, issues: Violations) {
         val struct = ion.system.newEmptyStruct()
