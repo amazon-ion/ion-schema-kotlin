@@ -1,11 +1,11 @@
-package software.amazon.ionschema
+package software.amazon.ionschema.internal
 
 import software.amazon.ion.IonValue
 
 /**
  * Represents a single constraint.
  */
-interface Constraint {
+internal interface Constraint {
     /**
      * Returns the name of the constraint.
      */
