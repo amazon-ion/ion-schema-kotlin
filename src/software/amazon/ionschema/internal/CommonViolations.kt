@@ -7,7 +7,7 @@ import software.amazon.ionschema.Violation
  * Provides methods to create Violations that are common across multiple
  * constraints.
  */
-class CommonViolations private constructor() {
+internal class CommonViolations private constructor() {
     companion object {
         @JvmStatic
         fun INVALID_TYPE(constraint: IonValue, value: IonValue) = Violation(
