@@ -24,7 +24,7 @@ internal class TypeReference private constructor() {
                         // import
                         val newSchema = schema.getSchemaSystem().loadSchema(id.stringValue())
                         val typeName = ion.get("type") as IonSymbol
-                        newSchema.getType(typeName.stringValue())
+                        newSchema.getType(typeName.stringValue()) as? TypeInternal
 
                     } else {
                         if (isField) {

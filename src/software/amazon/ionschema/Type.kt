@@ -8,12 +8,12 @@ import software.amazon.ionschema.internal.ConstraintInternal
  * [Constraints].  Unless otherwise specified, the constraint `type: any`
  * is automatically applied.
  */
-interface Type : Constraint {
+interface Type {
     /**
      * Returns the name of the type;  if the type has no name, a string representing
      * the definition of the type is returned.
      */
-    override fun name(): String
+    fun name(): String
 
     /**
      * If the specified value violates one or more of this type's constraints,

@@ -3,7 +3,7 @@ package software.amazon.ionschema.internal.constraint
 import software.amazon.ion.IonStruct
 import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.Constraint
+import software.amazon.ionschema.internal.Constraint
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.constraint.Occurs.Companion.OPTIONAL
