@@ -2,25 +2,15 @@ package software.amazon.ionschema
 
 import org.junit.Assert.*
 import org.junit.Test
-import software.amazon.ion.IonValue
 import software.amazon.ion.system.IonSystemBuilder
-import software.amazon.ionschema.util.CloseableIterator
-import java.io.StringReader
 
 class TypeTest {
     private val ION = IonSystemBuilder.standard().build()
-    private val iss = IonSchemaSystemBuilder.standard().addAuthority(
-        object : Authority {
-            override fun iteratorFor(iss: IonSchemaSystem, id: String) = object : CloseableIterator<IonValue> {
-                private val iter = ION.iterate(StringReader(id))
-                override fun hasNext() = iter.hasNext()
-                override fun next() = iter.next()
-                override fun close() { }
-            }
-        }
-    ).build()
 
-    private val type = iss.loadSchema("type::{ name: a, type: string }").getType("a")!!
+    private val type = IonSchemaSystemBuilder.standard()
+            .build()
+            .newSchema()
+            .newType("type::{ name: a, type: string }")
 
     @Test
     fun name() = assertEquals("a", type.name())

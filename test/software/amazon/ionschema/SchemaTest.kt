@@ -18,7 +18,12 @@ class SchemaTest {
     }
 
     @Test
-    fun getType_unknownType() {
+    fun getType_imported() {
+        assertNotNull(iss.loadSchema("schema/Customer.isl").getType("positive_int"))
+    }
+
+    @Test
+    fun getType_unknown() {
         assertNull(iss.loadSchema("schema/Customer.isl").getType("unknown_type"))
     }
 
@@ -28,8 +33,9 @@ class SchemaTest {
                 .loadSchema("schema/Customer.isl")
                 .getTypes()
                 .asSequence()
-                .associateBy({ it.name() })
+                .associateBy { it.name() }
         assertTrue(types.contains("Customer"))
+        assertTrue(types.contains("positive_int"))   // a type imported into Customer.isl
     }
 
     @Test
@@ -65,7 +71,7 @@ class SchemaTest {
     }
 
     @Test(expected = InvalidSchemaException::class)
-    fun unrecognized_type_reference() {
+    fun newType_unknown_type() {
         iss.newSchema().newType("type::{ type: unknown_type }")
     }
 }
