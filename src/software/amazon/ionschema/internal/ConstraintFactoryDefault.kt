@@ -1,7 +1,6 @@
 package software.amazon.ionschema.internal
 
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.ConstraintFactory
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
 import software.amazon.ionschema.internal.constraint.*

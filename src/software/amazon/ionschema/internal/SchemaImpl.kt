@@ -61,15 +61,15 @@ internal class SchemaImpl(
 
                 val typeName = it.get("type") as? IonSymbol
                 if (typeName != null) {
-                    val newType = importedSchema.getType(typeName.stringValue())
-                    if (newType != null) {
-                        var newTypeName = typeName
-                        val alias = it.get("as") as? IonSymbol
-                        if (alias != null) {
-                            newTypeName = alias
-                        }
-                        addType(typeMap, newTypeName.stringValue(), newType)
+                    var newTypeName = typeName.stringValue()
+                    val newType = importedSchema.getType(newTypeName)
+                    newType ?: throw InvalidSchemaException(
+                                "Schema $id doesn't contain a type named '$newTypeName'")
+                    val alias = it["as"] as? IonSymbol
+                    if (alias != null) {
+                        newTypeName = alias.stringValue()
                     }
+                    addType(typeMap, newTypeName, newType)
                 } else {
                     importedSchema.getTypes().forEach {
                         addType(typeMap, it.name(), it)

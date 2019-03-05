@@ -3,7 +3,6 @@ package software.amazon.ionschema.internal
 import software.amazon.ion.IonSystem
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.Authority
-import software.amazon.ionschema.ConstraintFactory
 import software.amazon.ionschema.IonSchemaException
 import software.amazon.ionschema.IonSchemaSystem
 import software.amazon.ionschema.Schema
@@ -13,18 +12,18 @@ internal class IonSchemaSystemImpl(
         private val ION: IonSystem,
         private val authorities: List<Authority>,
         private val constraintFactory: ConstraintFactory
-    ) : IonSchemaSystem {
+) : IonSchemaSystem {
 
     private val schemaCore = SchemaCore(this)
     private val schemaCache = mutableMapOf<String, Schema>()
 
     override fun loadSchema(id: String): Schema {
-        var cachedSchema = schemaCache.get(id)
+        val cachedSchema = schemaCache.get(id)
         if (cachedSchema != null) {
             return cachedSchema
         }
 
-        var exceptions = mutableListOf<Exception>()
+        val exceptions = mutableListOf<Exception>()
         authorities.forEach { authority ->
             try {
                 authority.iteratorFor(this, id).use {
@@ -39,7 +38,11 @@ internal class IonSchemaSystemImpl(
             }
         }
 
-        throw IonSchemaException("Unable to resolve schema id '$id' ($exceptions)")
+        val message = StringBuilder("Unable to resolve schema id '$id'")
+        if (exceptions.size > 0) {
+            message.append(" ($exceptions)")
+        }
+        throw IonSchemaException(message.toString())
     }
 
     override fun newSchema() = newSchema("")
