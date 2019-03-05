@@ -7,6 +7,7 @@ import software.amazon.ionschema.ViolationChild
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.CommonViolations
+import software.amazon.ionschema.internal.TypeReference
 
 internal class Element(
         ion: IonValue,

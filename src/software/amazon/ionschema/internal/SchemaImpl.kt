@@ -9,7 +9,6 @@ import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.IonSchemaSystem
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
-import software.amazon.ionschema.internal.constraint.TypeReferenceDeferred
 
 internal class SchemaImpl(
         private val schemaSystem: IonSchemaSystem,

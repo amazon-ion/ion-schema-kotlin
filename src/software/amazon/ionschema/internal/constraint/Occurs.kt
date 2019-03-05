@@ -10,6 +10,7 @@ import software.amazon.ionschema.ViolationChild
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.TypeInternal
+import software.amazon.ionschema.internal.TypeReference
 import software.amazon.ionschema.internal.util.Range
 import software.amazon.ionschema.internal.util.RangeFactory
 import software.amazon.ionschema.internal.util.RangeIntNonNegative

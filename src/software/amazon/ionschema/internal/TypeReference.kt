@@ -1,4 +1,4 @@
-package software.amazon.ionschema.internal.constraint
+package software.amazon.ionschema.internal
 
 import software.amazon.ion.IonStruct
 import software.amazon.ion.IonSymbol
@@ -6,13 +6,6 @@ import software.amazon.ion.IonText
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
-import software.amazon.ionschema.internal.SchemaImpl
-import software.amazon.ionschema.internal.TypeBuiltin
-import software.amazon.ionschema.internal.TypeImpl
-import software.amazon.ionschema.internal.TypeInline
-import software.amazon.ionschema.internal.TypeInternal
-import software.amazon.ionschema.internal.TypeNamed
-import software.amazon.ionschema.internal.TypeNullable
 
 internal class TypeReference private constructor() {
     companion object {

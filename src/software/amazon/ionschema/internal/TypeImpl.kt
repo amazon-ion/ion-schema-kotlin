@@ -4,7 +4,6 @@ import software.amazon.ion.*
 import software.amazon.ion.system.IonSystemBuilder
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.constraint.ConstraintBase
-import software.amazon.ionschema.internal.constraint.TypeReference
 import software.amazon.ionschema.Violations
 
 internal class TypeImpl(
