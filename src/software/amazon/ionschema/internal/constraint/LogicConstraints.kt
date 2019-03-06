@@ -2,6 +2,7 @@ package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonList
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
 import software.amazon.ionschema.Violations
@@ -14,7 +15,11 @@ internal abstract class LogicConstraints(
         schema: Schema
     ) : ConstraintBase(ion) {
 
-    internal val types = (ion as IonList).map { TypeReference.create(it, schema) }
+    internal val types = if (ion is IonList && !ion.isNullValue) {
+            ion.map { TypeReference.create(it, schema) }
+        } else {
+            throw InvalidSchemaException("Expected a list, found: $ion")
+        }
 
     internal fun validateTypes(value: IonValue, issues: Violations): List<Type> {
         val validTypes = mutableListOf<Type>()

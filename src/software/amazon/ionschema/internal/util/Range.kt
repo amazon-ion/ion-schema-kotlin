@@ -21,6 +21,10 @@ internal class RangeFactory {
     companion object {
         @JvmStatic
         fun <T : Any> rangeOf(ion: IonValue, rangeType: RangeType): Range<T> {
+            if (ion.isNullValue) {
+                throw InvalidSchemaException("Invalid range $ion")
+            }
+
             val ionList = if (ion !is IonList) {
                     val range = ion.system.newList(ion.clone(), ion.clone())
                     range.addTypeAnnotation("range")
@@ -29,8 +33,9 @@ internal class RangeFactory {
                     ion
                 }
 
-            if ((ionList[0] as? IonSymbol)?.stringValue() == "min"
-                    && (ionList[1] as? IonSymbol)?.stringValue() == "max") {
+            if (ionList.size != 2 || ionList[0].isNullValue || ionList[1].isNullValue
+                    || ((ionList[0] as? IonSymbol)?.stringValue() == "min"
+                            && ((ionList[1] as? IonSymbol)?.stringValue() == "max"))) {
                 throw InvalidSchemaException("Invalid range $ion")
             }
 

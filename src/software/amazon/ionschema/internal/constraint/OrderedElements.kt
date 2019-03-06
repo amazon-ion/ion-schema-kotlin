@@ -1,6 +1,7 @@
 package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.*
+import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.constraint.Occurs.Companion.REQUIRED
 import software.amazon.ionschema.ViolationChild
@@ -14,7 +15,11 @@ internal class OrderedElements(
     ) : ConstraintBase(ion) {
 
     init {
-        (ion as IonList).map { Occurs(it, schema, REQUIRED) }
+        if (ion !is IonList || ion.isNullValue) {
+            throw InvalidSchemaException("Invalid ordered_elements constraint: $ion")
+        } else {
+            ion.map { Occurs(it, schema, REQUIRED) }
+        }
     }
 
     // TBD this impl does not backtrack

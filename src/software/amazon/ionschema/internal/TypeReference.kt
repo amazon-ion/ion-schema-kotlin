@@ -10,47 +10,50 @@ import software.amazon.ionschema.Schema
 internal class TypeReference private constructor() {
     companion object {
         fun create(ion: IonValue, schema: Schema, isField: Boolean = false): () -> TypeInternal {
-            var type = when (ion) {
-                is IonStruct -> {
-                    val id = ion.get("id") as? IonText
-                    if (id != null) {
-                        // import
-                        val newSchema = schema.getSchemaSystem().loadSchema(id.stringValue())
-                        val typeName = ion.get("type") as IonSymbol
-                        newSchema.getType(typeName.stringValue()) as? TypeInternal
+            var type: TypeInternal? = null
+            if (!ion.isNullValue) {
+                type = when (ion) {
+                    is IonStruct -> {
+                        val id = ion.get("id") as? IonText
+                        if (id != null) {
+                            // import
+                            val newSchema = schema.getSchemaSystem().loadSchema(id.stringValue())
+                            val typeName = ion.get("type") as IonSymbol
+                            newSchema.getType(typeName.stringValue()) as? TypeInternal
 
-                    } else {
-                        if (isField) {
-                            TypeImpl(ion, schema)
                         } else {
-                            if (ion.size() == 1 && ion.get("type") != null) {
-                                // elide inline types defined as "{ type: X }" to TypeImpl;
-                                // this avoids creating a nested, redundant validation structure
+                            if (isField) {
                                 TypeImpl(ion, schema)
                             } else {
-                                TypeInline(ion, schema)
+                                if (ion.size() == 1 && ion.get("type") != null) {
+                                    // elide inline types defined as "{ type: X }" to TypeImpl;
+                                    // this avoids creating a nested, redundant validation structure
+                                    TypeImpl(ion, schema)
+                                } else {
+                                    TypeInline(ion, schema)
+                                } as TypeInternal
                             }
                         }
                     }
-                }
 
-                is IonSymbol -> {
-                    val t = schema.getType(ion.stringValue())
-                    if (t != null) {
-                        if (t is TypeBuiltin) {
-                            t
+                    is IonSymbol -> {
+                        val t = schema.getType(ion.stringValue())
+                        if (t != null) {
+                            if (t is TypeBuiltin) {
+                                t
+                            } else {
+                                TypeNamed(ion, t as TypeInternal)
+                            }
                         } else {
-                            TypeNamed(ion, t as TypeInternal)
+                            // type can't be resolved yet;  ask the schema to try again later
+                            val deferredType = TypeReferenceDeferred(ion, schema)
+                            (schema as SchemaImpl).addDeferredType(deferredType)
+                            return { deferredType.resolve() }
                         }
-                    } else {
-                        // type can't be resolved yet;  ask the schema to try again later
-                        val deferredType = TypeReferenceDeferred(ion, schema)
-                        (schema as SchemaImpl).addDeferredType(deferredType)
-                        return { deferredType.resolve() }
                     }
-                }
 
-                else -> throw InvalidSchemaException("Unable to resolve type reference '${ion}'")
+                    else -> throw InvalidSchemaException("Unable to resolve type reference '${ion}'")
+                }
             }
 
             if (type == null) {
@@ -58,9 +61,9 @@ internal class TypeReference private constructor() {
             }
 
             if (ion.hasTypeAnnotation("nullable")) {
-                type = TypeNullable(ion, type as TypeInternal, schema)
+                type = TypeNullable(ion, type, schema)
             }
-            return { type as TypeInternal }
+            return { type }
         }
     }
 }

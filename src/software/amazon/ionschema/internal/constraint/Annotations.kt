@@ -3,6 +3,7 @@ package software.amazon.ionschema.internal.constraint
 import software.amazon.ion.IonList
 import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.ConstraintInternal
@@ -18,7 +19,10 @@ internal class Annotations private constructor(
     companion object {
         private fun delegate(ion: IonValue): ConstraintInternal {
             val requiredByDefault = ion.hasTypeAnnotation("required")
-            val annotations = (ion as IonList).map {
+            if (ion !is IonList || ion.isNullValue) {
+                throw InvalidSchemaException("Expected annotations as a list, found: $ion")
+            }
+            val annotations = ion.map {
                 Annotation(it as IonSymbol, requiredByDefault)
             }
             return if (ion.hasTypeAnnotation("ordered")) {

@@ -12,11 +12,15 @@ internal class RangeIonNumber private constructor (
 
     companion object {
         private fun toBigDecimal(ion: IonValue) =
-                when (ion) {
-                    is IonDecimal -> ion.bigDecimalValue()
-                    is IonFloat -> ion.bigDecimalValue()
-                    is IonInt -> BigDecimal(ion.bigIntegerValue())
-                    else -> null
+                if (ion.isNullValue) {
+                    null
+                } else {
+                    when (ion) {
+                        is IonDecimal -> ion.bigDecimalValue()
+                        is IonFloat -> ion.bigDecimalValue()
+                        is IonInt -> BigDecimal(ion.bigIntegerValue())
+                        else -> null
+                    }
                 }
     }
 

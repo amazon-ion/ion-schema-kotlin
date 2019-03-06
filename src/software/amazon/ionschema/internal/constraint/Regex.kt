@@ -17,7 +17,12 @@ internal class Regex(
         private val scriptEngine = ScriptEngineManager().getEngineByName("javascript")
     }
 
-    private val regex = (ion as IonString).stringValue()
+    private val regex = if (ion !is IonString || ion.isNullValue) {
+            throw InvalidSchemaException("Invalid regex constraint: $ion")
+        } else {
+            ion.stringValue()
+        }
+
     private val flags: String
 
     init {
