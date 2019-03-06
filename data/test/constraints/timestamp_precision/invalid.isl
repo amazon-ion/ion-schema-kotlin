@@ -1,4 +1,7 @@
 // invalid specification
+invalid_type::{ timestamp_precision: null }
+invalid_type::{ timestamp_precision: null.symbol }
+invalid_type::{ timestamp_precision: null.list }
 invalid_type::{ timestamp_precision: 5 }
 invalid_type::{ timestamp_precision: min }
 invalid_type::{ timestamp_precision: max }

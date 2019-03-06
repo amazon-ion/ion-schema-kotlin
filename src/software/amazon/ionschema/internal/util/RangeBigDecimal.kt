@@ -7,14 +7,18 @@ import java.math.BigDecimal
 internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
     companion object {
         private fun toBigDecimal(ion: IonValue) =
-            when (ion) {
-                is IonDecimal -> ion.bigDecimalValue()
-                is IonFloat   -> ion.bigDecimalValue()
-                is IonInt     -> BigDecimal(ion.bigIntegerValue())
-                else          ->
-                    throw InvalidSchemaException(
-                            "Expected range lower/upper to be a decimal, float, or int (was $ion)")
-            }
+                if (ion.isNullValue) {
+                    throw InvalidSchemaException("Unable to convert $ion to BigDecimal")
+                } else {
+                    when (ion) {
+                        is IonDecimal -> ion.bigDecimalValue()
+                        is IonFloat -> ion.bigDecimalValue()
+                        is IonInt -> BigDecimal(ion.bigIntegerValue())
+                        else ->
+                            throw InvalidSchemaException(
+                                    "Expected range lower/upper to be a decimal, float, or int (was $ion)")
+                    }
+                }
     }
 
     internal val lower: Boundary

@@ -3,15 +3,20 @@ package software.amazon.ionschema.internal.constraint
 import software.amazon.ion.IonContainer
 import software.amazon.ion.IonList
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.CommonViolations
 
 internal class Contains(
         ion: IonValue
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
-    private val expectedElements = (ion as IonList).toArray()
+    private val expectedElements = if (ion !is IonList || ion.isNullValue) {
+            throw InvalidSchemaException("Expected annotations as a list, found: $ion")
+        } else {
+            ion.toArray()
+        }
 
     override fun validate(value: IonValue, issues: Violations) {
         if (value !is IonContainer) {

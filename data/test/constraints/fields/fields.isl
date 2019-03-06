@@ -37,7 +37,15 @@ invalid::[
   { a: 1, b: 2, c: 3, d: 4 },
 ]
 
-invalid_type::{ fields: null }
-invalid_type::{ fields: [] }
-invalid_type::{ fields: {} }
+type::{
+  fields: {
+    a: {},   // equivalent to { type: any }
+  },
+}
+valid::[
+  { a: 5 },
+]
+invalid::[
+  { a: null },
+]
 

@@ -17,7 +17,7 @@ internal class ValidValues(
 ) : ConstraintBase(ion) {
 
     private val validRange =
-            if (ion is IonList && ion.hasTypeAnnotation("range")) {
+            if (ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")) {
                 if (ion[0] is IonTimestamp || ion[1] is IonTimestamp) {
                     @Suppress("UNCHECKED_CAST")
                     RangeFactory.rangeOf<IonTimestamp>(ion, RangeType.ION_TIMESTAMP) as Range<IonValue>
@@ -29,17 +29,17 @@ internal class ValidValues(
             }
 
     private val validValues =
-            if (validRange != null) {
-                setOf()
+            if (validRange == null && ion is IonList && !ion.isNullValue) {
+                ion.filter { checkValue(it) }.toSet()
             } else {
-                when (ion) {
-                    is IonSequence -> ion.filter { checkValue(it) }.toSet()
-                    else -> {
-                        checkValue(ion)
-                        setOf(ion)
-                    }
-                }
+                null
             }
+
+    init {
+        if (validRange == null && validValues == null) {
+            throw InvalidSchemaException("Invalid valid_values constraint: $ion")
+        }
+    }
 
     private fun checkValue(ion: IonValue) =
         if (ion.typeAnnotations.size > 0) {
@@ -60,7 +60,7 @@ internal class ValidValues(
             }
         } else {
             val v = value.withoutTypeAnnotations()
-            if (!validValues.contains(v)) {
+            if (!validValues!!.contains(v)) {
                 issues.add(Violation(ion, "invalid_value", "invalid value $v"))
             }
         }

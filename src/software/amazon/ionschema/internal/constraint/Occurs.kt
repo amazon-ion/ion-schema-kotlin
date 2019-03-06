@@ -11,17 +11,18 @@ import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.TypeInternal
 import software.amazon.ionschema.internal.TypeReference
+import software.amazon.ionschema.internal.constraint.Occurs.Companion.toRange
 import software.amazon.ionschema.internal.util.Range
 import software.amazon.ionschema.internal.util.RangeFactory
 import software.amazon.ionschema.internal.util.RangeIntNonNegative
 import software.amazon.ionschema.internal.util.RangeType
 
-internal class Occurs(
+internal open class Occurs(
         ion: IonValue,
         schema: Schema,
         defaultRange: Range<Int>,
         isField: Boolean = false
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
     companion object {
         private val ION = IonSystemBuilder.standard().build()
@@ -31,8 +32,27 @@ internal class Occurs(
         internal val REQUIRED = RangeFactory.rangeOf<Int>(ION.singleValue("range::[1, 1]"),
                 RangeType.INT_NON_NEGATIVE)
 
-        private val OPTIONAL_ION = (ION.singleValue("{ occurs: optional } ") as IonStruct).get("occurs")
-        private val REQUIRED_ION = (ION.singleValue("{ occurs: required } ") as IonStruct).get("occurs")
+        private val OPTIONAL_ION = (ION.singleValue("{ occurs: optional }") as IonStruct).get("occurs")
+        private val REQUIRED_ION = (ION.singleValue("{ occurs: required }") as IonStruct).get("occurs")
+
+        internal fun toRange(ion: IonValue): Range<Int> {
+            if (!ion.isNullValue) {
+                return if (ion is IonSymbol) {
+                           when (ion.stringValue()) {
+                               "optional" -> OPTIONAL
+                               "required" -> REQUIRED
+                               else -> throw InvalidSchemaException("Invalid ion constraint '$ion'")
+                           }
+                       } else {
+                           val range = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE)
+                           if (range.contains(0) && !range.contains(1)) {
+                               throw InvalidSchemaException("Occurs must allow at least one value ($ion)")
+                           }
+                           range
+                       }
+            }
+            throw InvalidSchemaException("Invalid occurs constraint '$ion'")
+        }
     }
 
     internal val range: Range<Int>
@@ -44,41 +64,33 @@ internal class Occurs(
 
     init {
         var occurs: IonValue? = null
-        var tmpRange = defaultRange
-        if (ion is IonStruct) {
-            occurs = ion.get("occurs")
-            if (occurs != null) {
-                tmpRange =
-                    if (occurs is IonSymbol) {
-                        when (occurs.stringValue()) {
-                            "optional" -> OPTIONAL
-                            "required" -> REQUIRED
-                            else -> throw InvalidSchemaException("Unrecognized occurs constraint value '$occurs'")
-                        }
-                    } else {
-                        RangeFactory.rangeOf<Int>(occurs, RangeType.INT_NON_NEGATIVE)
-                    }
+        range =
+            if (ion is IonStruct && !ion.isNullValue) {
+                occurs = ion["occurs"]
+                if (occurs != null) {
+                    toRange(occurs)
+                } else {
+                    defaultRange
+                }
+            } else {
+                defaultRange
             }
-        }
-        range = tmpRange
 
-        if (range.contains(0) && !range.contains(1)) {
-            throw InvalidSchemaException("Occurs must allow at least one value ($ion)")
-        }
-
-        var tmpIon = ion
-        if (ion is IonStruct && occurs != null) {
-            tmpIon = ion.cloneAndRemove("occurs")
-        }
+        val tmpIon = if (ion is IonStruct && occurs != null) {
+                ion.cloneAndRemove("occurs")
+            } else {
+                ion
+            }
         typeReference = TypeReference.create(tmpIon, schema, isField)
 
-        occursIon = if (occurs != null) {
+        occursIon =
+            if (occurs != null) {
                 occurs
             } else {
                 when (range) {
                     OPTIONAL -> OPTIONAL_ION
                     REQUIRED -> REQUIRED_ION
-                    else -> throw InvalidSchemaException("Unrecognized occurs constraint value '$range'")
+                    else -> throw InvalidSchemaException("Invalid occurs constraint '$range'")
                 }
             }
     }
@@ -111,5 +123,23 @@ internal class Occurs(
 
     internal fun attemptsSatisfyOccurrences() = range.contains(attempts)
     internal fun canConsumeMore() = !(range as RangeIntNonNegative).isAtMax(attempts)
+}
+
+/**
+ * This class should only be used during load/validation of a type definition.
+ * The real Occurs constraint implentation is instantiated and used for validation
+ * by the Fields and OrderedElements constraints.
+ */
+internal open class OccursNoop(
+        ion: IonValue
+) : ConstraintBase(ion) {
+
+    init {
+        toRange(ion)
+    }
+
+    override fun validate(value: IonValue, issues: Violations) {
+        // no-op
+    }
 }
 

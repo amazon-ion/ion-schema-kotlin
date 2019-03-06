@@ -14,9 +14,11 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         codepoint_length,
         container_length,
         contains,
+        content,
         element,
         fields,
         not,
+        occurs,
         one_of,
         ordered_elements,
         precision,
@@ -45,9 +47,11 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
             Constraints.codepoint_length    -> CodepointLength(ion)
             Constraints.container_length    -> ContainerLength(ion)
             Constraints.contains            -> Contains(ion)
+            Constraints.content             -> Content(ion)
             Constraints.element             -> Element(ion, schema)
             Constraints.fields              -> Fields(ion, schema)
             Constraints.not                 -> Not(ion, schema)
+            Constraints.occurs              -> OccursNoop(ion)
             Constraints.one_of              -> OneOf(ion, schema)
             Constraints.ordered_elements    -> OrderedElements(ion, schema)
             Constraints.precision           -> Precision(ion)
