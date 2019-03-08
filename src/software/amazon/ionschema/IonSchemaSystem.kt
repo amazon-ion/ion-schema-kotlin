@@ -3,17 +3,21 @@ package software.amazon.ionschema
 import software.amazon.ion.IonValue
 
 /**
- * Entry point for Ion Schema.  To create an [IonSchemaSystem], use [IonSchemaSystemBuilder].
+ * Provides methods for instantiating instances of [Schema].
  *
- * @see IonSchemaSystemBuilder
+ * To create an instance, use [IonSchemaSystemBuilder].
  */
 interface IonSchemaSystem {
     /**
-     * Requests the configured Authorities, in order, to resolve the requested
-     * schema identifier until one successfully resolves it.
+     * Requests each of the provided [Authority]s, in order, to resolve
+     * the requested schema id until one successfully resolves it.
      *
-     * @param[id] identifier for the schema to load
-     * @throws IonSchemaException if the schema identifier cannot be resolved
+     * If an Authority throws an exception, resolution silently proceeds
+     * to the next Authority.
+     *
+     * @param[id] Identifier for the schema to load.
+     * @throws IonSchemaException if the schema id cannot be resolved.
+     * @throws InvalidSchemaException if the schema, once resolved, is determined to be invalid.
      */
     fun loadSchema(id: String): Schema
 
@@ -25,7 +29,7 @@ interface IonSchemaSystem {
     fun newSchema(): Schema
 
     /**
-     * Constructs a new schema using ISL provided as a string.
+     * Constructs a new schema using ISL provided as a String.
      *
      * @param[isl] ISL string representation of the schema to create
      * @return the new schema

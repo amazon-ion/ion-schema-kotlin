@@ -5,7 +5,7 @@ import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 
-enum class RangeType {
+internal enum class RangeType {
     INT,
     INT_NON_NEGATIVE,
     ION_NUMBER,

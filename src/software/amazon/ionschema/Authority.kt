@@ -4,13 +4,13 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.util.CloseableIterator
 
 /**
- * An Authority is responsible for resolving schema identifiers.
+ * An Authority is responsible for resolving a particular class of
+ * schema identifiers.
  *
  * The structure of a schema identifier string is defined by the
  * Authority responsible for the schema/type(s) being imported.
  *
- * Note that runtime resolution of a schema over a network presents
- * availability and security risks, and should thereby be avoided.
+ * **Runtime resolution of a schema over a network presents availability and security risks, and should thereby be avoided.**
  *
  * @see AuthorityFilesystem
  */
@@ -20,9 +20,7 @@ interface Authority {
      * If an error condition is encountered while attempting to resolve the schema
      * identifier, this method should throw an exception.  If no error conditions
      * were encountered, but the schema identifier can't be resolved, this method
-     * should return EMPTY_ITERATOR.
-     *
-     * @see EMPTY_ITERATOR
+     * should return [EMPTY_ITERATOR].
      */
     fun iteratorFor(iss: IonSchemaSystem, id: String): CloseableIterator<IonValue>
 }

@@ -4,9 +4,9 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.internal.ConstraintInternal
 
 /**
- * An Ion Schema Type is defined by an optional name and zero or more
- * [Constraints].  Unless otherwise specified, the constraint `type: any`
- * is automatically applied.
+ * A Type consists of an optional name and zero or more constraints.
+ *
+ * Unless otherwise specified, the constraint `type: any` is automatically applied.
  */
 interface Type {
     /**

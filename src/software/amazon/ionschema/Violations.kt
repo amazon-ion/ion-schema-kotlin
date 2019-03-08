@@ -6,11 +6,16 @@ import software.amazon.ionschema.internal.util.truncate
 
 /**
  * Indicates whether a value validated successfully against a [Type],
- * and if not, provides details indicating why not.  Instances of
- * this class contain zero or more Violation objects, and zero or
- * more ViolationChild objects.  Violation objects indicate constraints
- * that failed at the current level of the value, whereas ViolationChild
- * objects correspond to nesting of Violations within the value's hierarchy.
+ * and if not, provides details indicating why not.
+ *
+ * Instances of this class contain zero or more Violation objects,
+ * and zero or more ViolationChild objects.  Violation objects indicate
+ * constraints that failed at the current level of the value, whereas
+ * ViolationChild objects correspond to child values that resulted in
+ * Violations.
+ *
+ * @property[violations] List of constraint violations at the current
+ *   level of the value.
  */
 open class Violations internal constructor (
         private var shortCircuit: Boolean = false,
@@ -18,8 +23,15 @@ open class Violations internal constructor (
         val violations: MutableList<Violation> = mutableListOf()
 ) : Iterable<Violation> by violations {
 
+    /**
+     * Represents violations corresponding to specific fields
+     * of elements in a sequence.
+     */
     val children: MutableList<ViolationChild> = mutableListOf()
 
+    /**
+     * Returns `true` if no violations were found; otherwise `false`.
+     */
     fun isValid() = violations.isEmpty() && children.isEmpty()
 
     internal fun add(violation: Violation): Boolean {
@@ -81,6 +93,10 @@ open class Violations internal constructor (
 
 /**
  * Describes a constraint violation, including a violation code and message.
+ *
+ * @property[constraint] Definition of the constraint that created this violation.
+ * @property[code] An error code that briefly indicates the type of the violation.
+ * @property[message] A description of the cause of the violation.
  */
 class Violation(
         var constraint: IonValue? = null,
@@ -91,6 +107,10 @@ class Violation(
 /**
  * References a specific struct fieldName or index into a list/sexp/document
  * within a hierarchical Violations object.
+ *
+ * @property[fieldName] Within a struct, the name of the field this object corresponds to.
+ * @property[index] Within a sequence, the index of the element this object corresponds to.
+ * @property[value] The child value of this object corresponds to.
  */
 class ViolationChild internal constructor (
         val fieldName: String? = null,

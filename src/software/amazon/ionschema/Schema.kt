@@ -3,7 +3,11 @@ package software.amazon.ionschema
 import software.amazon.ion.IonStruct
 
 /**
- * Represents an Ion Schema.
+ * A Schema is a collection of zero or more [Type]s.
+ *
+ * Each type may refer to other types within the same schema,
+ * or types imported into this schema from other schemas.
+ * To instantiate a Schema, see [IonSchemaSystem].
  */
 interface Schema {
     /**
@@ -23,7 +27,7 @@ interface Schema {
     fun getSchemaSystem(): IonSchemaSystem
 
     /**
-     * Constructs a new type using the type ISL provided as a string.
+     * Constructs a new type using the type ISL provided as a String.
      *
      * @param[isl] ISL string representation of the type to create
      * @return the new type
