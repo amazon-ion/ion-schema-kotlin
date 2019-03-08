@@ -9,9 +9,14 @@ import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.CommonViolations
 import javax.script.ScriptEngineManager
 
+/**
+ * Implements the regex constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#regex
+ */
 internal class Regex(
         ion: IonValue
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
     companion object {
         private val scriptEngine = ScriptEngineManager().getEngineByName("javascript")
@@ -53,3 +58,4 @@ internal class Regex(
         }
     }
 }
+

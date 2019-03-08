@@ -9,10 +9,15 @@ import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.CommonViolations
 
+/**
+ * Implements the ordered_element constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#ordered_elements
+ */
 internal class OrderedElements(
         ion: IonValue,
         private val schema: Schema
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
     init {
         if (ion !is IonList || ion.isNullValue) {

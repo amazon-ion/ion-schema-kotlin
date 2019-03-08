@@ -8,6 +8,11 @@ import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.CommonViolations
 
+/**
+ * Implements the contains constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#contains
+ */
 internal class Contains(
         ion: IonValue
 ) : ConstraintBase(ion) {
@@ -35,3 +40,4 @@ internal class Contains(
         }
     }
 }
+

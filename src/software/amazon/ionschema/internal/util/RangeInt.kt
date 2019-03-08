@@ -6,6 +6,9 @@ import software.amazon.ion.IonSymbol
 import software.amazon.ionschema.InvalidSchemaException
 import java.math.BigDecimal
 
+/**
+ * Implementation of Range<Int>, which mostly delegates to RangeBigDecimal.
+ */
 internal class RangeInt (
         private val ion: IonList,
         private val delegate: RangeBigDecimal = RangeBigDecimal(ion)

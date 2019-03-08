@@ -8,6 +8,9 @@ import software.amazon.ionschema.IonSchemaSystem
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
 
+/**
+ * Implementation of [IonSchemaSystem].
+ */
 internal class IonSchemaSystemImpl(
         private val ION: IonSystem,
         private val authorities: List<Authority>,

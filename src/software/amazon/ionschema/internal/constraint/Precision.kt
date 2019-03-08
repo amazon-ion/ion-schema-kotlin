@@ -9,9 +9,14 @@ import software.amazon.ionschema.internal.CommonViolations
 import software.amazon.ionschema.internal.util.RangeFactory
 import software.amazon.ionschema.internal.util.RangeType
 
+/**
+ * Implements the precision constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#precision
+ */
 internal class Precision(
         ion: IonValue
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
     private val range = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE)
 
@@ -36,3 +41,4 @@ internal class Precision(
         }
     }
 }
+

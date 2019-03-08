@@ -5,6 +5,11 @@ import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.TypeReference
 
+/**
+ * Implements the type constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#type
+ */
 internal class Type(
         ion: IonValue,
         schema: Schema

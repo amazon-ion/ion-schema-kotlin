@@ -3,6 +3,9 @@ package software.amazon.ionschema.internal
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.Violations
 
+/**
+ * Internal methods for interacting with [Constraint]s.
+ */
 internal interface ConstraintInternal : Constraint {
     val ion: IonValue
 

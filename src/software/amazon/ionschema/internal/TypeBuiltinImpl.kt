@@ -7,7 +7,11 @@ import software.amazon.ionschema.Violation
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.internal.constraint.ConstraintBase
 
-// represents built-in types that are defined in terms of other built-in types
+/**
+ * Type implementation instantiated to represent built-in types.
+ *
+ * @see TypeBuiltin
+ */
 internal class TypeBuiltinImpl private constructor(
         override val ion : IonStruct,
         private val delegate: TypeInternal

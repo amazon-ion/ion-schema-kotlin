@@ -7,6 +7,14 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
 
+/**
+ * Provides a factory method that translates an ISL type reference into a function
+ * that returns a Type instance.
+ *
+ * Types that can't be resolved yet are instantiated as [TypeReferenceDeferred] objects
+ * that are resolved by [SchemaImpl.resolveDeferredTypeReferences] prior to asserting
+ * that the schema is valid.
+ */
 internal class TypeReference private constructor() {
     companion object {
         fun create(ion: IonValue, schema: Schema, isField: Boolean = false): () -> TypeInternal {
@@ -68,6 +76,9 @@ internal class TypeReference private constructor() {
     }
 }
 
+/**
+ * Represents a type reference that can't be resolved yet.
+ */
 internal class TypeReferenceDeferred(
         private val ion: IonSymbol,
         private val schema: Schema

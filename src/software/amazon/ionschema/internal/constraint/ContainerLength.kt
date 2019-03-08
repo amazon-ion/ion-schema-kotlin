@@ -8,9 +8,14 @@ import software.amazon.ionschema.internal.CommonViolations
 import software.amazon.ionschema.internal.util.RangeFactory
 import software.amazon.ionschema.internal.util.RangeType
 
+/**
+ * Implements the container_length constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#container_length
+ */
 internal class ContainerLength(
         ion: IonValue
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
     private val range = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE)
 
@@ -28,3 +33,4 @@ internal class ContainerLength(
         }
     }
 }
+

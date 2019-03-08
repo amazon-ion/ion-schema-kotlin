@@ -6,6 +6,12 @@ import software.amazon.ionschema.Schema
 import software.amazon.ionschema.internal.constraint.ConstraintBase
 import software.amazon.ionschema.Violations
 
+/**
+ * Implementation of [Type] backed by a collection of zero or more [Constraint]s.
+ *
+ * If no "type" constraint is found, the default "type: any" is inserted by this class
+ * (unless addDefaultTypeConstraint is `false`).
+ */
 internal class TypeImpl(
         private val ionStruct: IonStruct,
         private val schema: Schema,

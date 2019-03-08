@@ -7,9 +7,13 @@ import software.amazon.ion.Timestamp
 import software.amazon.ionschema.InvalidSchemaException
 
 /**
+ * Implementation of Range<IonTimestamp> that validates that the precision
+ * of a given timestamp is within the expected range.
  *
  * This implementation simply translates the allowed timestamp precisions
  * to a Range<Int>.
+ *
+ * @see IonTimestampPrecision
  */
 internal class RangeIonTimestampPrecision (
         ion: IonList

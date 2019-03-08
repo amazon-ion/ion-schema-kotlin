@@ -10,10 +10,15 @@ import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.ConstraintInternal
 import software.amazon.ionschema.internal.TypeReference
 
+/**
+ * Base class for logic constraint implementations.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#logic-constraints
+ */
 internal abstract class LogicConstraints(
         ion: IonValue,
         schema: Schema
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
     internal val types = if (ion is IonList && !ion.isNullValue) {
             ion.map { TypeReference.create(it, schema) }
@@ -34,6 +39,11 @@ internal abstract class LogicConstraints(
     }
 }
 
+/**
+ * Implements the all_of constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#all_of
+ */
 internal class AllOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
         val allOfViolation = Violation(ion, "all_types_not_matched")
@@ -45,6 +55,11 @@ internal class AllOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
     }
 }
 
+/**
+ * Implements the any_of constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#any_of
+ */
 internal class AnyOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
         val anyOfViolation = Violation(ion, "no_types_matched", "value matches none of the types")
@@ -55,6 +70,11 @@ internal class AnyOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
     }
 }
 
+/**
+ * Implements the one_of constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#one_of
+ */
 internal class OneOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
         val oneOfViolation = Violation(ion)
@@ -80,6 +100,11 @@ internal class OneOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
     }
 }
 
+/**
+ * Implements the not constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#not
+ */
 internal class Not(ion: IonValue, schema: Schema) : ConstraintBase(ion) {
     private val type = TypeReference.create(ion, schema)
 

@@ -4,6 +4,10 @@ import software.amazon.ion.*
 import software.amazon.ionschema.InvalidSchemaException
 import java.math.BigDecimal
 
+/**
+ * Implementation of Range<BigDecimal>.  As of this writing, all other Range<T>
+ * implementations directly or indirectly delegate to an instance of this class.
+ */
 internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
     companion object {
         private fun toBigDecimal(ion: IonValue) =
@@ -63,6 +67,9 @@ internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
         POSITIVE( 1),
     }
 
+    /**
+     * Represents either a lower or upper boundary of a range.
+     */
     internal class Boundary(ion: IonValue?, private val infinity: Infinity) : Comparable<Boundary> {
         internal val value: BigDecimal?
         internal val boundaryType: RangeBoundaryType
@@ -110,3 +117,4 @@ internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
             }
     }
 }
+

@@ -7,6 +7,10 @@ import software.amazon.ionschema.internal.constraint.ConstraintBase
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 
+/**
+ * Instantiated to represent individual Ion Types as defined by the
+ * Ion Schema Specification.
+ */
 internal class TypeIon(
         private val name: IonSymbol
     ) : TypeInternal, ConstraintBase(name), TypeBuiltin {

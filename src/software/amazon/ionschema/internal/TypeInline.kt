@@ -7,6 +7,9 @@ import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.constraint.ConstraintBase
 
+/**
+ * Implementation of [Type] corresponding to inline type definitions.
+ */
 internal class TypeInline private constructor (
         override val ion: IonStruct,
         private val type: TypeInternal

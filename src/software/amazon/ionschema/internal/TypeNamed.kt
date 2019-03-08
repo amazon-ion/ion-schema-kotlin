@@ -6,6 +6,9 @@ import software.amazon.ionschema.internal.constraint.ConstraintBase
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 
+/**
+ * Implementation of [Type] representing types identified only by name.
+ */
 internal class TypeNamed(
         override val ion: IonSymbol,
         internal val type: TypeInternal

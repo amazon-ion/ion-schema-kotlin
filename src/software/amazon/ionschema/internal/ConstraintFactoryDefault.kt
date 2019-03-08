@@ -5,6 +5,9 @@ import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
 import software.amazon.ionschema.internal.constraint.*
 
+/**
+ * Default [ConstraintFactory] implementation.
+ */
 internal class ConstraintFactoryDefault : ConstraintFactory {
     private enum class Constraints {
         all_of,

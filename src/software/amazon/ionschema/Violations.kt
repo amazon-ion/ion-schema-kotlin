@@ -106,7 +106,7 @@ class Violation(
 
 /**
  * References a specific struct fieldName or index into a list/sexp/document
- * within a hierarchical Violations object.
+ * within a hierarchical [Violations] object.
  *
  * @property[fieldName] Within a struct, the name of the field this object corresponds to.
  * @property[index] Within a sequence, the index of the element this object corresponds to.
