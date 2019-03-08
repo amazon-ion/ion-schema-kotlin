@@ -9,10 +9,15 @@ import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.CommonViolations
 import software.amazon.ionschema.internal.TypeReference
 
+/**
+ * Implements the element constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#element
+ */
 internal class Element(
         ion: IonValue,
         schema: Schema
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
     private val typeReference = TypeReference.create(ion, schema, isField = true)
 
@@ -40,3 +45,4 @@ internal class Element(
         }
     }
 }
+

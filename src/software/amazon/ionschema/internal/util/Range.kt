@@ -5,7 +5,10 @@ import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 
-enum class RangeType {
+/**
+ * Enum representing the support types of ranges.
+ */
+internal enum class RangeType {
     INT,
     INT_NON_NEGATIVE,
     ION_NUMBER,
@@ -13,10 +16,16 @@ enum class RangeType {
     ION_TIMESTAMP_PRECISION,
 }
 
+/**
+ * Interface for all range implementations.
+ */
 internal interface Range<in T : Any> {
     fun contains(value: T): Boolean
 }
 
+/**
+ * Factory method for instantiating Range<T> objects.
+ */
 internal class RangeFactory {
     companion object {
         @JvmStatic

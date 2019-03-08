@@ -17,6 +17,11 @@ import software.amazon.ionschema.internal.util.RangeFactory
 import software.amazon.ionschema.internal.util.RangeIntNonNegative
 import software.amazon.ionschema.internal.util.RangeType
 
+/**
+ * Implements the occurs constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#occurs
+ */
 internal open class Occurs(
         ion: IonValue,
         schema: Schema,
@@ -127,7 +132,7 @@ internal open class Occurs(
 
 /**
  * This class should only be used during load/validation of a type definition.
- * The real Occurs constraint implentation is instantiated and used for validation
+ * The real Occurs constraint implementation is instantiated and used for validation
  * by the Fields and OrderedElements constraints.
  */
 internal open class OccursNoop(

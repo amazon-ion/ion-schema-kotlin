@@ -5,6 +5,15 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Violations
 
+/**
+ * Implements the content constraint.
+ *
+ * This implementation exists solely to verify that the constraint
+ * definition is valid.  Validation logic for this constraint is
+ * performed by the [Fields] constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#content
+ */
 internal class Content(
         ion: IonValue
 ) : ConstraintBase(ion) {

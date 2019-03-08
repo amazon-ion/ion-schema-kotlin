@@ -10,6 +10,9 @@ import software.amazon.ionschema.IonSchemaSystem
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
 
+/**
+ * Implementation of [Schema] for all user-provided ISL.
+ */
 internal class SchemaImpl(
         private val schemaSystem: IonSchemaSystem,
         private val schemaCore: SchemaCore,

@@ -12,10 +12,18 @@ import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.CommonViolations
 
+/**
+ * Implements the fields constraint.
+ *
+ * [Content] and [Occurs] constraints in the context of a struct are also
+ * handled by this class.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#fields
+ */
 internal class Fields(
         ionValue: IonValue,
         private val schema: Schema
-    ) : ConstraintBase(ionValue), Constraint {
+) : ConstraintBase(ionValue), Constraint {
 
     private val ionStruct: IonStruct
     private val contentConstraintIon: IonValue?

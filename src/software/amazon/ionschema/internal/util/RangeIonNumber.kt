@@ -3,6 +3,10 @@ package software.amazon.ionschema.internal.util
 import software.amazon.ion.*
 import java.math.BigDecimal
 
+/**
+ * Implementation of Range<IonValue> restricted to IonDecimal, IonFloat,
+ * and IonInt (numeric) values.  Mostly delegates to RangeBigDecimal.
+ */
 internal class RangeIonNumber private constructor (
         private val ion: IonList,
         private val delegate: RangeBigDecimal

@@ -4,6 +4,9 @@ import software.amazon.ion.IonList
 import software.amazon.ion.IonTimestamp
 import software.amazon.ionschema.InvalidSchemaException
 
+/**
+ * Implementation of Range<IonTimestamp> which mostly delegates to RangeBigDecimal.
+ */
 internal class RangeIonTimestamp private constructor (
         private val ion: IonList,
         private val delegate: RangeBigDecimal

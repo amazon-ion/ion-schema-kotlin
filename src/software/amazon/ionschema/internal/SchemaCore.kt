@@ -5,9 +5,13 @@ import software.amazon.ionschema.IonSchemaSystem
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
 
+/**
+ * Provides instances of [Type] for all of the Core Types and Ion Types
+ * defined by the Ion Schema Specification.
+ */
 internal class SchemaCore(
         private val schemaSystem: IonSchemaSystem
-    ) : Schema {
+) : Schema {
 
     companion object {
         private val CORE_TYPES = """

@@ -8,9 +8,14 @@ import software.amazon.ionschema.internal.CommonViolations
 import software.amazon.ionschema.internal.util.RangeFactory
 import software.amazon.ionschema.internal.util.RangeType
 
+/**
+ * Implements the byte_length constraint.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#byte_length
+ */
 internal class ByteLength(
         ion: IonValue
-    ) : ConstraintBase(ion) {
+) : ConstraintBase(ion) {
 
     private val range = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE)
 
@@ -29,3 +34,4 @@ internal class ByteLength(
         }
     }
 }
+

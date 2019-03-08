@@ -5,6 +5,10 @@ import software.amazon.ion.IonList
 import software.amazon.ion.IonSymbol
 import software.amazon.ionschema.InvalidSchemaException
 
+/**
+ * Implementation of Range<Int> restricted to non-negative integers.
+ * Mostly delegates to RangeInt.
+ */
 internal class RangeIntNonNegative (
         private val ion: IonList,
         private val delegate: RangeInt = RangeInt(ion)

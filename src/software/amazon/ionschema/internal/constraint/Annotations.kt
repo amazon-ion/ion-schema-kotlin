@@ -9,6 +9,13 @@ import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.ConstraintInternal
 import software.amazon.ionschema.internal.util.withoutTypeAnnotations
 
+/**
+ * Implements the annotations constraint.
+ *
+ * Invocations are delegated to either an Ordered or Unordered implementation.
+ *
+ * @see https://amzn.github.io/ion-schema/docs/spec.html#annotations
+ */
 internal class Annotations private constructor(
         override val ion: IonValue,
         private val delegate: ConstraintInternal
@@ -36,6 +43,9 @@ internal class Annotations private constructor(
     override fun name() = delegate.name()
 }
 
+/**
+ * Ordered implementation of the annotations constraint, backed by a [StateMachine].
+ */
 internal class OrderedAnnotations(
         ion: IonValue,
         private val annotations: List<Annotation>
@@ -79,6 +89,9 @@ internal class OrderedAnnotations(
     }
 }
 
+/**
+ * Unordered implementation of the annotations constraint.
+ */
 internal class UnorderedAnnotations(
         ion: IonValue,
         private val annotations: List<Annotation>

@@ -2,6 +2,9 @@ package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonValue
 
+/**
+ * Builder that provides a simple API for constructing a [StateMachine].
+ */
 internal class StateMachineBuilder {
     private val states = StateSet()
     val initialState = State()
