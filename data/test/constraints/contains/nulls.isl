@@ -1,31 +1,17 @@
 type::{
-  contains: [null.null, null.bool, null.int, null.string],
+  contains: [null, null.bool, null.int, null.string],
 }
 valid::[
-  [null.int, null.null, null.bool, null.string],
-  document::"null.bool null.null null.string null.int",
+  [null.int, null, null.bool, null.string],
+  document::"null.bool null null.string null.int",
 ]
 invalid::[
   null,
-  null.null,
   null.bool,
   null.string,
   [],
   (),
-  document::"null.int null.null null.string",
-]
-
-type::{
-  contains: [null, null.null],
-}
-valid::[
-  [null],
-  (null),
-  document::"null",
-]
-invalid::[
-  [],
-  (),
-  document::"",
+  (null.int null null.string),
+  document::"null.int null null.string",
 ]
 

@@ -24,8 +24,12 @@ class ISLforISLTestRunner(
 
     private val blacklist = setOf(
             "data/test/schema/import/import_type_unknown.isl",
-            "data/test/schema/import/invalid.isl",
-            "data/test/schema/invalid.isl"
+            "data/test/schema/import/invalid_duplicate_import.isl",
+            "data/test/schema/import/invalid_duplicate_import_type.isl",
+            "data/test/schema/import/invalid_duplicate_type.isl",
+            "data/test/schema/invalid_missing_schema_footer.isl",
+            "data/test/schema/invalid_missing_schema_header.isl",
+            "data/test/schema/invalid_unknown_type.isl"
     )
 
     override fun run(notifier: RunNotifier) {

@@ -33,6 +33,10 @@ class IonSchemaTestRunner(
 
     private val schemaCore = SchemaCore(schemaSystem)
 
+    private val blacklist = setOf(
+            "data/test/constraints/not/empty_type.isl"
+    )
+
     private val specialFieldNames = setOf("fields", "element")
 
     override fun run(notifier: RunNotifier) {
@@ -40,6 +44,7 @@ class IonSchemaTestRunner(
         File(base).walk()
             .filter { it.isFile }
             .filter { !it.path.endsWith(".md") }
+            .filter { !blacklist.contains(it.path) }
             .forEach { file ->
                 val testName = file.path.substring(base.length + 1, file.path.length - ".isl".length)
                 var schema: Schema? = null

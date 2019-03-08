@@ -12,3 +12,12 @@ invalid_type::{ occurs: range::[1, 0] }
 invalid_type::{ occurs: range::[1] }
 invalid_type::{ occurs: range::[0, 1, 2] }
 
+invalid_type::{ fields: { a: { occurs: 0 } } }
+invalid_type::{ fields: { a: { occurs: range::[0, 0] } } }
+invalid_type::{ fields: { a: { occurs: range::[1, 0] } } }
+invalid_type::{ fields: { a: { occurs: range::[-1, 1] } } }
+invalid_type::{ fields: { a: { occurs: range::[-2, -1] } } }
+invalid_type::{ fields: { a: { occurs: range::[exclusive::1, exclusive::1] } } }
+invalid_type::{ fields: { a: { occurs: range::[1, exclusive::2] } } }
+invalid_type::{ fields: { a: { occurs: range::[exclusive::1, 2] } } }
+
