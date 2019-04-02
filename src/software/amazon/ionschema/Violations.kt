@@ -110,7 +110,7 @@ class Violation(
  *
  * @property[fieldName] Within a struct, the name of the field this object corresponds to.
  * @property[index] Within a sequence, the index of the element this object corresponds to.
- * @property[value] The child value of this object corresponds to.
+ * @property[value] The child value this object corresponds to.
  */
 class ViolationChild internal constructor (
         val fieldName: String? = null,
