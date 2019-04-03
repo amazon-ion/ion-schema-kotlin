@@ -109,9 +109,9 @@ internal class SchemaImpl(
     }
 
     private fun resolveDeferredTypeReferences() {
-        val unresolvedDeferredTypeReferences = deferredTypeReferences.filter {
-            !it.attemptToResolve()
-        }.map { it.name }.toSet()
+        val unresolvedDeferredTypeReferences = deferredTypeReferences
+                .filterNot { it.attemptToResolve() }
+                .map { it.name }.toSet()
 
         if (unresolvedDeferredTypeReferences.isNotEmpty()) {
             throw InvalidSchemaException(
