@@ -13,76 +13,6 @@ internal class SchemaCore(
         private val schemaSystem: IonSchemaSystem
 ) : Schema {
 
-    companion object {
-        private val CORE_TYPES = """
-            { type: blob }
-            { type: bool }
-            { type: clob }
-            { type: decimal }
-            { type: document }
-            { type: float }
-            { type: int }
-            { type: string }
-            { type: symbol }
-            { type: timestamp }
-            { type: list }
-            { type: sexp }
-            { type: struct }
-        """
-
-        private val ION_TYPES = """
-            { type: ${'$'}blob }
-            { type: ${'$'}bool }
-            { type: ${'$'}clob }
-            { type: ${'$'}decimal }
-            { type: ${'$'}float }
-            { type: ${'$'}int }
-            { type: ${'$'}null }
-            { type: ${'$'}string }
-            { type: ${'$'}symbol }
-            { type: ${'$'}timestamp }
-            { type: ${'$'}list }
-            { type: ${'$'}sexp }
-            { type: ${'$'}struct }
-        """
-
-        private val ADDITIONAL_TYPE_DEFS = """
-            { lob:    type::{ one_of: [ blob, clob ] } }
-
-            { number: type::{ one_of: [ decimal, float, int ] } }
-
-            { text:   type::{ one_of: [ string, symbol ] } }
-
-            { any:    type::{ one_of: [ blob, bool, clob, decimal, document,
-                                        float, int, string, symbol, timestamp,
-                                        list, sexp, struct ] } }
-
-            { '${'$'}lob':    type::{ one_of: [ '${'$'}blob', '${'$'}clob' ] } }
-
-            { '${'$'}number': type::{ one_of: [ '${'$'}decimal', '${'$'}float', '${'$'}int' ] } }
-
-            { '${'$'}text':   type::{ one_of: [ '${'$'}string', '${'$'}symbol' ] } }
-
-            { '${'$'}any':    type::{ one_of: [ '${'$'}blob',
-                                                '${'$'}bool',
-                                                '${'$'}clob',
-                                                '${'$'}decimal',
-                                                '${'$'}float',
-                                                '${'$'}int',
-                                                '${'$'}null',
-                                                '${'$'}string',
-                                                '${'$'}symbol',
-                                                '${'$'}timestamp',
-                                                '${'$'}list',
-                                                '${'$'}sexp',
-                                                '${'$'}struct',
-                                                document,
-                                              ] } }
-
-            { nothing:        type::{ not: ${'$'}any } }
-        """
-    }
-
     private val typeMap: Map<String, Type>
 
     init {
@@ -118,4 +48,72 @@ internal class SchemaCore(
 
     override fun newType(isl: IonStruct) = throw UnsupportedOperationException()
 }
+
+private const val CORE_TYPES = """
+        { type: blob }
+        { type: bool }
+        { type: clob }
+        { type: decimal }
+        { type: document }
+        { type: float }
+        { type: int }
+        { type: string }
+        { type: symbol }
+        { type: timestamp }
+        { type: list }
+        { type: sexp }
+        { type: struct }
+    """
+
+private const val ION_TYPES = """
+        { type: ${'$'}blob }
+        { type: ${'$'}bool }
+        { type: ${'$'}clob }
+        { type: ${'$'}decimal }
+        { type: ${'$'}float }
+        { type: ${'$'}int }
+        { type: ${'$'}null }
+        { type: ${'$'}string }
+        { type: ${'$'}symbol }
+        { type: ${'$'}timestamp }
+        { type: ${'$'}list }
+        { type: ${'$'}sexp }
+        { type: ${'$'}struct }
+    """
+
+private const val ADDITIONAL_TYPE_DEFS = """
+        { lob:    type::{ one_of: [ blob, clob ] } }
+
+        { number: type::{ one_of: [ decimal, float, int ] } }
+
+        { text:   type::{ one_of: [ string, symbol ] } }
+
+        { any:    type::{ one_of: [ blob, bool, clob, decimal, document,
+                                    float, int, string, symbol, timestamp,
+                                    list, sexp, struct ] } }
+
+        { '${'$'}lob':    type::{ one_of: [ '${'$'}blob', '${'$'}clob' ] } }
+
+        { '${'$'}number': type::{ one_of: [ '${'$'}decimal', '${'$'}float', '${'$'}int' ] } }
+
+        { '${'$'}text':   type::{ one_of: [ '${'$'}string', '${'$'}symbol' ] } }
+
+        { '${'$'}any':    type::{ one_of: [ '${'$'}blob',
+                                            '${'$'}bool',
+                                            '${'$'}clob',
+                                            '${'$'}decimal',
+                                            '${'$'}float',
+                                            '${'$'}int',
+                                            '${'$'}null',
+                                            '${'$'}string',
+                                            '${'$'}symbol',
+                                            '${'$'}timestamp',
+                                            '${'$'}list',
+                                            '${'$'}sexp',
+                                            '${'$'}struct',
+                                            document,
+                                          ] } }
+
+        { nothing:        type::{ not: ${'$'}any } }
+    """
 

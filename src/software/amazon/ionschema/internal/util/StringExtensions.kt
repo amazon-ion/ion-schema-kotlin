@@ -4,9 +4,9 @@ package software.amazon.ionschema.internal.util
  * String extension functions
  */
 internal fun String.truncate(limit: Int, truncated: CharSequence = "..."): String {
-    if (this.length < limit) {
+    if (length < limit) {
         return this
     }
-    return this.substring(0, limit) + truncated
+    return substring(0, limit) + truncated
 }
 

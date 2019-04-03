@@ -11,7 +11,7 @@ import software.amazon.ionschema.Violations
  * [Type] decorator that implements the nullable:: annotation.
  */
 internal class TypeNullable(
-        override val ion: IonValue,
+        ion: IonValue,
         private val type: TypeInternal,
         schema: Schema
 ) : TypeInternal by type, ConstraintBase(ion) {
@@ -25,9 +25,9 @@ internal class TypeNullable(
     override fun validate(value: IonValue, issues: Violations) {
         if (!(value.isNullValue
                     && (value.type == IonType.NULL || type.isValidForBaseType(value)))) {
-            (type as ConstraintInternal).validate(value, issues)
+            type.validate(value, issues)
         }
     }
 
-    override fun name() = type.name()
+    override val name = type.name
 }

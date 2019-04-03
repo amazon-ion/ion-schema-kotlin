@@ -6,6 +6,7 @@ import software.amazon.ion.IonText
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Schema
+import software.amazon.ionschema.Violations
 
 /**
  * Provides a factory method that translates an ISL type reference into a function
@@ -18,61 +19,61 @@ import software.amazon.ionschema.Schema
 internal class TypeReference private constructor() {
     companion object {
         fun create(ion: IonValue, schema: Schema, isField: Boolean = false): () -> TypeInternal {
-            var type: TypeInternal? = null
-            if (!ion.isNullValue) {
-                type = when (ion) {
-                    is IonStruct -> {
-                        val id = ion.get("id") as? IonText
-                        if (id != null) {
-                            // import
-                            val newSchema = schema.getSchemaSystem().loadSchema(id.stringValue())
-                            val typeName = ion.get("type") as IonSymbol
-                            newSchema.getType(typeName.stringValue()) as? TypeInternal
-
-                        } else {
-                            if (isField) {
-                                TypeImpl(ion, schema)
-                            } else {
-                                if (ion.size() == 1 && ion.get("type") != null) {
-                                    // elide inline types defined as "{ type: X }" to TypeImpl;
-                                    // this avoids creating a nested, redundant validation structure
-                                    TypeImpl(ion, schema)
-                                } else {
-                                    TypeInline(ion, schema)
-                                } as TypeInternal
-                            }
-                        }
-                    }
-
-                    is IonSymbol -> {
-                        val t = schema.getType(ion.stringValue())
-                        if (t != null) {
-                            if (t is TypeBuiltin) {
-                                t
-                            } else {
-                                TypeNamed(ion, t as TypeInternal)
-                            }
-                        } else {
-                            // type can't be resolved yet;  ask the schema to try again later
-                            val deferredType = TypeReferenceDeferred(ion, schema)
-                            (schema as SchemaImpl).addDeferredType(deferredType)
-                            return { deferredType.resolve() }
-                        }
-                    }
-
-                    else -> throw InvalidSchemaException("Unable to resolve type reference '${ion}'")
-                }
+            if (ion.isNullValue) {
+                throw InvalidSchemaException("Unable to resolve type reference '$ion'")
             }
 
-            if (type == null) {
-                throw InvalidSchemaException("Unable to resolve type reference '${ion}'")
+            return when (ion) {
+                is IonStruct -> handleStruct(ion, schema, isField)
+                is IonSymbol -> handleSymbol(ion, schema)
+                else -> throw InvalidSchemaException("Unable to resolve type reference '$ion'")
             }
-
-            if (ion.hasTypeAnnotation("nullable")) {
-                type = TypeNullable(ion, type, schema)
-            }
-            return { type }
         }
+
+        private fun handleStruct(ion: IonStruct, schema: Schema, isField: Boolean): () -> TypeInternal {
+            val id = ion["id"] as? IonText
+            val type = when {
+                id != null -> {
+                    // import
+                    val newSchema = schema.getSchemaSystem().loadSchema(id.stringValue())
+                    val typeName = ion.get("type") as IonSymbol
+                    newSchema.getType(typeName.stringValue()) as? TypeInternal
+                }
+                isField -> TypeImpl(ion, schema)
+                ion.size() == 1 && ion["type"] != null -> {
+                    // elide inline types defined as "{ type: X }" to TypeImpl;
+                    // this avoids creating a nested, redundant validation structure
+                    TypeImpl(ion, schema)
+                }
+                else -> TypeInline(ion, schema)
+            }
+
+            type ?: throw InvalidSchemaException("Unable to resolve type reference '$ion'")
+
+            val theType = handleNullable(ion, schema, type)
+            return { theType }
+        }
+
+        private fun handleSymbol(ion: IonSymbol, schema: Schema): () -> TypeInternal {
+            val t = schema.getType(ion.stringValue())
+            return if (t != null) {
+                    val type = t as? TypeBuiltin ?: TypeNamed(ion, t as TypeInternal)
+                    val theType = handleNullable(ion, schema, type);
+                    { theType }
+                } else {
+                    // type can't be resolved yet;  ask the schema to try again later
+                    val deferredType = TypeReferenceDeferred(ion, schema)
+                    (schema as SchemaImpl).addDeferredType(deferredType);
+                    { deferredType.resolve() }
+                }
+        }
+
+        private fun handleNullable(ion: IonValue, schema: Schema, type: TypeInternal): TypeInternal =
+            if (ion.hasTypeAnnotation("nullable")) {
+                TypeNullable(ion, type, schema)
+            } else {
+                type
+            }
     }
 }
 
@@ -80,19 +81,24 @@ internal class TypeReference private constructor() {
  * Represents a type reference that can't be resolved yet.
  */
 internal class TypeReferenceDeferred(
-        private val ion: IonSymbol,
+        ion: IonSymbol,
         private val schema: Schema
-) {
+) : TypeInternal {
 
     private var type: TypeInternal? = null
+    override val name: String = ion.stringValue()
 
     fun attemptToResolve(): Boolean {
-        type = schema.getType(ion.stringValue()) as? TypeInternal
+        type = schema.getType(name) as? TypeInternal
         return type != null
     }
 
     fun resolve(): TypeInternal = type!!
 
-    override fun toString() = ion.stringValue()
+    override fun getBaseType(): TypeBuiltin = throw UnsupportedOperationException()
+
+    override fun isValidForBaseType(value: IonValue): Boolean = throw UnsupportedOperationException()
+
+    override fun validate(value: IonValue, issues: Violations) = throw UnsupportedOperationException()
 }
 

@@ -26,7 +26,7 @@ internal class TypeCore(
         ionTypeName = ionType.schemaTypeName()
     }
 
-    override fun name() = ionTypeName
+    override val name = ionTypeName
 
     override fun getBaseType() = this
 

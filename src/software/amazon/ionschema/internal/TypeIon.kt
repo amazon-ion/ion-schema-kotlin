@@ -12,12 +12,12 @@ import software.amazon.ionschema.Violation
  * Ion Schema Specification.
  */
 internal class TypeIon(
-        private val name: IonSymbol
-    ) : TypeInternal, ConstraintBase(name), TypeBuiltin {
+        nameSymbol: IonSymbol
+    ) : TypeInternal, ConstraintBase(nameSymbol), TypeBuiltin {
 
-    private val ionType = IonType.valueOf(name.stringValue().toUpperCase().substring(1))
+    private val ionType = IonType.valueOf(nameSymbol.stringValue().toUpperCase().substring(1))
 
-    override fun name() = name.stringValue()
+    override val name = nameSymbol.stringValue()
 
     override fun getBaseType() = this
 

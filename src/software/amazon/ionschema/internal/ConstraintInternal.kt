@@ -7,8 +7,6 @@ import software.amazon.ionschema.Violations
  * Internal methods for interacting with [Constraint]s.
  */
 internal interface ConstraintInternal : Constraint {
-    val ion: IonValue
-
     /**
      * Checks this constraint against the provided value,
      * adding [Violation]s and/or [ViolationChild]ren to issues

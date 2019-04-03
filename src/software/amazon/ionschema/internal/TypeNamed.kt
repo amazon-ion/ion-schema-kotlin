@@ -10,7 +10,7 @@ import software.amazon.ionschema.Violation
  * Implementation of [Type] representing types identified only by name.
  */
 internal class TypeNamed(
-        override val ion: IonSymbol,
+        ion: IonSymbol,
         internal val type: TypeInternal
 ) : TypeInternal by type, ConstraintBase(ion) {
 
@@ -18,12 +18,12 @@ internal class TypeNamed(
         val struct = ion.system.newEmptyStruct()
         struct.put("type", ion.clone())
         val violation = Violation(struct, "type_mismatch")
-        (type as ConstraintInternal).validate(value, violation)
+        type.validate(value, violation)
         if (!violation.isValid()) {
-            violation.message = "expected type %s".format(name())
+            violation.message = "expected type %s".format(name)
             issues.add(violation)
         }
     }
 
-    override fun name() = ion.stringValue()
+    override val name = ion.stringValue()
 }

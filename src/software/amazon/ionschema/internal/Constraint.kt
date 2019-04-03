@@ -7,8 +7,8 @@ import software.amazon.ion.IonValue
  */
 internal interface Constraint {
     /**
-     * Returns the name of the constraint.
+     * The name of the constraint.
      */
-    fun name(): String
+    val name: String
 }
 
