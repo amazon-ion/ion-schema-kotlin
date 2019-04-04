@@ -6,7 +6,6 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
-import software.amazon.ionschema.internal.CommonViolations
 import javax.script.ScriptEngineManager
 
 /**
@@ -43,13 +42,9 @@ internal class Regex(
     }
 
     override fun validate(value: IonValue, issues: Violations) {
-        if (value !is IonText) {
-            issues.add(CommonViolations.INVALID_TYPE(ion, value))
-        } else if (value.isNullValue) {
-            issues.add(CommonViolations.NULL_VALUE(ion))
-        } else {
-            val string = value.stringValue().replace("\"", "\\\"")
-            val expr = "(/$regex/$flags).test(\"" + string + "\")"
+        validateAs<IonText>(value, issues) { v ->
+            val string = v.stringValue().replace("\"", "\\\"")
+            val expr = "(/$regex/$flags).test(\"$string\")"
             val result = scriptEngine.eval(expr) as Boolean
 
             if (!result) {

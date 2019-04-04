@@ -4,7 +4,6 @@ import software.amazon.ion.IonList
 import software.amazon.ion.IonString
 import software.amazon.ion.IonTimestamp
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.internal.CommonViolations
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.Violations
@@ -80,14 +79,10 @@ internal class TimestampOffset(
     }
 
     override fun validate(value: IonValue, issues: Violations) {
-        if (value !is IonTimestamp) {
-            issues.add(CommonViolations.INVALID_TYPE(ion, value))
-        } else if (value.isNullValue) {
-            issues.add(CommonViolations.NULL_VALUE(ion))
-        } else {
-            if (!validOffsets.contains(value.localOffset)) {
+        validateAs<IonTimestamp>(value, issues) { v ->
+            if (!validOffsets.contains(v.localOffset)) {
                 issues.add(Violation(ion, "invalid_timestamp_offset",
-                        "invalid timestamp offset %s, expected %s".format(value.localOffset, ion)))
+                        "invalid timestamp offset %s, expected %s".format(v.localOffset, ion)))
             }
         }
     }

@@ -6,7 +6,6 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
-import software.amazon.ionschema.internal.CommonViolations
 
 /**
  * Implements the contains constraint.
@@ -24,13 +23,9 @@ internal class Contains(
         }
 
     override fun validate(value: IonValue, issues: Violations) {
-        if (value !is IonContainer) {
-            issues.add(CommonViolations.INVALID_TYPE(ion, value))
-        } else if (value.isNullValue) {
-            issues.add(CommonViolations.NULL_VALUE(ion))
-        } else {
+        validateAs<IonContainer>(value, issues) { v ->
             val expectedValues = expectedElements.toMutableSet()
-            value.forEach {
+            v.forEach {
                 expectedValues.remove(it)
             }
             if (!expectedValues.isEmpty()) {

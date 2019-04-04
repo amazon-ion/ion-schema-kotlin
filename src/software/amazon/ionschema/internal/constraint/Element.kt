@@ -6,7 +6,6 @@ import software.amazon.ionschema.Schema
 import software.amazon.ionschema.ViolationChild
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
-import software.amazon.ionschema.internal.CommonViolations
 import software.amazon.ionschema.internal.TypeReference
 
 /**
@@ -22,13 +21,9 @@ internal class Element(
     private val typeReference = TypeReference.create(ion, schema, isField = true)
 
     override fun validate(value: IonValue, issues: Violations) {
-        if (value !is IonContainer) {
-            issues.add(CommonViolations.INVALID_TYPE(ion, value))
-        } else if (value.isNullValue) {
-            issues.add(CommonViolations.NULL_VALUE(ion))
-        } else {
+        validateAs<IonContainer>(value, issues) { v ->
             val elementIssues = Violation(ion, "element_mismatch", "one or more elements don't match expectations")
-            value.forEachIndexed { idx, it ->
+            v.forEachIndexed { idx, it ->
                 val elementValidation = if (it.fieldName == null) {
                         ViolationChild(index = idx, value = it)
                     } else {
