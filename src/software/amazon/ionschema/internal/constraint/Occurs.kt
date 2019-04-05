@@ -43,9 +43,9 @@ internal open class Occurs(
         internal fun toRange(ion: IonValue): Range<Int> {
             if (!ion.isNullValue) {
                 return if (ion is IonSymbol) {
-                           when (ion.stringValue()) {
-                               "optional" -> OPTIONAL
-                               "required" -> REQUIRED
+                           when (ion) {
+                               OPTIONAL_ION -> OPTIONAL
+                               REQUIRED_ION -> REQUIRED
                                else -> throw InvalidSchemaException("Invalid ion constraint '$ion'")
                            }
                        } else {
