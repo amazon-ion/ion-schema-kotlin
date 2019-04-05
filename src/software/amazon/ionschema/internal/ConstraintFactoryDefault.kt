@@ -2,7 +2,6 @@ package software.amazon.ionschema.internal
 
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.Schema
-import software.amazon.ionschema.Type
 import software.amazon.ionschema.internal.constraint.*
 
 /**
@@ -41,7 +40,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
             false
         }
 
-    override fun constraintFor(ion: IonValue, schema: Schema, type: Type?) =
+    override fun constraintFor(ion: IonValue, schema: Schema) =
         when (Constraints.valueOf(ion.fieldName)) {
             Constraints.all_of              -> AllOf(ion, schema)
             Constraints.annotations         -> Annotations(ion)

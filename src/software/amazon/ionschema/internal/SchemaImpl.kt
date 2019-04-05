@@ -14,7 +14,7 @@ import software.amazon.ionschema.Type
  * Implementation of [Schema] for all user-provided ISL.
  */
 internal class SchemaImpl(
-        private val schemaSystem: IonSchemaSystem,
+        private val schemaSystem: IonSchemaSystemImpl,
         private val schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>
 ) : Schema {
@@ -31,7 +31,7 @@ internal class SchemaImpl(
             val it = schemaContent.next()
 
             if (it is IonSymbol && it.stringValue() == "\$ion_schema_1_0") {
-                // TBD
+                // TBD https://github.com/amzn/ion-schema-kotlin/issues/95
 
             } else if (it.hasTypeAnnotation("schema_header")) {
                 loadHeader(types, it as IonStruct)
@@ -39,7 +39,7 @@ internal class SchemaImpl(
 
             } else if (it.hasTypeAnnotation("type") && it is IonStruct) {
                 val newType = TypeImpl(it, this)
-                addType(types, newType.name(), newType)
+                addType(types, newType.name, newType)
             } else if (it.hasTypeAnnotation("schema_footer")) {
                 foundFooter = true
             }
@@ -56,29 +56,27 @@ internal class SchemaImpl(
     }
 
     private fun loadHeader(typeMap: MutableMap<String, Type>, header: IonStruct) {
-        (header.get("imports") as? IonList)?.forEach {
-            if (it is IonStruct) {
-                val id = it.get("id") as IonString
+        (header.get("imports") as? IonList)
+            ?.filterIsInstance<IonStruct>()
+            ?.forEach {
+                val id = it["id"] as IonString
                 val importedSchema = schemaSystem.loadSchema(id.stringValue())
 
-                val typeName = it.get("type") as? IonSymbol
+                val typeName = (it["type"] as? IonSymbol)?.stringValue()
                 if (typeName != null) {
-                    var newTypeName = typeName.stringValue()
-                    val newType = importedSchema.getType(newTypeName)
-                    newType ?: throw InvalidSchemaException(
-                                "Schema $id doesn't contain a type named '$newTypeName'")
+                    val newType = importedSchema.getType(typeName)
+                            ?: throw InvalidSchemaException(
+                                "Schema $id doesn't contain a type named '$typeName'")
+
                     val alias = it["as"] as? IonSymbol
-                    if (alias != null) {
-                        newTypeName = alias.stringValue()
-                    }
+                    val newTypeName = alias?.stringValue() ?: typeName
                     addType(typeMap, newTypeName, newType)
                 } else {
                     importedSchema.getTypes().forEach {
-                        addType(typeMap, it.name(), it)
+                        addType(typeMap, it.name, it)
                     }
                 }
             }
-        }
     }
 
     private fun addType(typeMap: MutableMap<String, Type>, name: String, type: Type) {
@@ -96,7 +94,7 @@ internal class SchemaImpl(
                     .iterator()
 
     override fun newType(isl: String) = newType(
-            (schemaSystem as IonSchemaSystemImpl).getIonSystem().singleValue(isl) as IonStruct)
+            schemaSystem.getIonSystem().singleValue(isl) as IonStruct)
 
     override fun newType(isl: IonStruct): Type {
         val type = TypeImpl(isl, this)
@@ -111,20 +109,13 @@ internal class SchemaImpl(
     }
 
     private fun resolveDeferredTypeReferences() {
-        do {
-            var resolvedSomething = false
-            val iter = deferredTypeReferences.listIterator()
-            while (iter.hasNext()) {
-                val it = iter.next()
-                if (it.attemptToResolve()) {
-                    iter.remove()
-                    resolvedSomething = true
-                }
-            }
-        } while (resolvedSomething)
+        val unresolvedDeferredTypeReferences = deferredTypeReferences
+                .filterNot { it.attemptToResolve() }
+                .map { it.name }.toSet()
 
-        if (deferredTypeReferences.size > 0) {
-            throw InvalidSchemaException("Unable to resolve type reference(s): $deferredTypeReferences")
+        if (unresolvedDeferredTypeReferences.isNotEmpty()) {
+            throw InvalidSchemaException(
+                    "Unable to resolve type reference(s): $unresolvedDeferredTypeReferences")
         }
     }
 }

@@ -27,34 +27,26 @@ internal class TypeImpl(
 
     init {
         var foundTypeConstraint = false
-        val tmpConstraints = ionStruct
+        constraints = ionStruct.asSequence()
                 .filter { it.fieldName == null || (schema.getSchemaSystem() as IonSchemaSystemImpl).isConstraint(it.fieldName) }
-                .map {
-                    if (it.fieldName.equals("type")) {
-                        foundTypeConstraint = true
-                    }
-                    (schema.getSchemaSystem() as IonSchemaSystemImpl).constraintFor(it, schema, this)
-                }
+                .onEach { if (it.fieldName.equals("type")) { foundTypeConstraint = true } }
+                .map { (schema.getSchemaSystem() as IonSchemaSystemImpl).constraintFor(it, schema) }
                 .toMutableList()
 
         if (!foundTypeConstraint && addDefaultTypeConstraint) {
             // default type is 'any':
-            tmpConstraints.add(TypeReference.create(ANY, schema)())
+            constraints.add(TypeReference.create(ANY, schema)())
         }
-
-        constraints = tmpConstraints.toList()
     }
 
-    override fun name() = (ionStruct.get("name") as? IonSymbol)?.stringValue() ?: ionStruct.toString()
+    override val name = (ionStruct.get("name") as? IonSymbol)?.stringValue() ?: ionStruct.toString()
 
     override fun getBaseType(): TypeBuiltin {
-        val type = ionStruct.get("type")
-        type?.let {
-            if (type is IonSymbol) {
-                val parentType = schema.getType(type.stringValue())
-                parentType?.let {
-                    return (parentType as TypeInternal).getBaseType()
-                }
+        val type = ionStruct["type"]
+        if (type != null && type is IonSymbol) {
+            val parentType = schema.getType(type.stringValue())
+            if (parentType != null) {
+                return (parentType as TypeInternal).getBaseType()
             }
         }
         return schema.getType("any")!! as TypeBuiltin
