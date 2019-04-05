@@ -33,7 +33,7 @@ class SchemaTest {
                 .loadSchema("schema/Customer.isl")
                 .getTypes()
                 .asSequence()
-                .associateBy { it.name() }
+                .associateBy { it.name }
         assertTrue(types.contains("Customer"))
         assertTrue(types.contains("positive_int"))   // a type imported into Customer.isl
     }
