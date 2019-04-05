@@ -6,7 +6,7 @@ import software.amazon.ionschema.Type
 /**
  * Internal methods for interacting with [Type]s.
  */
-internal interface TypeInternal : Type, ConstraintInternal {
+internal interface TypeInternal : Type, Constraint {
     fun getBaseType(): TypeBuiltin
 
     fun isValidForBaseType(value: IonValue): Boolean

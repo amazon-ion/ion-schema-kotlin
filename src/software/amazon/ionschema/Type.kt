@@ -1,7 +1,7 @@
 package software.amazon.ionschema
 
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.internal.ConstraintInternal
+import software.amazon.ionschema.internal.Constraint
 
 /**
  * A Type consists of an optional name and zero or more constraints.
@@ -33,7 +33,7 @@ interface Type {
                 shortCircuit = shortCircuit,
                 childrenAllowed = false)
         try {
-            (type as ConstraintInternal).validate(value, violations)
+            (type as Constraint).validate(value, violations)
         } catch (e: ShortCircuitValidationException) {
             // short-circuit validation winds up here, safe to ignore
         }

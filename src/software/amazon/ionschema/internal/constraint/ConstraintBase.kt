@@ -3,14 +3,14 @@ package software.amazon.ionschema.internal.constraint
 import software.amazon.ion.IonValue
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.internal.CommonViolations
-import software.amazon.ionschema.internal.ConstraintInternal
+import software.amazon.ionschema.internal.Constraint
 
 /**
  * Base class for constraint implementations.
  */
 internal abstract class ConstraintBase(
         val ion: IonValue
-) : ConstraintInternal {
+) : Constraint {
 
     override val name = ion.fieldName
 
