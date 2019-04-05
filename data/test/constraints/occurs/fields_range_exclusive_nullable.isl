@@ -9,6 +9,7 @@ invalid::[
   { },
   { a: null },
   { a: null.string },
+  { a: null.int, a: null.int },
   { a: null, a: null, a: null },
   { a: null.string, a: null.string, a: null.string },
   { a: "1" },
