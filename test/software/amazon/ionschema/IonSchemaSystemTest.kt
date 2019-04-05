@@ -77,7 +77,7 @@ class IonSchemaSystemTest {
                 type::{ name: c }
                 """)
         assertEquals(listOf("a", "b", "c"),
-                schema.getTypes().asSequence().toList().map { it.name() })
+                schema.getTypes().asSequence().toList().map { it.name })
     }
 
     @Test
@@ -89,7 +89,7 @@ class IonSchemaSystemTest {
                     type::{ name: f }
                     """))
         assertEquals(listOf("d", "e", "f"),
-                schema.getTypes().asSequence().toList().map { it.name() })
+                schema.getTypes().asSequence().toList().map { it.name })
     }
 
     @Test(expected = IonSchemaException::class)

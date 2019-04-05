@@ -9,4 +9,8 @@ invalid_type::{ precision: range::[min, max] }
 invalid_type::{ precision: range::[1, 0] }
 invalid_type::{ precision: range::[1] }
 invalid_type::{ precision: range::[1, 2, 3] }
+invalid_type::{ precision: range::[0d0, 1] }
+invalid_type::{ precision: range::[0e0, 1] }
+invalid_type::{ precision: range::[0, 1d0] }
+invalid_type::{ precision: range::[0, 1e0] }
 

@@ -13,7 +13,7 @@ class TypeTest {
             .newType("type::{ name: a, type: string }")
 
     @Test
-    fun name() = assertEquals("a", type.name())
+    fun name() = assertEquals("a", type.name)
 
     @Test
     fun isValid_true() = assertTrue(type.isValid(ION.singleValue("\"hello\"")))

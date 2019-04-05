@@ -2,11 +2,6 @@ package software.amazon.ionschema.internal.constraint
 
 import software.amazon.ion.IonContainer
 import software.amazon.ion.IonValue
-import software.amazon.ionschema.Violations
-import software.amazon.ionschema.Violation
-import software.amazon.ionschema.internal.CommonViolations
-import software.amazon.ionschema.internal.util.RangeFactory
-import software.amazon.ionschema.internal.util.RangeType
 
 /**
  * Implements the container_length constraint.
@@ -15,22 +10,11 @@ import software.amazon.ionschema.internal.util.RangeType
  */
 internal class ContainerLength(
         ion: IonValue
-) : ConstraintBase(ion) {
+) : ConstraintBaseIntRange<IonContainer>(IonContainer::class.java, ion) {
 
-    private val range = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE)
+    override val violationCode = "invalid_container_length"
+    override val violationMessage = "invalid container length %s, expected %s"
 
-    override fun validate(value: IonValue, issues: Violations) {
-        if (value !is IonContainer) {
-            issues.add(CommonViolations.INVALID_TYPE(ion, value))
-        } else if (value.isNullValue) {
-            issues.add(CommonViolations.NULL_VALUE(ion))
-        } else {
-            val length = value.size()
-            if (!range.contains(length)) {
-                issues.add(Violation(ion, "invalid_container_length",
-                        "invalid container length %s, expected %s".format(length, range)))
-            }
-        }
-    }
+    override fun getIntValue(value: IonContainer) = value.size()
 }
 

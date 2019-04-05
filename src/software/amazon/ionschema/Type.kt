@@ -10,10 +10,10 @@ import software.amazon.ionschema.internal.ConstraintInternal
  */
 interface Type {
     /**
-     * Returns the name of the type;  if the type has no name, a string representing
+     * The name of the type;  if the type has no name, a string representing
      * the definition of the type is returned.
      */
-    fun name(): String
+    val name: String
 
     /**
      * If the specified value violates one or more of this type's constraints,

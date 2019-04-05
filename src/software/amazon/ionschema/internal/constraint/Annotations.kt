@@ -17,7 +17,7 @@ import software.amazon.ionschema.internal.util.withoutTypeAnnotations
  * @see https://amzn.github.io/ion-schema/docs/spec.html#annotations
  */
 internal class Annotations private constructor(
-        override val ion: IonValue,
+        ion: IonValue,
         private val delegate: ConstraintInternal
 ) : ConstraintBase(ion), ConstraintInternal by delegate {
 
@@ -40,7 +40,7 @@ internal class Annotations private constructor(
         }
     }
 
-    override fun name() = delegate.name()
+    override val name = delegate.name
 }
 
 /**

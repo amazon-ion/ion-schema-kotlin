@@ -89,7 +89,7 @@ internal class OneOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
                 oneOfViolation.message = "value matches %s types, expected 1".format(validTypes.size)
 
                 validTypes.forEach {
-                    val typeDef = (it as ConstraintInternal).ion
+                    val typeDef = (it as ConstraintBase).ion
                     oneOfViolation.add(
                             Violation(typeDef, "type_matched",
                                     "value matches type %s".format(typeDef)))
