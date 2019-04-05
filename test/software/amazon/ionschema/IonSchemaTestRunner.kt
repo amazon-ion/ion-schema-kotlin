@@ -43,7 +43,7 @@ class IonSchemaTestRunner(
         val base = "data/test"
         File(base).walk()
             .filter { it.isFile }
-            .filter { !it.path.endsWith(".md") }
+            .filter { it.path.endsWith(".isl") }
             .filter { !blacklist.contains(it.path) }
             .forEach { file ->
                 val testName = file.path.substring(base.length + 1, file.path.length - ".isl".length)
