@@ -20,7 +20,7 @@ internal enum class RangeType {
 /**
  * Interface for all range implementations.
  */
-internal interface Range<in T : Any> {
+internal interface Range<in T> {
     fun contains(value: T): Boolean
 }
 
@@ -29,7 +29,7 @@ internal interface Range<in T : Any> {
  */
 internal class RangeFactory {
     companion object {
-        fun <T : Any> rangeOf(ion: IonValue, rangeType: RangeType): Range<T> {
+        fun <T> rangeOf(ion: IonValue, rangeType: RangeType): Range<T> {
             if (ion.isNullValue) {
                 throw InvalidSchemaException("Invalid range $ion")
             }
