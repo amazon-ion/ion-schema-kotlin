@@ -11,6 +11,10 @@ invalid_type::{ occurs: range::[min, max] }
 invalid_type::{ occurs: range::[1, 0] }
 invalid_type::{ occurs: range::[1] }
 invalid_type::{ occurs: range::[0, 1, 2] }
+invalid_type::{ occurs: range::[0d0, 1] }
+invalid_type::{ occurs: range::[0e0, 1] }
+invalid_type::{ occurs: range::[0, 1d0] }
+invalid_type::{ occurs: range::[0, 1e0] }
 
 invalid_type::{ fields: { a: { occurs: 0 } } }
 invalid_type::{ fields: { a: { occurs: range::[0, 0] } } }
