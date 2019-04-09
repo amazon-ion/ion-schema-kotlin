@@ -1,5 +1,6 @@
 package software.amazon.ionschema.internal.util
 
+import software.amazon.ion.IonInt
 import software.amazon.ion.IonList
 import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
@@ -19,7 +20,7 @@ internal enum class RangeType {
 /**
  * Interface for all range implementations.
  */
-internal interface Range<in T : Any> {
+internal interface Range<in T> {
     fun contains(value: T): Boolean
 }
 
@@ -28,25 +29,21 @@ internal interface Range<in T : Any> {
  */
 internal class RangeFactory {
     companion object {
-        @JvmStatic
-        fun <T : Any> rangeOf(ion: IonValue, rangeType: RangeType): Range<T> {
+        fun <T> rangeOf(ion: IonValue, rangeType: RangeType): Range<T> {
             if (ion.isNullValue) {
                 throw InvalidSchemaException("Invalid range $ion")
             }
 
-            val ionList = if (ion !is IonList) {
+            val ionList = when (ion) {
+                !is IonList -> {
                     val range = ion.system.newList(ion.clone(), ion.clone())
                     range.addTypeAnnotation("range")
                     range
-                } else {
-                    ion
                 }
-
-            if (ionList.size != 2 || ionList[0].isNullValue || ionList[1].isNullValue
-                    || ((ionList[0] as? IonSymbol)?.stringValue() == "min"
-                            && ((ionList[1] as? IonSymbol)?.stringValue() == "max"))) {
-                throw InvalidSchemaException("Invalid range $ion")
+                else -> ion
             }
+
+            checkRange(ionList)
 
             @Suppress("UNCHECKED_CAST")
             return when (rangeType) {
@@ -59,4 +56,20 @@ internal class RangeFactory {
         }
     }
 }
+
+internal fun checkRange(ion: IonList) {
+    when {
+        !ion.hasTypeAnnotation("range") ->
+            throw InvalidSchemaException("Invalid range, missing 'range' annotation:  $ion")
+        ion.size != 2 ->
+            throw InvalidSchemaException("Invalid range, size of list must be 2:  $ion")
+        ion[0].isNullValue || ion[1].isNullValue || (isRangeMin(ion[0]) && isRangeMax(ion[1])) ->
+            throw InvalidSchemaException("Invalid range $ion")
+    }
+}
+
+internal fun isRangeMin(ion: IonValue) = (ion as? IonSymbol)?.stringValue().equals("min")
+internal fun isRangeMax(ion: IonValue) = (ion as? IonSymbol)?.stringValue().equals("max")
+
+internal fun toInt(ion: IonValue) = (ion as? IonInt)?.intValue()
 

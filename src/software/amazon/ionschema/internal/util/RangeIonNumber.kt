@@ -8,11 +8,10 @@ import java.math.BigDecimal
  * and IonInt (numeric) values.  Mostly delegates to RangeBigDecimal.
  */
 internal class RangeIonNumber private constructor (
-        private val ion: IonList,
         private val delegate: RangeBigDecimal
 ) : Range<IonValue> {
 
-    constructor (ion: IonList) : this(ion, RangeBigDecimal(ion))
+    constructor (ion: IonList) : this(RangeBigDecimal(ion))
 
     companion object {
         private fun toBigDecimal(ion: IonValue) =

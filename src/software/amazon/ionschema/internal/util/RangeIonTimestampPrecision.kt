@@ -22,12 +22,7 @@ internal class RangeIonTimestampPrecision (
     private val delegate: Range<Int>
 
     init {
-        if (!ion.hasTypeAnnotation("range")) {
-            throw InvalidSchemaException("Invalid timestamp range, missing 'range' annotation:  $ion")
-        }
-        if (ion.size != 2) {
-            throw InvalidSchemaException("Invalid timestamp range, size of list must be 2:  $ion")
-        }
+        checkRange(ion)
 
         // convert to an int range
         // e.g., range::[year, exclusive::millisecond] is translated to range::[-4, exclusive::3]
@@ -67,6 +62,16 @@ internal class RangeIonTimestampPrecision (
     override fun contains(value: IonTimestamp) = delegate.contains(IonTimestampPrecision.toInt(value))
 }
 
+/**
+ * Maps timestamp precisions to int values.  Note that RangeIonTimestampPrecision
+ * delegates to a Range<Int> instance, and:
+ * * 'year' is the minimum timestamp precision, so it should correspond to the lowest int
+ * * 'nanosecond' is the maximum timestamp precision enum value, and we should allow room for
+ *   a 'picosecond' value in the future;  using the scale of Ion's Timestamp.decimalSecond serves
+ *   this purpose well when the precision is 'second' or finer-grained
+ * * if 'second' is anchored at 0, then less precise enum values simply map to negative ints,
+ *   and no additional offset calculation is required
+ */
 internal enum class IonTimestampPrecision (val id: Int) {
     year(-4),
     month(-3),

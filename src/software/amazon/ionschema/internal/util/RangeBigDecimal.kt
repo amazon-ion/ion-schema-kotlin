@@ -28,24 +28,16 @@ internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
     internal val lower: Boundary
     internal val upper: Boundary
     init {
-        if (!ion.hasTypeAnnotation("range")) {
-            throw InvalidSchemaException("Invalid range, missing 'range' annotation:  $ion")
-        }
-        if (ion.size != 2) {
-            throw InvalidSchemaException("Invalid range, size of list must be 2:  $ion")
-        }
+        checkRange(ion)
 
-        lower = if (ion[0] is IonSymbol && (ion[0] as IonSymbol).stringValue() == "min") {
-                Boundary(null, Infinity.NEGATIVE)
-            } else {
-                Boundary(ion[0], Infinity.NEGATIVE)
-            }
-        upper = if (ion[1] is IonSymbol && (ion[1] as IonSymbol).stringValue() == "max") {
-                Boundary(null, Infinity.POSITIVE)
-            } else {
-                Boundary(ion[1], Infinity.POSITIVE)
-            }
-
+        lower = when {
+            isRangeMin(ion[0]) -> Boundary(null, Infinity.NEGATIVE)
+            else  -> Boundary(ion[0], Infinity.NEGATIVE)
+        }
+        upper = when {
+            isRangeMax(ion[1]) -> Boundary(null, Infinity.POSITIVE)
+            else  -> Boundary(ion[1], Infinity.POSITIVE)
+        }
 
         if (lower > upper) {
             throw InvalidSchemaException("Lower bound must be <= upper in $ion")

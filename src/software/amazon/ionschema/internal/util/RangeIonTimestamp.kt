@@ -8,20 +8,14 @@ import software.amazon.ionschema.InvalidSchemaException
  * Implementation of Range<IonTimestamp> which mostly delegates to RangeBigDecimal.
  */
 internal class RangeIonTimestamp private constructor (
-        private val ion: IonList,
         private val delegate: RangeBigDecimal
 ) : Range<IonTimestamp> {
 
-    constructor (ion: IonList) : this(ion, toRangeBigDecimal(ion))
+    constructor (ion: IonList) : this(toRangeBigDecimal(ion))
 
     companion object {
         private fun toRangeBigDecimal(ion: IonList): RangeBigDecimal {
-            if (!ion.hasTypeAnnotation("range")) {
-                throw InvalidSchemaException("Invalid range, missing 'range' annotation:  $ion")
-            }
-            if (ion.size != 2) {
-                throw InvalidSchemaException("Invalid range, size of list must be 2:  $ion")
-            }
+            checkRange(ion)
 
             // convert to a decimal range
             val newRange = ion.system.newEmptyList()
