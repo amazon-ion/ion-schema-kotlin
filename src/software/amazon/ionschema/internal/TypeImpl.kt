@@ -56,7 +56,7 @@ internal class TypeImpl(
 
     override fun validate(value: IonValue, issues: Violations) {
         constraints.forEach {
-            (it as ConstraintInternal).validate(value, issues)
+            it.validate(value, issues)
         }
     }
 }

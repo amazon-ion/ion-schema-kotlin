@@ -6,7 +6,7 @@ import software.amazon.ion.IonValue
 import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
-import software.amazon.ionschema.internal.ConstraintInternal
+import software.amazon.ionschema.internal.Constraint
 import software.amazon.ionschema.internal.util.withoutTypeAnnotations
 
 /**
@@ -18,13 +18,13 @@ import software.amazon.ionschema.internal.util.withoutTypeAnnotations
  */
 internal class Annotations private constructor(
         ion: IonValue,
-        private val delegate: ConstraintInternal
-) : ConstraintBase(ion), ConstraintInternal by delegate {
+        private val delegate: Constraint
+) : ConstraintBase(ion), Constraint by delegate {
 
     constructor(ion: IonValue) : this(ion, delegate(ion))
 
     companion object {
-        private fun delegate(ion: IonValue): ConstraintInternal {
+        private fun delegate(ion: IonValue): Constraint {
             val requiredByDefault = ion.hasTypeAnnotation("required")
             if (ion !is IonList || ion.isNullValue) {
                 throw InvalidSchemaException("Expected annotations as a list, found: $ion")
@@ -118,12 +118,10 @@ internal class Annotation(
 ) {
     val text = ion.stringValue()
 
-    val isRequired = if (ion.hasTypeAnnotation("required")) {
-            true
-        } else if (ion.hasTypeAnnotation("optional")) {
-            false
-        } else {
-            requiredByDefault
-        }
+    val isRequired = when {
+        ion.hasTypeAnnotation("required") -> true
+        ion.hasTypeAnnotation("optional") -> false
+        else -> requiredByDefault
+    }
 }
 

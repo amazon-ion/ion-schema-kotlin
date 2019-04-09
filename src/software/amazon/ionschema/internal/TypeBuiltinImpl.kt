@@ -26,7 +26,7 @@ internal class TypeBuiltinImpl private constructor(
         val struct = ion.system.newEmptyStruct()
         struct.put("type", ion.system.newSymbol(name))
         val violation = Violation(struct, "type_mismatch")
-        (delegate as ConstraintInternal).validate(value, violation)
+        delegate.validate(value, violation)
         if (!violation.isValid()) {
             violation.message = "expected type %s".format(name)
             issues.add(violation)

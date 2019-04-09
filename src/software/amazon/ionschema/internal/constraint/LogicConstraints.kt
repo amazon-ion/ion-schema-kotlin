@@ -7,7 +7,6 @@ import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
-import software.amazon.ionschema.internal.ConstraintInternal
 import software.amazon.ionschema.internal.TypeReference
 
 /**
