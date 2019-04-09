@@ -10,7 +10,6 @@ import software.amazon.ionschema.internal.constraint.Occurs.Companion.OPTIONAL
 import software.amazon.ionschema.ViolationChild
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
-import software.amazon.ionschema.internal.CommonViolations
 
 /**
  * Implements the fields constraint.
@@ -44,11 +43,7 @@ internal class Fields(
     }
 
     override fun validate(value: IonValue, issues: Violations) {
-        if (value !is IonStruct) {
-            issues.add(CommonViolations.INVALID_TYPE(ion, value))
-        } else if (value.isNullValue) {
-            issues.add(CommonViolations.NULL_VALUE(ion))
-        } else {
+        validateAs<IonStruct>(value, issues) { v ->
             val fieldIssues = Violation(ion, "fields_mismatch", "one or more fields don't match expectations")
             val fieldConstraints = ionStruct.associateBy(
                     { it.fieldName },
@@ -57,7 +52,7 @@ internal class Fields(
                     })
             var closedContentIssues: Violation? = null
 
-            value.iterator().forEach {
+            v.iterator().forEach {
                 val pair = fieldConstraints[it.fieldName]
                 if (pair != null) {
                     pair.first.validate(it, pair.second)
