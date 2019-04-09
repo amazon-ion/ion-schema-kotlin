@@ -32,7 +32,7 @@ open class Violations internal constructor (
     /**
      * Returns `true` if no violations were found; otherwise `false`.
      */
-    fun isValid() = violations.isEmpty() && children.isEmpty()
+    fun isValid(): Boolean = violations.isEmpty() && children.isEmpty()
 
     internal fun add(violation: Violation): Boolean {
         (violation as Violations).shortCircuit = shortCircuit

@@ -19,14 +19,14 @@ interface Type {
      * If the specified value violates one or more of this type's constraints,
      * returns `false`, otherwise `true`.
      */
-    fun isValid(value: IonValue) = validate(this, value, true).isValid()
+    fun isValid(value: IonValue): Boolean = validate(this, value, true).isValid()
 
     /**
      * Returns a Violations object indicating whether the specified value
      * is valid for this type, and if not, provides details as to which
      * constraints were violated.
      */
-    fun validate(value: IonValue) = validate(this, value, false)
+    fun validate(value: IonValue): Violations = validate(this, value, false)
 
     private fun validate(type: Type, value: IonValue, shortCircuit: Boolean): Violations {
         val violations = Violations(
