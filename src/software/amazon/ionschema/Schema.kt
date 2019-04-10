@@ -51,21 +51,11 @@ interface Schema {
     fun newType(isl: IonStruct): Type
 
     /**
-     * Constructs a new type using the type ISL provided as a String,
-     * and returns a new Schema instance containing all the types
-     * of this instance plus the new type.  Note that the new type
+     * Returns a new Schema instance containing all the types of this
+     * instance plus the provided type.  Note that the added type
      * in the returned instance will hide a type of the same name
      * from this instance.
      */
-    fun plusType(isl: String): Schema
-
-    /**
-     * Constructs a new type using the type ISL provided as an IonStruct.
-     * and returns a new Schema instance containing all the types
-     * of this instance plus the new type.  Note that the new type
-     * in the returned instance will hide a type of the same name
-     * from this instance.
-     */
-    fun plusType(isl: IonStruct): Schema
+    fun plusType(type: Type): Schema
 }
 

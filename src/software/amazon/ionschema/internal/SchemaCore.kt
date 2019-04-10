@@ -46,8 +46,7 @@ internal class SchemaCore(
 
     override fun newType(isl: String) = throw UnsupportedOperationException()
     override fun newType(isl: IonStruct) = throw UnsupportedOperationException()
-    override fun plusType(isl: String) = throw UnsupportedOperationException()
-    override fun plusType(isl: IonStruct) = throw UnsupportedOperationException()
+    override fun plusType(type: Type) = throw UnsupportedOperationException()
 }
 
 private const val CORE_TYPES = """

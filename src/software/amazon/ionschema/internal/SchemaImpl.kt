@@ -19,7 +19,7 @@ internal class SchemaImpl internal constructor(
         schemaContent: Iterator<IonValue>,
         /*
          * [types] is declared as a MutableMap in order to be populated DURING
-         * INITIALIZATION ONLY.  This enables type B to find it's already-loaded
+         * INITIALIZATION ONLY.  This enables type B to find its already-loaded
          * dependency type A.  After initialization, [types] is expected to
          * be treated as immutable as required by the Schema interface.
          */
@@ -113,13 +113,9 @@ internal class SchemaImpl internal constructor(
         return type
     }
 
-    override fun plusType(isl: String) = plusType(
-            schemaSystem.getIonSystem().singleValue(isl) as IonStruct)
-
-    override fun plusType(isl: IonStruct): Schema {
+    override fun plusType(type: Type): Schema {
         val newTypes = types.toMutableMap()
-        val newType = newType(isl)
-        newTypes[newType.name] = newType
+        newTypes[type.name] = type
         return SchemaImpl(schemaSystem, schemaCore, newTypes)
     }
 
