@@ -58,23 +58,22 @@ type::{
   },
 }
 
-/*
 type::{
-  name: import_inline,
-  type: import,
+  name: type_import_inline,
+  type: struct,
   fields: {
-    type: { occurs: required },
+    id: { type: string, occurs: required },
+    type: { type: symbol, occurs: required },
   },
   annotations: [nullable],
 }
-*/
 
 type::{
   name: type_reference,
   any_of: [
     type_name,
     type_inline,
-    //import_inline,
+    type_import_inline,
   ],
   annotations: [nullable],
 }
