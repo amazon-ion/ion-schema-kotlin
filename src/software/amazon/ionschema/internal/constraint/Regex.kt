@@ -25,6 +25,7 @@ internal class Regex(
             throw InvalidSchemaException("Invalid regex constraint: $ion")
         } else {
             ion.stringValue()
+                    .replace("/", "\\/")      // escape '/'
         }
 
     private val flags: String
@@ -43,7 +44,8 @@ internal class Regex(
 
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonText>(value, issues) { v ->
-            val string = v.stringValue().replace("\"", "\\\"")
+            val string = v.stringValue()
+                    .replace("\"", "\\\"")    // escape '"'
             val expr = "(/$regex/$flags).test(\"$string\")"
             val result = scriptEngine.eval(expr) as Boolean
 
