@@ -5,25 +5,36 @@ import software.amazon.ion.IonString
 import software.amazon.ion.IonStruct
 import software.amazon.ion.IonSymbol
 import software.amazon.ion.IonValue
+import software.amazon.ionschema.EMPTY_ITERATOR
 import software.amazon.ionschema.InvalidSchemaException
-import software.amazon.ionschema.IonSchemaSystem
 import software.amazon.ionschema.Schema
 import software.amazon.ionschema.Type
 
 /**
  * Implementation of [Schema] for all user-provided ISL.
  */
-internal class SchemaImpl(
+internal class SchemaImpl internal constructor(
         private val schemaSystem: IonSchemaSystemImpl,
         private val schemaCore: SchemaCore,
-        schemaContent: Iterator<IonValue>
+        schemaContent: Iterator<IonValue>,
+        /*
+         * [types] is declared as a MutableMap in order to be populated DURING
+         * INITIALIZATION ONLY.  This enables type B to find its already-loaded
+         * dependency type A.  After initialization, [types] is expected to
+         * be treated as immutable as required by the Schema interface.
+         */
+        private val types: MutableMap<String, Type> = mutableMapOf()
 ) : Schema {
 
-    private val types: Map<String, Type>
     private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
 
+    private constructor(
+            schemaSystem: IonSchemaSystemImpl,
+            schemaCore: SchemaCore,
+            types: MutableMap<String, Type>
+        ) : this(schemaSystem, schemaCore, EMPTY_ITERATOR, types)
+
     init {
-        types = mutableMapOf()
         var foundHeader = false
         var foundFooter = false
 
@@ -100,6 +111,12 @@ internal class SchemaImpl(
         val type = TypeImpl(isl, this)
         resolveDeferredTypeReferences()
         return type
+    }
+
+    override fun plusType(type: Type): Schema {
+        val newTypes = types.toMutableMap()
+        newTypes[type.name] = type
+        return SchemaImpl(schemaSystem, schemaCore, newTypes)
     }
 
     override fun getSchemaSystem() = schemaSystem

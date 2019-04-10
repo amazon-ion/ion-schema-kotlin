@@ -74,5 +74,38 @@ class SchemaTest {
     fun newType_unknown_type() {
         iss.newSchema().newType("type::{ type: unknown_type }")
     }
+
+    @Test
+    fun plusType() {
+        val schema = iss.newSchema()
+
+        val type1 = schema.newType("type::{ name: A, codepoint_length: 3 }")
+        val schema1 = schema.plusType(type1)
+
+        val type2 = schema.newType("type::{ name: A, codepoint_length: 5 }")
+        val schema2 = schema1.plusType(type2)
+
+        // verify the type remains unchanged in the original schema
+        val typeA1 = schema1.getType("A")!!
+        assertFalse(typeA1.isValid(ION.singleValue("ab")))
+        assertTrue (typeA1.isValid(ION.singleValue("abc")))
+        assertFalse(typeA1.isValid(ION.singleValue("abcd")))
+
+        // verify the type reflects new behavior when retrieved from the newer schema instance
+        val typeA2 = schema2.getType("A")!!
+        assertFalse(typeA2.isValid(ION.singleValue("abcd")))
+        assertTrue (typeA2.isValid(ION.singleValue("abcde")))
+        assertFalse(typeA2.isValid(ION.singleValue("abcdef")))
+
+        // verify a new type 'B' isn't available from the earlier schema instances
+        val type3 = schema.newType("type::{ name: B }")
+        val schema3 = schema2.plusType(type3)
+        assertNull   (schema1.getType("B"))
+        assertNull   (schema2.getType("B"))
+        assertNotNull(schema3.getType("B"))
+
+        // verify the original schema remains empty
+        assertEquals(0, schema.getTypes().asSequence().count())
+    }
 }
 
