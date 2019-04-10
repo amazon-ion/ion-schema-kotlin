@@ -8,6 +8,14 @@ import software.amazon.ion.IonStruct
  * Each type may refer to other types within the same schema,
  * or types imported into this schema from other schemas.
  * To instantiate a Schema, see [IonSchemaSystem].
+ *
+ * Classes that implement this interface are expected to be
+ * immutable.  This avoids surprising behavior, for instance:
+ * if a particular type in a schema were allowed to be replaced,
+ * a value that was once valid for the type may no longer be valid.
+ * Instead, any methods that would mutate a Schema are expected
+ * to return a new Schema instance with the mutation applied
+ * (see [plusType] as an example of this).
  */
 interface Schema {
     /**
@@ -41,5 +49,23 @@ interface Schema {
      * @return the new type
      */
     fun newType(isl: IonStruct): Type
+
+    /**
+     * Constructs a new type using the type ISL provided as a String,
+     * and returns a new Schema instance containing all the types
+     * of this instance plus the new type.  Note that the new type
+     * in the returned instance will hide a type of the same name
+     * from this instance.
+     */
+    fun plusType(isl: String): Schema
+
+    /**
+     * Constructs a new type using the type ISL provided as an IonStruct.
+     * and returns a new Schema instance containing all the types
+     * of this instance plus the new type.  Note that the new type
+     * in the returned instance will hide a type of the same name
+     * from this instance.
+     */
+    fun plusType(isl: IonStruct): Schema
 }
 
