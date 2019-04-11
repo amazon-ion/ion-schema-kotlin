@@ -46,6 +46,8 @@ internal class Regex(
         validateAs<IonText>(value, issues) { v ->
             val string = v.stringValue()
                     .replace("\"", "\\\"")    // escape '"'
+                    .replace("\n", "\\n")     // escape '\n' (new line)
+                    .replace("\r", "\\r")     // escape '\r' (carriage return)
             val expr = "(/$regex/$flags).test(\"$string\")"
             val result = scriptEngine.eval(expr) as Boolean
 
