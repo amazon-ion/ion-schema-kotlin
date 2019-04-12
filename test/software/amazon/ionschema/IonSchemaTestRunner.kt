@@ -34,9 +34,7 @@ class IonSchemaTestRunner(
 
     private val schemaCore = SchemaCore(schemaSystem)
 
-    private val blacklist = setOf(
-            "data/test/constraints/not/empty_type.isl"
-    )
+    private val blacklist = setOf("")
 
     private val specialFieldNames = setOf("fields", "element")
 
