@@ -90,7 +90,7 @@ internal enum class IonTimestampPrecision (val id: Int) {
                     Timestamp.Precision.MONTH -> month.id
                     Timestamp.Precision.DAY -> day.id
                     Timestamp.Precision.MINUTE -> minute.id
-                    Timestamp.Precision.SECOND -> ion.timestampValue().decimalSecond.scale()
+                    Timestamp.Precision.SECOND, Timestamp.Precision.FRACTION -> ion.timestampValue().decimalSecond.scale()
                     null -> throw NullPointerException()
                 }
     }
