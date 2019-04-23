@@ -14,17 +14,6 @@ test_validation::{
         ],
       },
       code: ordered_elements_mismatch,
-      children: [
-        {
-          index: 1,
-          violations: [
-            {
-              constraint: { occurs: range::[2, 4] },
-              code: occurs_mismatch,
-            },
-          ],
-        },
-      ],
     },
   ],
 }

@@ -7,6 +7,7 @@ import software.amazon.ionschema.InvalidSchemaException
 import software.amazon.ionschema.Violations
 import software.amazon.ionschema.Violation
 import software.amazon.ionschema.internal.Constraint
+import software.amazon.ionschema.internal.util.IntRange
 import software.amazon.ionschema.internal.util.withoutTypeAnnotations
 
 /**
@@ -56,25 +57,18 @@ internal class OrderedAnnotations(
     private val stateMachine: StateMachine
 
     init {
-        val stateMachineBuilder = StateMachineBuilder()
-
-        // support for open content at the beginning:
-        stateMachineBuilder.addTransition(
-                stateMachineBuilder.initialState, Event.ANY, stateMachineBuilder.initialState)
-
-        var state = stateMachineBuilder.initialState
-
+        val stateMachineBuilder = StateMachineBuilder().withOpenContent()
+        var state: State? = null
         (ion as IonList).forEachIndexed { idx, it ->
-            val newState = State(isFinal = idx == ion.size - 1)
+            val newState = State(
+                occurs = when {
+                    annotations[idx].isRequired -> IntRange.REQUIRED
+                    else -> IntRange.OPTIONAL
+                },
+                isFinal = idx == ion.size - 1
+            )
             val annotationSymbol = it.withoutTypeAnnotations()
-            stateMachineBuilder.addTransition(state, Event(annotationSymbol), newState)
-            if (!annotations[idx].isRequired) {
-                // optional annotations are modeled as no-op events
-                stateMachineBuilder.addTransition(state, Event.NOOP, newState)
-            }
-
-            // support for open content
-            stateMachineBuilder.addTransition(newState, Event.ANY, newState)
+            stateMachineBuilder.addTransition(state, EventIonValue(annotationSymbol), newState)
 
             state = newState
         }

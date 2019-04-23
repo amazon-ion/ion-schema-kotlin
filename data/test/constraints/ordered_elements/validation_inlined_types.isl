@@ -28,30 +28,6 @@ test_validation::{
         ],
       },
       code: ordered_elements_mismatch,
-      children: [
-        {
-          index: 1,
-          value: {},
-          violations: [
-            { constraint: { type: int }, code: type_mismatch },
-            { constraint: { type: decimal }, code: type_mismatch },
-            { constraint: { type: float }, code: type_mismatch },
-            { constraint: { type: symbol }, code: type_mismatch },
-          ],
-        },
-        {
-          index: 2,
-          violations: [
-            { constraint: { occurs: required }, code: occurs_mismatch },
-          ],
-        },
-        {
-          index: 2,
-          violations: [
-            { constraint: { occurs: required }, code: occurs_mismatch },
-          ],
-        },
-      ],
     },
   ],
 }
