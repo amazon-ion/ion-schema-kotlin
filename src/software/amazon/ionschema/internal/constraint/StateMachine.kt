@@ -46,6 +46,70 @@ internal class StateMachineBuilder {
  * Implements a Non-deterministic Finite Automata (NFA) based on an algorithm developed
  * by Ken Thompson.  With thanks to Russ Cox for a very informative writeup.
  *
+ * This implementation determines whether a given Iterator<IonValue> is valid against
+ * the states and transitions of the state machine.  It implements NFAs not by converting
+ * them into DFAs in advance, but rather by allowing the machine to progress in multiple states
+ * (see []StateSet]) concurrently.  This has the added benefit of avoiding the need to backtrack.
+ *
+ * A state machine instance always has at least one state, the initial state.  As states are
+ * visited, a counter (visitCount) is incremented in order to enforce occurrence expectations.
+ * Once reachable, an optional state is preemptively visited with visitCount equal to 0.
+ * If a state machine is configured to support open content, an incoming open content event
+ * results in no change to the state set.
+ *
+ * To illustrate, consider a state machine with states A, B, C, and D
+ * (where A and B are required, C is optional, and D is expected 0..3 times),
+ * and corresponding events a, b, c, d transition into states
+ * of the corresponding letter.  The state machine proceeds as follows:
+ *
+ * Event | State set (each state represented by state:visitCount)
+ * ------+-------------------------------------------------------
+ *       | (initial state)
+ *    a  | A:1
+ *    b  | B:1, C:0, D:0   (preemptive visit to optional states C and D) --> matches!
+ *
+ * or:
+ *
+ * Event | State set
+ * ------+-------------------------------------------------------
+ *       | (initial state)
+ *    a  | A:1
+ *    b  | B:1, C:0, D:0
+ *    c  | C:1, D:0 --> matches!
+ *
+ * or:
+ *
+ * Event | State set
+ * ------+-------------------------------------------------------
+ *       | (initial state)
+ *    a  | A:1
+ *    b  | B:1, C:0, D:0
+ *    d  | D:1 --> matches!
+ *
+ * or:
+ *
+ * Event | State set
+ * ------+-------------------------------------------------------
+ *       | (initial state)
+ *    a  | A:1
+ *    b  | B:1, C:0, D:0
+ *    c  | C:1, D:0
+ *    d  | D:1
+ *    d  | D:2
+ *    d  | D:3 --> matches!
+ *
+ * or:
+ *
+ * Event | State set
+ * ------+-------------------------------------------------------
+ *       | (initial state)
+ *    a  | A:1
+ *    b  | B:1, C:0, D:0
+ *    d  | D:1
+ *    d  | D:2
+ *    d  | D:3
+ *    d  | D:4 --> no match, too many 'd' events
+ *
  * @see https://swtch.com/~rsc/regexp/regexp1.html
  * @see "Regular Expression Search Algorithm" by Ken Thompson
  *      Communications of the ACM 11(6) (June 1968), pp. 419–422
