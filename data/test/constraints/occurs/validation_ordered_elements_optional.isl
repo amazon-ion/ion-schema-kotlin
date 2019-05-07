@@ -18,27 +18,6 @@ test_validation::{
         ],
       },
       code: ordered_elements_mismatch,
-      children: [
-        {
-          index: 1,
-          value: hello,
-          violations: [
-            {
-              constraint: { type: int },
-              code: type_mismatch,
-            },
-          ],
-        },
-        {
-          index: 2,
-          violations: [
-            {
-              constraint: { occurs: range::[1, 3] },
-              code: occurs_mismatch,
-            },
-          ],
-        },
-      ],
     },
   ],
 }
@@ -54,11 +33,7 @@ test_validation::{
           { type: string, occurs: range::[1, 3] },
         ],
       },
-      code: unexpected_content,
-      children: [
-        { index: 6, value: "4" },
-        { index: 7, value: "5" },
-      ],
+      code: ordered_elements_mismatch,
     },
   ],
 }

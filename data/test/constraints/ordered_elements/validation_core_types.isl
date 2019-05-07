@@ -14,38 +14,6 @@ test_validation::{
     {
       constraint: { ordered_elements: [int, decimal, string] },
       code: ordered_elements_mismatch,
-      children: [
-        {
-          index: 0,
-          value: true,
-          violations: [
-            {
-              constraint: { type: int },
-              code: type_mismatch,
-            },
-          ],
-        },
-        {
-          index: 1,
-          value: 5,
-          violations: [
-            {
-              constraint: { type: decimal },
-              code: type_mismatch,
-            },
-          ],
-        },
-        {
-          index: 2,
-          value: hello,
-          violations: [
-            {
-              constraint: { type: string },
-              code: type_mismatch,
-            },
-          ],
-        },
-      ],
     },
   ],
 }
@@ -57,11 +25,7 @@ test_validation::{
   violations: [
     {
       constraint: { ordered_elements: [ int, decimal, string ] },
-      code: unexpected_content,
-      children: [
-        { index: 3, value: extra_content },
-        { index: 4, value: more_extra_content },
-      ],
+      code: ordered_elements_mismatch,
     },
   ],
 }
