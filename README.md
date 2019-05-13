@@ -43,7 +43,7 @@ public class IonSchemaGettingStarted {
         Type type = schema.getType("Customer");
 
         checkValue(type, "{ firstName: \"Susie\", lastName: \"Smith\" }");
-        checkValue(type, "{ firstName: \"Susie\", middleNmae: \"B\", lastName: \"Smith\" }");
+        checkValue(type, "{ firstName: \"Susie\", middleName: \"B\", lastName: \"Smith\" }");
         checkValue(type, "{ middleName: B, lastName: Washington }");
     }
 
