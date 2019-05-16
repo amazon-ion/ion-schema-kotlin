@@ -51,7 +51,7 @@ task sourcesJar(type: Jar) {
   classifier = "sources"
 }
 task javadocJar(type: Jar) {
-  from javadoc
+  from dokka
   classifier = "javadoc"
 }
 publishing {
@@ -104,4 +104,3 @@ publishing {
 signing {
   sign publishing.publications.maven
 }
-
