@@ -1,0 +1,32 @@
+type::{
+  regex: "^(ab|(cd){2,3}|ef){2}$",
+}
+valid::[
+  abab,
+  abcdcd,
+  abcdcdcd,
+  abef,
+  cdcdab,
+  cdcdcdab,
+  cdcdcdcd,
+  cdcdcdcdcd,
+  cdcdcdcdcdcd,
+  cdcdcdef,
+  cdcdef,
+  efab,
+  efcdcd,
+  efcdcdcd,
+  efef,
+]
+invalid::[
+  "",
+  ab,
+  abcdcdcdcd,
+  cd,
+  cdcd,
+  cdcdcd,
+  cdcdcdcdcdcdcd,
+  cdcdcdcdef,
+  ef,
+]
+

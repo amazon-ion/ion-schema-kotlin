@@ -1,9 +1,9 @@
 type::{
-  regex: "hello\bworld",
+  regex: "\0\a\b\t\n\f\r\v",
 }
 valid::[
-  'hello\bworld',
-  "hello\bworld",
+  '\0\a\b\t\n\f\r\v',
+  "\0\a\b\t\n\f\r\v",
 ]
 invalid::[
   null,
