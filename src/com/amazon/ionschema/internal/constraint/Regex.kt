@@ -202,11 +202,11 @@ internal class Regex(
     }
 
     private fun error(si: StringIterator, message: String): Unit =
-        throw InvalidSchemaException("$message in regex '$si' at offset ${si.index}")
+        throw InvalidSchemaException("$message in regex '$si' at offset ${si.currentIndex()}")
 }
 
 private class StringIterator(private val s: String) {
-    var index = -1
+    private var index = -1
     val length = s.length
 
     fun next(): Char? {
@@ -222,6 +222,8 @@ private class StringIterator(private val s: String) {
         }
         return null
     }
+
+    fun currentIndex() = index
 
     override fun toString() = s
 }
