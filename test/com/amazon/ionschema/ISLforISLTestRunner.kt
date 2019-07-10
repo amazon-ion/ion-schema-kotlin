@@ -38,6 +38,7 @@ class ISLforISLTestRunner(
             .build()
 
     private val blacklist = setOf(
+            "data/test/schema/import/import_schema_with_aliased_type_invalid.isl",
             "data/test/schema/import/import_type_unknown.isl",
             "data/test/schema/import/invalid_duplicate_import.isl",
             "data/test/schema/import/invalid_duplicate_import_type.isl",
