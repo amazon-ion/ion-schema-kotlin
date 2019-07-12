@@ -300,7 +300,7 @@ internal class State private constructor(
 }
 
 // base class for all event types
-abstract class Event {
+internal abstract class Event {
     abstract fun matches(value: IonValue?): Boolean
 }
 
