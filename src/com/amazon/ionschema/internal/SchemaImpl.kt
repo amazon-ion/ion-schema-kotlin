@@ -65,7 +65,7 @@ internal class SchemaImpl internal constructor(
 
             } else if (it.hasTypeAnnotation("type") && it is IonStruct) {
                 val newType = TypeImpl(it, this)
-                addType(types, newType.name, newType)
+                addType(types, newType)
             } else if (it.hasTypeAnnotation("schema_footer")) {
                 foundFooter = true
             }
@@ -90,33 +90,35 @@ internal class SchemaImpl internal constructor(
 
                 val typeName = (it["type"] as? IonSymbol)?.stringValue()
                 if (typeName != null) {
-                    val newType = importedSchema.getType(typeName)
+                    var newType = importedSchema.getType(typeName)
                             ?: throw InvalidSchemaException(
                                 "Schema $id doesn't contain a type named '$typeName'")
 
                     val alias = it["as"] as? IonSymbol
-                    val newTypeName = alias?.stringValue() ?: typeName
-                    addType(typeMap, newTypeName, newType)
+                    if (alias != null) {
+                        newType = TypeAliased(alias, newType as TypeInternal)
+                    }
+                    addType(typeMap, newType)
                 } else {
                     importedSchema.getTypes().forEach {
-                        addType(typeMap, it.name, it)
+                        addType(typeMap, it)
                     }
                 }
             }
     }
 
-    private fun addType(typeMap: MutableMap<String, Type>, name: String, type: Type) {
-        if (getType(name) != null) {
-            throw InvalidSchemaException("Duplicate type name/alias encountered:  '$name'")
+    private fun addType(typeMap: MutableMap<String, Type>, type: Type) {
+        if (getType(type.name) != null) {
+            throw InvalidSchemaException("Duplicate type name/alias encountered:  '$type.name'")
         }
-        typeMap[name] = type
+        typeMap[type.name] = type
     }
 
     override fun getType(name: String) = schemaCore.getType(name) ?: types[name]
 
     override fun getTypes(): Iterator<Type> =
             (schemaCore.getTypes().asSequence() + types.values.asSequence())
-                    .filter { it is TypeNamed || it is TypeImpl }
+                    .filter { it is TypeNamed || it is TypeAliased || it is TypeImpl }
                     .iterator()
 
     override fun newType(isl: String) = newType(
