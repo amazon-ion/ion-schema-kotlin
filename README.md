@@ -7,9 +7,6 @@ written in Kotlin.
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.amazon.ion/ion-schema-kotlin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.amazon.ion/ion-schema-kotlin)
 [![Javadoc](https://javadoc-badge.appspot.com/com.amazon.ion/ion-schema-kotlin.svg?label=javadoc)](http://www.javadoc.io/doc/com.amazon.ion/ion-schema-kotlin)
 
-**This is currently alpha software and all aspects of it are subject
-to change.**
-
 ## Getting Started
 
 The following code provides a simple example of how to use this
