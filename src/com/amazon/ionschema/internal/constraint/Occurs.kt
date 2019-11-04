@@ -80,7 +80,6 @@ internal open class Occurs(
     private val typeReference: () -> TypeInternal
     private var attempts = 0
     internal var validCount = 0
-    private val values = ion.system.newEmptyList()
 
     init {
         var occurs: IonValue? = null
@@ -121,8 +120,6 @@ internal open class Occurs(
         typeReference().validate(value, issues)
         validCount = attempts - issues.violations.size
         (issues as ViolationChild).addValue(value)
-
-        values.add(value.clone())
     }
 
     fun validateAttempts(issues: Violations) {
