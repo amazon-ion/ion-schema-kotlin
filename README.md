@@ -33,7 +33,7 @@ public class IonSchemaGettingStarted {
 
     public static void main(String[] args) {
         IonSchemaSystem iss = IonSchemaSystemBuilder.standard()
-                .withAuthority(new AuthorityFilesystem("<base_path>/data/test"))
+                .withAuthority(new AuthorityFilesystem("<base_path>/ion-schema-tests"))
                 .build();
 
         Schema schema = iss.loadSchema("/schema/Customer.isl");
@@ -69,6 +69,48 @@ Validation failed:
     - invalid codepoint length 10, expected range::[min,7]
 ```
 
+## Development
+This repository contains two [git submodules](https://git-scm.com/docs/git-submodule):
+[ion-schema-tests](https://github.com/amzn/ion-schema-tests)
+and [ion-schema-schemas](https://github.com/amzn/ion-schema-schemas).
+Both are used by this library's unit tests.
+
+The easiest way to clone the `ion-schema-kotlin` repository and initialize its submodules
+is to run the following command:
+
+```
+$ git clone --recursive https://github.com/amzn/ion-schema-kotlin.git ion-schema-kotlin
+```
+
+Alternatively, the submodule may be initialized independently from the clone
+by running the following commands:
+
+```
+$ git submodule init
+$ git submodule update
+```
+
+`ion-schema-kotlin` may now be built with the following command:
+
+```
+$ gradle build
+```
+
+### Pulling in Upstream Changes
+To pull upstream changes into `ion-schema-kotlin`, start with a simple `git pull`.
+This will pull in any changes to `ion-schema-kotlin` itself (including any changes
+to its `.gitmodules` file), but not any changes to the submodules.
+To make sure the submodules are up-to-date, use the following
+command:
+
+```
+$ git submodule update --remote
+```
+
+For detailed walkthroughs of git submodule usage, see the
+[Git Tools documentation](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+
+
 ## Roadmap
 
 The roadmap is organized as a series of [milestones](https://github.com/amzn/ion-schema-kotlin/milestones?direction=asc&sort=due_date&state=open).
@@ -76,3 +118,4 @@ The roadmap is organized as a series of [milestones](https://github.com/amzn/ion
 ## License
 
 This library is licensed under the Apache 2.0 License. 
+
