@@ -45,9 +45,9 @@ class IonSchemaSystemTest {
     @Test
     fun loadSchema_despite_authority_issues() {
         val schema = IonSchemaSystemBuilder.standard()
-                .addAuthority(AuthorityFilesystem("data"))       // misconfigured
-                .addAuthority(exceptionalAuthority)              // always throws
-                .addAuthority(AuthorityFilesystem("data/test"))  // correctly configured
+                .addAuthority(AuthorityFilesystem("src"))               // misconfigured
+                .addAuthority(exceptionalAuthority)                     // always throws
+                .addAuthority(AuthorityFilesystem("ion-schema-tests"))  // correctly configured
                 .build()
                 .loadSchema("schema/Customer.isl")
         assertEquals(2, exceptionalAuthority.invokeCnt)   // for "Customer.isl" and "positive_int.isl"
@@ -59,7 +59,7 @@ class IonSchemaSystemTest {
         // exceptionalAuthority.iteratorFor() should not be invoked by:
         val schema = IonSchemaSystemBuilder.standard()
                 .addAuthority(exceptionalAuthority)
-                .withAuthority(AuthorityFilesystem("data/test"))
+                .withAuthority(AuthorityFilesystem("ion-schema-tests"))
                 .build()
                 .loadSchema("schema/Customer.isl")
         assertEquals(0, exceptionalAuthority.invokeCnt)
@@ -71,7 +71,7 @@ class IonSchemaSystemTest {
         // exceptionalAuthority.iteratorFor() should not be invoked by:
         val schema = IonSchemaSystemBuilder.standard()
                 .addAuthority(exceptionalAuthority)
-                .withAuthorities(listOf<Authority>(AuthorityFilesystem("data/test")))
+                .withAuthorities(listOf<Authority>(AuthorityFilesystem("ion-schema-tests")))
                 .build()
                 .loadSchema("schema/Customer.isl")
         assertEquals(0, exceptionalAuthority.invokeCnt)

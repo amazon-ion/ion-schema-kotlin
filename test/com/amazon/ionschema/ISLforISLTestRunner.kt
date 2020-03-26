@@ -34,18 +34,18 @@ class ISLforISLTestRunner(
 ) : AbstractTestRunner(testClass) {
 
     private val schemaSystem = IonSchemaSystemBuilder.standard()
-            .withAuthority(AuthorityFilesystem("schema"))
+            .withAuthority(AuthorityFilesystem("ion-schema-schemas"))
             .build()
 
     private val blacklist = setOf(
-            "data/test/schema/import/import_schema_with_aliased_type_invalid.isl",
-            "data/test/schema/import/import_type_unknown.isl",
-            "data/test/schema/import/invalid_duplicate_import.isl",
-            "data/test/schema/import/invalid_duplicate_import_type.isl",
-            "data/test/schema/import/invalid_duplicate_type.isl",
-            "data/test/schema/invalid_missing_schema_footer.isl",
-            "data/test/schema/invalid_missing_schema_header.isl",
-            "data/test/schema/invalid_unknown_type.isl"
+            "ion-schema-tests/schema/import/import_schema_with_aliased_type_invalid.isl",
+            "ion-schema-tests/schema/import/import_type_unknown.isl",
+            "ion-schema-tests/schema/import/invalid_duplicate_import.isl",
+            "ion-schema-tests/schema/import/invalid_duplicate_import_type.isl",
+            "ion-schema-tests/schema/import/invalid_duplicate_type.isl",
+            "ion-schema-tests/schema/invalid_missing_schema_footer.isl",
+            "ion-schema-tests/schema/invalid_missing_schema_header.isl",
+            "ion-schema-tests/schema/invalid_unknown_type.isl"
     )
 
     override fun run(notifier: RunNotifier) {
@@ -53,7 +53,7 @@ class ISLforISLTestRunner(
         val schema = islSchema.getType("schema")!!
         val type = islSchema.getType("type")!!
 
-        val base = "data/test"
+        val base = "ion-schema-tests"
         File(base).walk()
             .filter { it.isFile }
             .filter { it.path.endsWith(".isl") }
