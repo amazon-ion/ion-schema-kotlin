@@ -41,7 +41,7 @@ internal class IonSchemaSystemImpl(
                 try {
                     authority.iteratorFor(this, id).use {
                         if (it.hasNext()) {
-                            return SchemaImpl(this, schemaCore, it)
+                            return@getOrPut SchemaImpl(this, schemaCore, it)
                         }
                     }
                 } catch (e: Exception) {
