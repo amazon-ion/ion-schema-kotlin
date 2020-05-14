@@ -79,6 +79,16 @@ class IonSchemaSystemTest {
     }
 
     @Test
+    fun loadSchema_verifyCache() {
+        val iss = IonSchemaSystemBuilder.standard()
+                .addAuthority(AuthorityFilesystem("ion-schema-tests"))
+                .build()
+        val schema = iss.loadSchema("schema/Customer.isl")
+        val schemaFromCache = iss.loadSchema("schema/Customer.isl")
+        assertTrue(schema == schemaFromCache)
+    }
+
+    @Test
     fun newSchema() {
         val schema = iss.newSchema()
         assertFalse(schema.getTypes().hasNext())
