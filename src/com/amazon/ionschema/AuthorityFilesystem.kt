@@ -19,6 +19,7 @@ import com.amazon.ion.IonValue
 import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import com.amazon.ionschema.util.CloseableIterator
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.FileReader
 import java.io.Reader
 
@@ -28,15 +29,26 @@ import java.io.Reader
  *
  * @property[basePath] The base path in the filesystem in which to resolve schema identifiers.
  */
-class AuthorityFilesystem(private val basePath: String) : Authority {
+class AuthorityFilesystem(basePath: String) : Authority {
+    private val basePath: String
+
     init {
-        if (!File(basePath).exists()) {
-            throw IllegalArgumentException("Path '$basePath' does not exist")
+        val file = File(basePath)
+        if (!file.exists()) {
+            throw FileNotFoundException("Path '$basePath' does not exist")
         }
+
+        this.basePath = file.canonicalPath
     }
 
     override fun iteratorFor(iss: IonSchemaSystem, id: String): CloseableIterator<IonValue> {
         val file = File(basePath, id)
+
+        if (!file.canonicalPath.startsWith(basePath)) {
+            throw FileNotFoundException(
+                    "Unable to load schema from $id, as that path is not within $basePath")
+        }
+
         if (file.exists() && file.canRead()) {
             return object : CloseableIterator<IonValue> {
                 private var reader: FileReader? = FileReader(file)
