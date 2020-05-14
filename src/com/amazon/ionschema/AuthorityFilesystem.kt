@@ -49,7 +49,8 @@ class AuthorityFilesystem(basePath: String) : Authority {
         val file = File(basePath, id)
 
         if (!file.canonicalPath.startsWith(basePath)) {
-            throw FileNotFoundException("$id (Permission denied)")
+            // constructing a new File here avoids leaking information about the filesystem
+            throw AccessDeniedException(File(id))
         }
 
         if (file.exists() && file.canRead()) {

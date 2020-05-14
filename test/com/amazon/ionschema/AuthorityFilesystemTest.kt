@@ -40,7 +40,7 @@ class AuthorityFilesystemTest {
         iter.close()
     }
 
-    @Test(expected = FileNotFoundException::class)
+    @Test(expected = AccessDeniedException::class)
     fun iteratorFor_outsideBasePath() {
         val iss = IonSchemaSystemBuilder.standard().build()
         var authority = AuthorityFilesystem("ion-schema-tests/schema")
