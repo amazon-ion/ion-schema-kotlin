@@ -30,7 +30,7 @@ import java.io.Reader
  * @property[basePath] The base path in the filesystem in which to resolve schema identifiers.
  */
 class AuthorityFilesystem(basePath: String) : Authority {
-    private val canonicalBasePath: String
+    private val basePath: String
 
     init {
         val file = File(basePath)
@@ -38,7 +38,7 @@ class AuthorityFilesystem(basePath: String) : Authority {
             throw FileNotFoundException("Path '$basePath' does not exist")
         }
 
-        this.canonicalBasePath = if (file.canonicalPath.endsWith(File.separator)) {
+        this.basePath = if (file.canonicalPath.endsWith(File.separator)) {
             file.canonicalPath
         } else {
             file.canonicalPath + File.separator
@@ -46,9 +46,9 @@ class AuthorityFilesystem(basePath: String) : Authority {
     }
 
     override fun iteratorFor(iss: IonSchemaSystem, id: String): CloseableIterator<IonValue> {
-        val file = File(canonicalBasePath, id)
+        val file = File(basePath, id)
 
-        if (!file.canonicalPath.startsWith(canonicalBasePath)) {
+        if (!file.canonicalPath.startsWith(basePath)) {
             throw FileNotFoundException("$id (Permission denied)")
         }
 
