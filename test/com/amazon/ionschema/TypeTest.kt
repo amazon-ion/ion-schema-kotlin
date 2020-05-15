@@ -22,10 +22,12 @@ import com.amazon.ion.system.IonSystemBuilder
 class TypeTest {
     private val ION = IonSystemBuilder.standard().build()
 
+    private val typeIsl = "type::{ name: a, type: string, open_content: hi }"
+
     private val type = IonSchemaSystemBuilder.standard()
             .build()
             .newSchema()
-            .newType("type::{ name: a, type: string }")
+            .newType(typeIsl)
 
     @Test
     fun name() = assertEquals("a", type.name)
@@ -57,6 +59,33 @@ class TypeTest {
         assertEquals("type_mismatch", violation.code)
         assertEquals("type", violation.constraint?.fieldName)
         assertEquals(ION.singleValue("string"), violation.constraint)
+    }
+
+    @Test
+    fun isl_type() {
+        assertEquals(ION.singleValue(typeIsl), type.isl)
+        assertTrue(type.isl.isReadOnly)
+        assertNull(type.isl.container)
+    }
+
+    @Test
+    fun isl_newType() {
+        val schema = IonSchemaSystemBuilder.standard().build().newSchema()
+        val isl = "type::{name: b, type: struct, open_content: hi}"
+        val newType = schema.newType(isl)
+        assertEquals(ION.singleValue(isl), newType.isl)
+        assertTrue(newType.isl.isReadOnly)
+        assertNull(newType.isl.container)
+    }
+
+    @Test
+    fun isl_plusType() {
+        val schema = IonSchemaSystemBuilder.standard().build().newSchema()
+        val isl = "type::{name: b, type: struct, open_content: hi}"
+        val newSchema = schema.plusType(schema.newType(isl))
+        assertEquals(ION.singleValue(isl), newSchema.getType("b")!!.isl)
+        assertTrue(newSchema.getType("b")!!.isl.isReadOnly)
+        assertNull(newSchema.getType("b")!!.isl.container)
     }
 }
 

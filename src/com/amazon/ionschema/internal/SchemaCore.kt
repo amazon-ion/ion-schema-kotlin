@@ -19,6 +19,7 @@ import com.amazon.ion.*
 import com.amazon.ionschema.IonSchemaSystem
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
+import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
  * Provides instances of [Type] for all of the Core Types and Ion Types
@@ -29,6 +30,8 @@ internal class SchemaCore(
 ) : Schema {
 
     private val typeMap: Map<String, Type>
+
+    override val isl: IonDatagram
 
     init {
         val ION = (schemaSystem as IonSchemaSystemImpl).getIonSystem()
@@ -44,6 +47,8 @@ internal class SchemaCore(
             .forEach {
                 typeMap.put(it.fieldName, TypeBuiltinImpl(it as IonStruct, this))
             }
+
+        isl = ION.newDatagram().markReadOnly()
     }
 
     private fun newType(name: IonSymbol): Type =

@@ -15,6 +15,7 @@
 
 package com.amazon.ionschema
 
+import com.amazon.ion.IonDatagram
 import com.amazon.ion.IonStruct
 
 /**
@@ -33,6 +34,11 @@ import com.amazon.ion.IonStruct
  * (see [plusType] as an example of this).
  */
 interface Schema {
+    /**
+     * A read-only view of the ISL for this schema.
+     */
+    val isl: IonDatagram
+
     /**
      * Returns the requested type, if present in this schema;
      * otherwise returns null.

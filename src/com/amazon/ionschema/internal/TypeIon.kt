@@ -21,6 +21,7 @@ import com.amazon.ion.IonValue
 import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Violation
+import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
  * Instantiated to represent individual Ion Types as defined by the
@@ -33,6 +34,8 @@ internal class TypeIon(
     private val ionType = IonType.valueOf(nameSymbol.stringValue().toUpperCase().substring(1))
 
     override val name = nameSymbol.stringValue()
+
+    override val isl = nameSymbol.markReadOnly()
 
     override fun getBaseType() = this
 

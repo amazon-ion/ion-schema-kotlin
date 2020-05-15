@@ -31,6 +31,11 @@ interface Type {
     val name: String
 
     /**
+     * A read-only view of the ISL for this type.
+     */
+    val isl: IonValue
+
+    /**
      * If the specified value violates one or more of this type's constraints,
      * returns `false`, otherwise `true`.
      */

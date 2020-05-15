@@ -21,27 +21,26 @@ import com.amazon.ion.IonValue
 import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Violation
+import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
  * Instantiated to represent individual Core Types as defined by the
  * Ion Schema Specification.
  */
 internal class TypeCore(
-        name: IonSymbol
-) : TypeInternal, ConstraintBase(name), TypeBuiltin {
+        nameSymbol: IonSymbol
+) : TypeInternal, ConstraintBase(nameSymbol), TypeBuiltin {
 
-    private val ionType: IonType
-    private val ionTypeName: String
-
-    init {
-        ionType = when (name.stringValue().toUpperCase()) {
-                "DOCUMENT" -> IonType.DATAGRAM
-                else -> IonType.valueOf(name.stringValue().toUpperCase())
-            }
-        ionTypeName = ionType.schemaTypeName()
+    private val ionType = when (nameSymbol.stringValue().toUpperCase()) {
+        "DOCUMENT" -> IonType.DATAGRAM
+        else -> IonType.valueOf(nameSymbol.stringValue().toUpperCase())
     }
 
+    private val ionTypeName = ionType.schemaTypeName()
+
     override val name = ionTypeName
+
+    override val isl = nameSymbol.markReadOnly()
 
     override fun getBaseType() = this
 
@@ -60,7 +59,7 @@ internal class TypeCore(
 }
 
 internal fun IonType.schemaTypeName() = when (this) {
-        IonType.DATAGRAM -> "document"
-        else -> this.toString().toLowerCase()
-    }
+    IonType.DATAGRAM -> "document"
+    else -> this.toString().toLowerCase()
+}
 

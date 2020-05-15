@@ -20,6 +20,7 @@ import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
  * Implementation of [Type] backed by a collection of zero or more [Constraint]s.
@@ -37,6 +38,8 @@ internal class TypeImpl(
         private val ION = IonSystemBuilder.standard().build()
         private val ANY = ION.newSymbol("any")
     }
+
+    override val isl = ionStruct.markReadOnly()
 
     internal val constraints: List<Constraint>
 

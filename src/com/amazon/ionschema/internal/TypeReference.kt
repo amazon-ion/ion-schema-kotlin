@@ -22,6 +22,7 @@ import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
  * Provides a factory method that translates an ISL type reference into a function
@@ -96,12 +97,13 @@ internal class TypeReference private constructor() {
  * Represents a type reference that can't be resolved yet.
  */
 internal class TypeReferenceDeferred(
-        ion: IonSymbol,
+        nameSymbol: IonSymbol,
         private val schema: Schema
 ) : TypeInternal {
 
     private var type: TypeInternal? = null
-    override val name: String = ion.stringValue()
+    override val name: String = nameSymbol.stringValue()
+    override val isl = nameSymbol.markReadOnly()
 
     fun attemptToResolve(): Boolean {
         type = schema.getType(name) as? TypeInternal

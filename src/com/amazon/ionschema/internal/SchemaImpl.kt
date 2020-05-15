@@ -15,15 +15,16 @@
 
 package com.amazon.ionschema.internal
 
+import com.amazon.ion.IonDatagram
 import com.amazon.ion.IonList
 import com.amazon.ion.IonString
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.EMPTY_ITERATOR
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
+import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
  * Implementation of [Schema] for all user-provided ISL.
@@ -43,42 +44,53 @@ internal class SchemaImpl internal constructor(
 
     private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
 
-    private constructor(
-            schemaSystem: IonSchemaSystemImpl,
-            schemaCore: SchemaCore,
-            types: MutableMap<String, Type>
-        ) : this(schemaSystem, schemaCore, EMPTY_ITERATOR, types)
+    override val isl: IonDatagram
 
     init {
-        var foundHeader = false
-        var foundFooter = false
+        if (types.isEmpty()) {
+            var foundHeader = false
+            var foundFooter = false
 
-        while (schemaContent.hasNext() && !foundFooter) {
-            val it = schemaContent.next()
+            val dgIsl = schemaSystem.getIonSystem().newDatagram()
+            while (schemaContent.hasNext()) {
+                val it = schemaContent.next()
 
-            if (it is IonSymbol && it.stringValue() == "\$ion_schema_1_0") {
-                // TBD https://github.com/amzn/ion-schema-kotlin/issues/95
+                dgIsl.add(it.clone())
 
-            } else if (it.hasTypeAnnotation("schema_header")) {
-                loadHeader(types, it as IonStruct)
-                foundHeader = true
+                if (it is IonSymbol && it.stringValue() == "\$ion_schema_1_0") {
+                    // TBD https://github.com/amzn/ion-schema-kotlin/issues/95
 
-            } else if (it.hasTypeAnnotation("type") && it is IonStruct) {
-                val newType = TypeImpl(it, this)
-                addType(types, newType)
-            } else if (it.hasTypeAnnotation("schema_footer")) {
-                foundFooter = true
+                } else if (it.hasTypeAnnotation("schema_header")) {
+                    loadHeader(types, it as IonStruct)
+                    foundHeader = true
+
+                } else if (!foundFooter && it.hasTypeAnnotation("type") && it is IonStruct) {
+                    val newType = TypeImpl(it, this)
+                    addType(types, newType)
+
+                } else if (it.hasTypeAnnotation("schema_footer")) {
+                    foundFooter = true
+                }
             }
-        }
 
-        if (foundHeader && !foundFooter) {
-            throw InvalidSchemaException("Found a schema_header, but not a schema_footer")
-        }
-        if (!foundHeader && foundFooter) {
-            throw InvalidSchemaException("Found a schema_footer, but not a schema_header")
-        }
+            if (foundHeader && !foundFooter) {
+                throw InvalidSchemaException("Found a schema_header, but not a schema_footer")
+            }
+            if (!foundHeader && foundFooter) {
+                throw InvalidSchemaException("Found a schema_footer, but not a schema_header")
+            }
 
-        resolveDeferredTypeReferences()
+            resolveDeferredTypeReferences()
+
+            isl = dgIsl.markReadOnly()
+
+        } else {
+            val dgIsl = schemaSystem.getIonSystem().newDatagram()
+            while (schemaContent.hasNext()) {
+                dgIsl.add(schemaContent.next().clone())
+            }
+            isl = dgIsl.markReadOnly()
+        }
     }
 
     private fun loadHeader(typeMap: MutableMap<String, Type>, header: IonStruct) {
@@ -131,9 +143,35 @@ internal class SchemaImpl internal constructor(
     }
 
     override fun plusType(type: Type): Schema {
-        val newTypes = types.toMutableMap()
-        newTypes[type.name] = type
-        return SchemaImpl(schemaSystem, schemaCore, newTypes)
+        // prepare ISL corresponding to the new Schema
+        // (might be simpler if IonDatagram.set(int, IonValue) were implemented,
+        // see https://github.com/amzn/ion-java/issues/50)
+        val newIsl = schemaSystem.getIonSystem().newDatagram()
+        var newTypeAdded = false
+        isl.forEachIndexed { idx, value ->
+            if (!newTypeAdded) {
+                when {
+                    value is IonStruct
+                            && (value["name"] as? IonSymbol)?.stringValue().equals(type.name) -> {
+                        // new type replaces existing type of the same name
+                        newIsl.add(type.isl.clone())
+                        newTypeAdded = true
+                        return@forEachIndexed
+                    }
+                    (value is IonStruct && value.hasTypeAnnotation("schema_footer"))
+                            || idx == isl.lastIndex -> {
+                        newIsl.add(type.isl.clone())
+                        newTypeAdded = true
+                    }
+                }
+            }
+            newIsl.add(value.clone())
+        }
+
+        // clone the types map:
+        val preLoadedTypes = types.toMutableMap()
+        preLoadedTypes[type.name] = type
+        return SchemaImpl(schemaSystem, schemaCore, newIsl.iterator(), preLoadedTypes)
     }
 
     override fun getSchemaSystem() = schemaSystem
