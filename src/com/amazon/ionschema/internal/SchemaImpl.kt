@@ -29,7 +29,7 @@ import com.amazon.ionschema.internal.util.markReadOnly
 /**
  * Implementation of [Schema] for all user-provided ISL.
  */
-internal class SchemaImpl internal constructor(
+internal class SchemaImpl private constructor(
         private val schemaSystem: IonSchemaSystemImpl,
         private val schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>,
@@ -39,19 +39,26 @@ internal class SchemaImpl internal constructor(
          * dependency type A.  After initialization, [types] is expected to
          * be treated as immutable as required by the Schema interface.
          */
-        private val types: MutableMap<String, Type> = mutableMapOf()
+        private val types: MutableMap<String, Type>
 ) : Schema {
+
+    internal constructor(
+        schemaSystem: IonSchemaSystemImpl,
+        schemaCore: SchemaCore,
+        schemaContent: Iterator<IonValue>
+    ) : this(schemaSystem, schemaCore, schemaContent, mutableMapOf())
 
     private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
 
     override val isl: IonDatagram
 
     init {
+        val dgIsl = schemaSystem.getIonSystem().newDatagram()
+
         if (types.isEmpty()) {
             var foundHeader = false
             var foundFooter = false
 
-            val dgIsl = schemaSystem.getIonSystem().newDatagram()
             while (schemaContent.hasNext()) {
                 val it = schemaContent.next()
 
@@ -82,15 +89,15 @@ internal class SchemaImpl internal constructor(
 
             resolveDeferredTypeReferences()
 
-            isl = dgIsl.markReadOnly()
-
         } else {
-            val dgIsl = schemaSystem.getIonSystem().newDatagram()
-            while (schemaContent.hasNext()) {
-                dgIsl.add(schemaContent.next().clone())
+            // in this case the new Schema is based on an existing Schema and the 'types'
+            // map was populated by the caller
+            schemaContent.forEach {
+                dgIsl.add(it.clone())
             }
-            isl = dgIsl.markReadOnly()
         }
+
+        isl = dgIsl.markReadOnly()
     }
 
     private fun loadHeader(typeMap: MutableMap<String, Type>, header: IonStruct) {
