@@ -22,7 +22,7 @@ import com.amazon.ion.system.IonSystemBuilder
 class TypeTest {
     private val ION = IonSystemBuilder.standard().build()
 
-    private val typeIsl = "type::{ name: a, type: string, open_content: hi }"
+    private val typeIsl = "type::{name: a, type: string, open_content: hi}"
 
     private val type = IonSchemaSystemBuilder.standard()
             .build()
