@@ -15,6 +15,8 @@
 
 package com.amazon.ionschema.internal.util
 
+import com.amazon.ion.IonDatagram
+import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 
 /**
@@ -27,3 +29,17 @@ internal fun IonValue.withoutTypeAnnotations() =
             this
         }
 
+internal fun IonValue.markReadOnly(): IonValue {
+    this.makeReadOnly()
+    return this
+}
+
+internal fun IonDatagram.markReadOnly(): IonDatagram {
+    this.makeReadOnly()
+    return this
+}
+
+internal fun IonSymbol.markReadOnly(): IonSymbol {
+    this.makeReadOnly()
+    return this
+}

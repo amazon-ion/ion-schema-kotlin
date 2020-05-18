@@ -19,6 +19,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import com.amazon.ion.IonStruct
 import com.amazon.ion.system.IonSystemBuilder
+import com.amazon.ionschema.internal.SchemaCore
 
 class SchemaTest {
     private val ION = IonSystemBuilder.standard().build()
@@ -121,6 +122,66 @@ class SchemaTest {
 
         // verify the original schema remains empty
         assertEquals(0, schema.getTypes().asSequence().count())
+    }
+
+    private val islTemplate = """
+            open_content
+            schema_header::{open_content: hi}
+            open_content
+            type::{name: one, valid_values: [1], open_content: 1}
+            open_content
+            type::{name: two, valid_values: [2], open_content: 2}
+            open_content
+            %s
+            schema_footer::{open_content: bye}
+            open_content
+        """.trimIndent()
+
+    @Test
+    fun isl() {
+        val isl = islTemplate.format("")
+        val schema = iss.newSchema(isl)
+        assertEquals(ION.newLoader().load(isl), schema.isl)
+        assertTrue(schema.isl.isReadOnly)
+        assertNull(schema.isl.container)
+    }
+
+    @Test
+    fun isl_plusType() {
+        val isl = islTemplate.format("")
+        val schema = iss.newSchema(isl)
+        val type3isl = "type::{name: three, value_values: [3], open_content: 3}"
+        val newType = schema.newType(type3isl)
+        val newSchema = schema.plusType(newType)
+
+        val newIsl = islTemplate.format(type3isl)
+        assertNotEquals(isl, newIsl)
+        assertEquals(ION.newLoader().load(newIsl), newSchema.isl)
+        assertTrue(newSchema.isl.isReadOnly)
+        assertNull(newSchema.getType("three")!!.isl.container)
+    }
+
+    @Test
+    fun isl_plusType_replace() {
+        val isl = islTemplate.format("")
+        val schema = iss.newSchema(isl)
+        val replacementType2isl = "type::{name: two, valid_values: [222], open_content: 222}"
+        val newType = schema.newType(replacementType2isl)
+        val newSchema = schema.plusType(newType)
+
+        val newIsl = islTemplate.format("").replace("2", "222")
+        assertNotEquals(isl, newIsl)
+        assertEquals(ION.newLoader().load(newIsl), newSchema.isl)
+        assertTrue(newSchema.isl.isReadOnly)
+        assertNull(schema.getType("two")!!.isl.container)
+    }
+
+    @Test
+    fun isl_SchemaCore() {
+        val schemaCore = SchemaCore(iss)
+        assertEquals(ION.newDatagram(), schemaCore.isl)
+        assertTrue(schemaCore.isl.isReadOnly)
+        assertNull(schemaCore.isl.container)
     }
 }
 
