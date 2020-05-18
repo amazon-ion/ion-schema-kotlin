@@ -21,6 +21,7 @@ import com.amazon.ionschema.Authority
 import com.amazon.ionschema.IonSchemaException
 import com.amazon.ionschema.IonSchemaSystem
 import com.amazon.ionschema.Schema
+import com.amazon.ionschema.SchemaCache
 
 /**
  * Implementation of [IonSchemaSystem].
@@ -28,14 +29,14 @@ import com.amazon.ionschema.Schema
 internal class IonSchemaSystemImpl(
         private val ION: IonSystem,
         private val authorities: List<Authority>,
-        private val constraintFactory: ConstraintFactory
+        private val constraintFactory: ConstraintFactory,
+        private val schemaCache: SchemaCache
 ) : IonSchemaSystem {
 
     private val schemaCore = SchemaCore(this)
-    private val schemaCache = mutableMapOf<String, Schema>()
 
     override fun loadSchema(id: String) =
-        schemaCache.getOrPut(id, {
+        schemaCache.getOrPut(id) {
             val exceptions = mutableListOf<Exception>()
             authorities.forEach { authority ->
                 try {
@@ -54,7 +55,7 @@ internal class IonSchemaSystemImpl(
                 message.append(" ($exceptions)")
             }
             throw IonSchemaException(message.toString())
-        })
+        }
 
     override fun newSchema() = newSchema("")
 

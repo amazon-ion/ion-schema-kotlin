@@ -38,6 +38,7 @@ class IonSchemaSystemBuilder private constructor() {
     private var authorities = mutableListOf<Authority>()
     private var constraintFactory = defaultConstraintFactory
     private var ionSystem = IonSystemBuilder.standard().build()
+    private var schemaCache: SchemaCache? = null
 
     /**
      * Adds the provided authority to the list of [Authority]s.
@@ -73,13 +74,22 @@ class IonSchemaSystemBuilder private constructor() {
     }
 
     /**
+     * Provides a SchemaCache to use when building an IonSchemaSystem.
+     */
+    fun withSchemaCache(schemaCache: SchemaCache): IonSchemaSystemBuilder {
+        this.schemaCache = schemaCache
+        return this
+    }
+
+    /**
      * Instantiates an [IonSchemaSystem] using the provided [Authority](s)
      * and IonSystem.
      */
     fun build(): IonSchemaSystem = IonSchemaSystemImpl(
             ionSystem,
             authorities,
-            constraintFactory
+            constraintFactory,
+            schemaCache ?: SchemaCacheDefault()
     )
 }
 
