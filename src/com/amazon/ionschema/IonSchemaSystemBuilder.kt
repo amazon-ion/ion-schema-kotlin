@@ -74,7 +74,7 @@ class IonSchemaSystemBuilder private constructor() {
     }
 
     /**
-     * Provides a SchemaCache to use when building an IonSchemaSystem.
+     * Provides the SchemaCache to use when building an IonSchemaSystem.
      */
     fun withSchemaCache(schemaCache: SchemaCache): IonSchemaSystemBuilder {
         this.schemaCache = schemaCache
