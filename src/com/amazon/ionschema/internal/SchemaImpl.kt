@@ -127,10 +127,12 @@ internal class SchemaImpl private constructor(
     }
 
     private fun validateType(type: Type) {
-        val name = (type.isl as IonStruct)["name"]
-        if (!schemaSystem.hasParam(IonSchemaSystemImpl.Param.ALLOW_UNNAMED_TOP_LEVEL_TYPES)
-                && (name == null || name.isNullValue)) {
-            throw InvalidSchemaException("Top-level types of a schema must have a name ($type.isl)")
+        if (!schemaSystem.hasParam(IonSchemaSystemImpl.Param.ALLOW_UNNAMED_TOP_LEVEL_TYPES)) {
+            val name = (type.isl as IonStruct)["name"]
+            if (name == null || name.isNullValue) {
+                throw InvalidSchemaException(
+                        "Top-level types of a schema must have a name ($type.isl)")
+            }
         }
     }
 
