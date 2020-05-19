@@ -39,6 +39,7 @@ class IonSchemaSystemBuilder private constructor() {
     private var constraintFactory = defaultConstraintFactory
     private var ionSystem = IonSystemBuilder.standard().build()
     private var schemaCache: SchemaCache? = null
+    private var params = mutableMapOf<IonSchemaSystemImpl.Param, Any>()
 
     /**
      * Adds the provided authority to the list of [Authority]s.
@@ -82,6 +83,21 @@ class IonSchemaSystemBuilder private constructor() {
     }
 
     /**
+     * Allows top-level types to not have a name.  Such types can't be referred to
+     * by name and are thereby of limited (if any?) value.  This option if provided
+     * in case consumers have defined top-level types that don't have names.
+     * Should only be used if needed for backwards compatibility with v1.0; this will
+     * be removed in a future release.
+     *
+     * @since 1.1
+     */
+    @Deprecated("For backwards compatibility with v1.0")
+    fun allowUnnamedTopLevelTypes(): IonSchemaSystemBuilder {
+        params.put(IonSchemaSystemImpl.Param.ALLOW_UNNAMED_TOP_LEVEL_TYPES, Object())
+        return this
+    }
+
+    /**
      * Instantiates an [IonSchemaSystem] using the provided [Authority](s)
      * and IonSystem.
      */
@@ -89,7 +105,8 @@ class IonSchemaSystemBuilder private constructor() {
             ionSystem,
             authorities,
             constraintFactory,
-            schemaCache ?: SchemaCacheDefault()
+            schemaCache ?: SchemaCacheDefault(),
+            params
     )
 }
 

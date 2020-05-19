@@ -30,7 +30,8 @@ internal class IonSchemaSystemImpl(
         private val ION: IonSystem,
         private val authorities: List<Authority>,
         private val constraintFactory: ConstraintFactory,
-        private val schemaCache: SchemaCache
+        private val schemaCache: SchemaCache,
+        private val params: Map<Param, Any>
 ) : IonSchemaSystem {
 
     private val schemaCore = SchemaCore(this)
@@ -70,5 +71,11 @@ internal class IonSchemaSystemImpl(
             = constraintFactory.constraintFor(ion, schema)
 
     internal fun getIonSystem() = ION
+
+    internal fun hasParam(param: Param) = params.containsKey(param)
+
+    internal enum class Param {
+        ALLOW_UNNAMED_TOP_LEVEL_TYPES,  // for backwards compatibility with v1.0
+    }
 }
 

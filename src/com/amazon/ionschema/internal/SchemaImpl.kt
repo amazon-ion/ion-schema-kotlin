@@ -126,7 +126,16 @@ internal class SchemaImpl private constructor(
             }
     }
 
+    private fun validateType(type: Type) {
+        val name = (type.isl as IonStruct)["name"]
+        if (!schemaSystem.hasParam(IonSchemaSystemImpl.Param.ALLOW_UNNAMED_TOP_LEVEL_TYPES)
+                && (name == null || name.isNullValue)) {
+            throw InvalidSchemaException("Top-level types of a schema must have a name ($type.isl)")
+        }
+    }
+
     private fun addType(typeMap: MutableMap<String, Type>, type: Type) {
+        validateType(type)
         if (getType(type.name) != null) {
             throw InvalidSchemaException("Duplicate type name/alias encountered:  '$type.name'")
         }
@@ -150,6 +159,8 @@ internal class SchemaImpl private constructor(
     }
 
     override fun plusType(type: Type): Schema {
+        validateType(type)
+
         // prepare ISL corresponding to the new Schema
         // (might be simpler if IonDatagram.set(int, IonValue) were implemented,
         // see https://github.com/amzn/ion-java/issues/50)
