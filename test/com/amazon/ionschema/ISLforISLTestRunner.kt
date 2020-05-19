@@ -15,6 +15,7 @@
 
 package com.amazon.ionschema
 
+import com.amazon.ion.IonStruct
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.runner.notification.RunNotifier
@@ -92,6 +93,9 @@ class ISLforISLTestRunner(
 
                         "type" ->
                             runTest(notifier, testName, ion) {
+                                ion as IonStruct
+                                // ensure the type has a name, otherwise it's not valid ISL
+                                ion["name"] ?: ion.put("name", ION.newSymbol(testName))
                                 println(ion)
                                 val result = type.validate(ion)
                                 println(result)

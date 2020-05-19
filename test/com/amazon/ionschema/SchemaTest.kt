@@ -124,6 +124,23 @@ class SchemaTest {
         assertEquals(0, schema.getTypes().asSequence().count())
     }
 
+    @Test(expected = InvalidSchemaException::class)
+    fun plusType_unnamed_type() {
+        val schema = iss.newSchema()
+        val unnamedType = schema.newType("type::{ codepoint_length: 3 }")
+        schema.plusType(unnamedType)
+    }
+
+    @Test
+    fun param_allow_anonymous_top_level_types() {
+        val iss = IonSchemaSystemBuilder.standard()
+                .allowAnonymousTopLevelTypes()
+                .build()
+        val schema = iss.newSchema()
+        val unnamedType = schema.newType("type::{ codepoint_length: 3 }")
+        schema.plusType(unnamedType)
+    }
+
     private val islTemplate = """
             open_content
             schema_header::{open_content: hi}
