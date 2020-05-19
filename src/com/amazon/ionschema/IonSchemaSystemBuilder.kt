@@ -92,8 +92,8 @@ class IonSchemaSystemBuilder private constructor() {
      * @since 1.1
      */
     @Deprecated("For backwards compatibility with v1.0")
-    fun allowUnnamedTopLevelTypes(): IonSchemaSystemBuilder {
-        params.put(IonSchemaSystemImpl.Param.ALLOW_UNNAMED_TOP_LEVEL_TYPES, Object())
+    fun allowAnonymousTopLevelTypes(): IonSchemaSystemBuilder {
+        params.put(IonSchemaSystemImpl.Param.ALLOW_ANONYMOUS_TOP_LEVEL_TYPES, Object())
         return this
     }
 

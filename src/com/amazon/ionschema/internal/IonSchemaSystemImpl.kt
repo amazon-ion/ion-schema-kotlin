@@ -75,7 +75,7 @@ internal class IonSchemaSystemImpl(
     internal fun hasParam(param: Param) = params.containsKey(param)
 
     internal enum class Param {
-        ALLOW_UNNAMED_TOP_LEVEL_TYPES,  // for backwards compatibility with v1.0
+        ALLOW_ANONYMOUS_TOP_LEVEL_TYPES,  // for backwards compatibility with v1.0
     }
 }
 

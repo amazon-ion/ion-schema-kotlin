@@ -132,9 +132,9 @@ class SchemaTest {
     }
 
     @Test
-    fun param_allow_unnamed_top_level_types() {
+    fun param_allow_anonymous_top_level_types() {
         val iss = IonSchemaSystemBuilder.standard()
-                .allowUnnamedTopLevelTypes()
+                .allowAnonymousTopLevelTypes()
                 .build()
         val schema = iss.newSchema()
         val unnamedType = schema.newType("type::{ codepoint_length: 3 }")

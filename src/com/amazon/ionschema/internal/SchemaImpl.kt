@@ -127,7 +127,7 @@ internal class SchemaImpl private constructor(
     }
 
     private fun validateType(type: Type) {
-        if (!schemaSystem.hasParam(IonSchemaSystemImpl.Param.ALLOW_UNNAMED_TOP_LEVEL_TYPES)) {
+        if (!schemaSystem.hasParam(IonSchemaSystemImpl.Param.ALLOW_ANONYMOUS_TOP_LEVEL_TYPES)) {
             val name = (type.isl as IonStruct)["name"]
             if (name == null || name.isNullValue) {
                 throw InvalidSchemaException(
