@@ -73,16 +73,6 @@ internal class Regex(
         var ch = si.next()
         do {
             when (ch) {
-                // Ion escape characters
-                '\u0000' -> sb.append("\\u0000")    // \0
-                '\u0007' -> sb.append("\\u0007")    // \a
-                '\u0008' -> sb.append("\\u0008")    // \b
-                '\u0009' -> sb.append("\\u0009")    // \t
-                '\u000A' -> sb.append("\\u000A")    // \n
-                '\u000B' -> sb.append("\\u000B")    // \v
-                '\u000C' -> sb.append("\\u000C")    // \f
-                '\u000D' -> sb.append("\\u000D")    // \r
-
                 '[' -> {
                     sb.append(ch)
                     parseCharacterClass(si, sb)
@@ -118,47 +108,35 @@ internal class Regex(
     }
 
     private fun parseCharacterClass(si: StringIterator, sb: StringBuilder) {
-        var ch = si.next()
-        sb.append(ch)
-
-        if (ch == '^') {
-            ch = si.next()
-            sb.append(ch)
-        }
-
-        ch = si.next()
-        if (ch == '\\') {      // block use of Pattern's "[\p..." constructs
-            error(si, "invalid character '$ch' in character class")
-        }
-        sb.append(ch)
-
-        if (ch == '-') {       // it's a character range
-            ch = si.next()
+        do {
+            val ch = si.next()
             sb.append(ch)
 
-            ch = si.next()
             when (ch) {
-                ']' -> sb.append(ch)
-                null -> error(si, "unexpected end of string")
-                else -> error(si, "unexpected character '$ch'")
-            }
-
-        } else {               // it's a character class
-            var complete = false
-            ch = si.next()
-            while (ch != null && !complete) {
-                sb.append(ch)
-                if (ch == ']') {
-                    complete = true
-                } else {
-                    ch = si.next()
+                '&' -> {
+                    if (si.peek() == '&') {
+                        error(si, "'&&' is not supported in a character class")
+                    }
                 }
-            }
 
-            if (!complete) {
-                error(si, "character class missing ']'")
+                '[' -> error(si, "'[' must be escaped within a character class")
+
+                '\\' -> {
+                    val ch2 = si.next()
+                    when (ch2) {
+                        '[', ']', '\\' -> sb.append(ch2)
+                        // not supporting pre-defined char classes (i.e., \d, \s, \w)
+                        // as user is specifying a new char class
+                        else -> error(si,
+                                "invalid sequence '\\$ch2' in character class")
+                    }
+                }
+
+                ']' -> return
             }
-        }
+        } while (ch != null)
+
+        error(si, "character class missing ']'")
     }
 
     private fun parseQuantifier(si: StringIterator, sb: StringBuilder) {
