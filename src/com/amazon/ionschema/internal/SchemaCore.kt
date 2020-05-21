@@ -16,6 +16,7 @@
 package com.amazon.ionschema.internal
 
 import com.amazon.ion.*
+import com.amazon.ionschema.Import
 import com.amazon.ionschema.IonSchemaSystem
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
@@ -57,6 +58,10 @@ internal class SchemaCore(
         } else {
             TypeCore(name)
         }
+
+    override fun getImport(id: String) = null
+
+    override fun getImports() = emptyList<Import>().iterator()
 
     override fun getType(name: String): Type? = typeMap[name]
 

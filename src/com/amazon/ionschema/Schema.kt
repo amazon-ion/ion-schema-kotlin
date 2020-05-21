@@ -40,6 +40,20 @@ interface Schema {
     val isl: IonDatagram
 
     /**
+     * Returns an Import representing all the types imported from
+     * the specified schema [id].
+     */
+    fun getImport(id: String): Import?
+
+    /**
+     * Returns an iterator over the imports of this Schema.  Note that
+     * multiple ISL imports referencing the same schema id (to import
+     * individual types from the same schema id, for example) are
+     * represented by a single Import object.
+     */
+    fun getImports(): Iterator<Import>
+
+    /**
      * Returns the requested type, if present in this schema;
      * otherwise returns null.
      */

@@ -132,6 +132,16 @@ class SchemaTest {
     }
 
     @Test
+    fun plusType_imports_retained() {
+        val schema = iss.loadSchema("schema/import/import_types.isl")
+        assertEquals(2, schema.getImports().asSequence().count())
+        val newType = schema.newType("type::{name: three, value_values: [3], open_content: 3}")
+        val newSchema = schema.plusType(newType)
+        assertEquals(schema.getImports().asSequence().toList(),
+                newSchema.getImports().asSequence().toList())
+    }
+
+    @Test
     fun param_allow_anonymous_top_level_types() {
         val iss = IonSchemaSystemBuilder.standard()
                 .allowAnonymousTopLevelTypes()
