@@ -107,15 +107,22 @@ internal class SchemaImpl private constructor(
         isl = dgIsl.markReadOnly()
     }
 
+    private class SchemaAndTypeImports {
+        var schema: Schema? = null
+        val types = mutableMapOf<String, Type>()
+    }
+
     private fun loadHeader(typeMap: MutableMap<String, Type>,
                            header: IonStruct): Map<String, Import> {
 
-        val importsMap = mutableMapOf<String, MutableMap<String, Type>>()
+        val importsMap = mutableMapOf<String, SchemaAndTypeImports>()
         (header.get("imports") as? IonList)
             ?.filterIsInstance<IonStruct>()
             ?.forEach {
                 val id = it["id"] as IonString
-                val importedTypes = importsMap.getOrPut(id.stringValue()) { mutableMapOf() }
+                val schemaAndTypes = importsMap.getOrPut(id.stringValue()) {
+                    SchemaAndTypeImports()
+                }
                 val importedSchema = schemaSystem.loadSchema(id.stringValue())
 
                 val typeName = (it["type"] as? IonSymbol)?.stringValue()
@@ -129,16 +136,16 @@ internal class SchemaImpl private constructor(
                         newType = TypeAliased(alias, newType as TypeInternal)
                     }
                     addType(typeMap, newType)
-                    importedTypes[alias?.stringValue() ?: typeName] = newType
+                    schemaAndTypes.types[alias?.stringValue() ?: typeName] = newType
                 } else {
                     importedSchema.getTypes().forEach { type ->
                         addType(typeMap, type)
-                        importedTypes[type.name] = type
                     }
+                    schemaAndTypes.schema = importedSchema
                 }
             }
 
-        return importsMap.mapValues { ImportImpl(it.key, it.value) }
+        return importsMap.mapValues { ImportImpl(it.key, it.value.schema, it.value.types) }
     }
 
     override fun getImport(id: String) = imports[id]

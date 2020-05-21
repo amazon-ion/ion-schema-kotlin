@@ -1,6 +1,7 @@
 package com.amazon.ionschema.internal
 
 import com.amazon.ionschema.Import
+import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
 
 /**
@@ -8,11 +9,14 @@ import com.amazon.ionschema.Type
  */
 internal class ImportImpl(
         override val id: String,
-        private val types: Map<String, Type>
+        private val schema: Schema?,
+        private val types: Map<String, Type> = emptyMap()
 ) : Import {
 
-    override fun getType(name: String) = types[name]
+    override fun getType(name: String) = schema?.getType(name) ?: types[name]
 
-    override fun getTypes() = types.values.iterator()
+    override fun getTypes() =
+            ((schema?.getTypes()?.asSequence() ?: emptySequence())
+                    + types.values.asSequence()).iterator()
 }
 
