@@ -35,7 +35,9 @@ class SchemaImportTest {
     @Test
     fun getImport_entire_schema() {
         val schema = iss.loadSchema("schema/import/import.isl")
-        val import = schema.getImport("schema/import/abcde.isl")!!
+        val schemaId = "schema/import/abcde.isl"
+        val import = schema.getImport(schemaId)!!
+        assertEquals(schemaId, import.id)
         assertEquals(5, import.getTypes().asSequence().count())
         assertEquals(5, import.getSchema().getTypes().asSequence().count())
         import.getTypes().forEach {
@@ -47,7 +49,9 @@ class SchemaImportTest {
     @Test
     fun getImport_type() {
         val schema = iss.loadSchema("schema/import/import_type.isl")
-        val import = schema.getImport("schema/util/positive_int.isl")!!
+        val schemaId = "schema/util/positive_int.isl"
+        val import = schema.getImport(schemaId)!!
+        assertEquals(schemaId, import.id)
         assertEquals(1, import.getTypes().asSequence().count())
         val type = import.getType("positive_int")!!
         assertEquals("positive_int", type.name)
@@ -65,6 +69,7 @@ class SchemaImportTest {
         val schema = iss.loadSchema("schema/import/import_type_by_alias.isl")
         assertEquals(1, schema.getImports().asSequence().count())
         val import = schema.getImports().next()
+        assertEquals("schema/util/positive_int.isl", import.id)
         assertEquals(2, import.getTypes().asSequence().count())
         assertNotNull(import.getType("positive_int_1"))
         assertNotNull(import.getType("positive_int_2"))
@@ -81,6 +86,7 @@ class SchemaImportTest {
         assertEquals(keys.size, schema.getImports().asSequence().count())
         keys.entries.forEach { entry ->
             val import = schema.getImport(entry.key)!!
+            assertEquals(entry.key, import.id)
             assertEquals(entry.value.size, import.getTypes().asSequence().count())
             entry.value.forEach {
                 val type = import.getType(it)!!

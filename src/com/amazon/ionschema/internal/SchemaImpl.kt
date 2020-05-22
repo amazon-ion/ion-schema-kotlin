@@ -107,7 +107,7 @@ internal class SchemaImpl private constructor(
         isl = dgIsl.markReadOnly()
     }
 
-    private class SchemaAndTypeImports(val schema: Schema) {
+    private class SchemaAndTypeImports(val id: String, val schema: Schema) {
         var importEntireSchema = false
         var types: MutableMap<String,Type>? = null
 
@@ -129,7 +129,7 @@ internal class SchemaImpl private constructor(
                 val id = it["id"] as IonString
                 val importedSchema = schemaSystem.loadSchema(id.stringValue())
                 val schemaAndTypes = importsMap.getOrPut(id.stringValue()) {
-                    SchemaAndTypeImports(importedSchema)
+                    SchemaAndTypeImports(id.stringValue(), importedSchema)
                 }
 
                 val typeName = (it["type"] as? IonSymbol)?.stringValue()
@@ -153,7 +153,7 @@ internal class SchemaImpl private constructor(
             }
 
         return importsMap.mapValues {
-            ImportImpl(it.value.schema, it.value.importEntireSchema, it.value.types)
+            ImportImpl(it.value.id, it.value.schema, it.value.importEntireSchema, it.value.types)
         }
     }
 

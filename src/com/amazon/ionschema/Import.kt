@@ -25,6 +25,11 @@ package com.amazon.ionschema
  */
 interface Import {
     /**
+     * The id of the referenced schema.
+     */
+    val id: String
+
+    /**
      * Returns the schema referenced by the import.
      */
     fun getSchema(): Schema

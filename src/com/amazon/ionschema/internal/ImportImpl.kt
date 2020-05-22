@@ -24,6 +24,7 @@ import java.lang.IllegalArgumentException
  * Implementation of [Import] for all user-provided ISL.
  */
 internal class ImportImpl(
+        override val id: String,
         private val schema: Schema,
         private val importEntireSchema: Boolean,
         private val types: Map<String, Type>?
