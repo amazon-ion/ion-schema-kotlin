@@ -35,11 +35,9 @@ class SchemaImportTest {
     @Test
     fun getImport_entire_schema() {
         val schema = iss.loadSchema("schema/import/import.isl")
-        val id = "schema/import/abcde.isl"
-        val import = schema.getImport(id)!!
-        assertEquals(id, import.id)
-
+        val import = schema.getImport("schema/import/abcde.isl")!!
         assertEquals(5, import.getTypes().asSequence().count())
+        assertEquals(5, import.getSchema().getTypes().asSequence().count())
         import.getTypes().forEach {
             val type = import.getType(it.name)
             assertNotNull(type)
@@ -49,17 +47,32 @@ class SchemaImportTest {
     @Test
     fun getImport_type() {
         val schema = iss.loadSchema("schema/import/import_type.isl")
-        val id = "schema/util/positive_int.isl"
-        val import = schema.getImport(id)!!
-        assertEquals(id, import.id)
-
+        val import = schema.getImport("schema/util/positive_int.isl")!!
         assertEquals(1, import.getTypes().asSequence().count())
         val type = import.getType("positive_int")!!
         assertEquals("positive_int", type.name)
+        assertNotNull(import.getSchema())
     }
 
     @Test
-    fun getImport_multiple_aliased_types() {
+    fun getImports_none() {
+        val schema = iss.loadSchema("schema/byte_length.isl")
+        assertEquals(0, schema.getImports().asSequence().count())
+    }
+
+    @Test
+    fun getImports() {
+        val schema = iss.loadSchema("schema/import/import_type_by_alias.isl")
+        assertEquals(1, schema.getImports().asSequence().count())
+        val import = schema.getImports().next()
+        assertEquals(2, import.getTypes().asSequence().count())
+        assertNotNull(import.getType("positive_int_1"))
+        assertNotNull(import.getType("positive_int_2"))
+        assertNotNull(import.getSchema().getType("positive_int"))
+    }
+
+    @Test
+    fun getImports_multiple_aliased_types() {
         val schema = iss.loadSchema("schema/import/import_types.isl")
         val keys = mapOf(
                 "schema/import/abcde.isl"      to setOf("a2", "b", "c2"),
@@ -74,20 +87,11 @@ class SchemaImportTest {
                 assertEquals(it, type.name)
             }
         }
-    }
 
-    @Test
-    fun getImports_none() {
-        val schema = iss.loadSchema("schema/byte_length.isl")
-        assertEquals(0, schema.getImports().asSequence().count())
-    }
-
-    @Test
-    fun getImports() {
-        val schema = iss.loadSchema("schema/import/import_type_by_alias.isl")
-        assertEquals(1, schema.getImports().asSequence().count())
-        val import = schema.getImports().next()
-        assertEquals("schema/util/positive_int.isl", import.id)
+        assertEquals(1, schema.getImport("schema/util/positive_int.isl")!!.getSchema()
+                .getTypes().asSequence().count())
+        assertEquals(5, schema.getImport("schema/import/abcde.isl")!!.getSchema()
+                .getTypes().asSequence().count())
     }
 }
 

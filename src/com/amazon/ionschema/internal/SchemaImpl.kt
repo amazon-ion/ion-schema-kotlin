@@ -107,9 +107,16 @@ internal class SchemaImpl private constructor(
         isl = dgIsl.markReadOnly()
     }
 
-    private class SchemaAndTypeImports {
-        var schema: Schema? = null
-        val types = mutableMapOf<String, Type>()
+    private class SchemaAndTypeImports(val schema: Schema) {
+        var importEntireSchema = false
+        var types: MutableMap<String,Type>? = null
+
+        fun addType(name: String, type: Type) {
+            if (types == null) {
+                types = mutableMapOf()
+            }
+            types!![name] = type
+        }
     }
 
     private fun loadHeader(typeMap: MutableMap<String, Type>,
@@ -120,10 +127,10 @@ internal class SchemaImpl private constructor(
             ?.filterIsInstance<IonStruct>()
             ?.forEach {
                 val id = it["id"] as IonString
-                val schemaAndTypes = importsMap.getOrPut(id.stringValue()) {
-                    SchemaAndTypeImports()
-                }
                 val importedSchema = schemaSystem.loadSchema(id.stringValue())
+                val schemaAndTypes = importsMap.getOrPut(id.stringValue()) {
+                    SchemaAndTypeImports(importedSchema)
+                }
 
                 val typeName = (it["type"] as? IonSymbol)?.stringValue()
                 if (typeName != null) {
@@ -136,16 +143,18 @@ internal class SchemaImpl private constructor(
                         newType = TypeAliased(alias, newType as TypeInternal)
                     }
                     addType(typeMap, newType)
-                    schemaAndTypes.types[alias?.stringValue() ?: typeName] = newType
+                    schemaAndTypes.addType(alias?.stringValue() ?: typeName, newType)
                 } else {
+                    schemaAndTypes.importEntireSchema = true
                     importedSchema.getTypes().forEach { type ->
                         addType(typeMap, type)
                     }
-                    schemaAndTypes.schema = importedSchema
                 }
             }
 
-        return importsMap.mapValues { ImportImpl(it.key, it.value.schema, it.value.types) }
+        return importsMap.mapValues {
+            ImportImpl(it.value.schema, it.value.importEntireSchema, it.value.types)
+        }
     }
 
     override fun getImport(id: String) = imports[id]

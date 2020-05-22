@@ -25,9 +25,9 @@ package com.amazon.ionschema
  */
 interface Import {
     /**
-     * The schema id referenced by the import.
+     * Returns the schema referenced by the import.
      */
-    val id: String
+    fun getSchema(): Schema
 
     /**
      * Returns the requested type, if present in this import;
@@ -39,6 +39,8 @@ interface Import {
 
     /**
      * Returns an iterator over the types imported by this Import.
+     * Callers must not rely on any particular ordering, as Types
+     * may be returned in any order.
      */
     fun getTypes(): Iterator<Type>
 }

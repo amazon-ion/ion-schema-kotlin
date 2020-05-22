@@ -18,20 +18,37 @@ package com.amazon.ionschema.internal
 import com.amazon.ionschema.Import
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
+import java.lang.IllegalArgumentException
 
 /**
  * Implementation of [Import] for all user-provided ISL.
  */
 internal class ImportImpl(
-        override val id: String,
-        private val schema: Schema?,
-        private val types: Map<String, Type> = emptyMap()
+        private val schema: Schema,
+        private val importEntireSchema: Boolean,
+        private val types: Map<String, Type>?
 ) : Import {
 
-    override fun getType(name: String) = schema?.getType(name) ?: types[name]
+    init {
+        when {
+            !importEntireSchema && (types == null || types.isEmpty()) ->
+                throw IllegalArgumentException(
+                        "types to import must be provided when importEntireSchema is false")
+        }
+    }
 
-    override fun getTypes() =
-            ((schema?.getTypes()?.asSequence() ?: emptySequence())
-                    + types.values.asSequence()).iterator()
+    override fun getSchema() = schema
+
+    override fun getType(name: String): Type? = if (importEntireSchema) {
+        schema.getType(name) ?: types?.get(name)
+    } else {
+        types?.get(name)
+    }
+
+    override fun getTypes(): Iterator<Type> = if (importEntireSchema) {
+        (schema.getTypes().asSequence() + (types?.values?.asSequence() ?: emptySequence())).iterator()
+    } else {
+        types!!.values.iterator()
+    }
 }
 
