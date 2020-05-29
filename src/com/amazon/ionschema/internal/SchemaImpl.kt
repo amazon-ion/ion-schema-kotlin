@@ -21,7 +21,9 @@ import com.amazon.ion.IonString
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
+import com.amazon.ionschema.Import
 import com.amazon.ionschema.InvalidSchemaException
+import com.amazon.ionschema.IonSchemaException
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
 import com.amazon.ionschema.internal.util.markReadOnly
@@ -33,6 +35,7 @@ internal class SchemaImpl private constructor(
         private val schemaSystem: IonSchemaSystemImpl,
         private val schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>,
+        preloadedImports: Map<String, Import>,
         /*
          * [types] is declared as a MutableMap in order to be populated DURING
          * INITIALIZATION ONLY.  This enables type B to find its already-loaded
@@ -46,11 +49,13 @@ internal class SchemaImpl private constructor(
         schemaSystem: IonSchemaSystemImpl,
         schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>
-    ) : this(schemaSystem, schemaCore, schemaContent, mutableMapOf())
+    ) : this(schemaSystem, schemaCore, schemaContent, emptyMap(), mutableMapOf())
 
     private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
 
     override val isl: IonDatagram
+
+    private val imports: Map<String, Import>
 
     init {
         val dgIsl = schemaSystem.getIonSystem().newDatagram()
@@ -58,6 +63,7 @@ internal class SchemaImpl private constructor(
         if (types.isEmpty()) {
             var foundHeader = false
             var foundFooter = false
+            var importsMap = emptyMap<String, Import>()
 
             while (schemaContent.hasNext()) {
                 val it = schemaContent.next()
@@ -68,7 +74,7 @@ internal class SchemaImpl private constructor(
                     // TBD https://github.com/amzn/ion-schema-kotlin/issues/95
 
                 } else if (it.hasTypeAnnotation("schema_header")) {
-                    loadHeader(types, it as IonStruct)
+                    importsMap = loadHeader(types, it as IonStruct)
                     foundHeader = true
 
                 } else if (!foundFooter && it.hasTypeAnnotation("type") && it is IonStruct) {
@@ -88,6 +94,7 @@ internal class SchemaImpl private constructor(
             }
 
             resolveDeferredTypeReferences()
+            imports = importsMap
 
         } else {
             // in this case the new Schema is based on an existing Schema and the 'types'
@@ -95,17 +102,36 @@ internal class SchemaImpl private constructor(
             schemaContent.forEach {
                 dgIsl.add(it.clone())
             }
+            imports = preloadedImports
         }
 
         isl = dgIsl.markReadOnly()
     }
 
-    private fun loadHeader(typeMap: MutableMap<String, Type>, header: IonStruct) {
+    private class SchemaAndTypeImports(val id: String, val schema: Schema) {
+        var types: MutableMap<String,Type> = mutableMapOf()
+
+        fun addType(name: String, type: Type) {
+            if (types.containsKey(name)) {
+                throw InvalidSchemaException(
+                        "Duplicate imported type name/alias encountered:  '$name'")
+            }
+            types[name] = type
+        }
+    }
+
+    private fun loadHeader(typeMap: MutableMap<String, Type>,
+                           header: IonStruct): Map<String, Import> {
+
+        val importsMap = mutableMapOf<String, SchemaAndTypeImports>()
         (header.get("imports") as? IonList)
             ?.filterIsInstance<IonStruct>()
             ?.forEach {
                 val id = it["id"] as IonString
                 val importedSchema = schemaSystem.loadSchema(id.stringValue())
+                val schemaAndTypes = importsMap.getOrPut(id.stringValue()) {
+                    SchemaAndTypeImports(id.stringValue(), importedSchema)
+                }
 
                 val typeName = (it["type"] as? IonSymbol)?.stringValue()
                 if (typeName != null) {
@@ -118,13 +144,23 @@ internal class SchemaImpl private constructor(
                         newType = TypeAliased(alias, newType as TypeInternal)
                     }
                     addType(typeMap, newType)
+                    schemaAndTypes.addType(alias?.stringValue() ?: typeName, newType)
                 } else {
-                    importedSchema.getTypes().forEach {
-                        addType(typeMap, it)
+                    importedSchema.getTypes().forEach { type ->
+                        addType(typeMap, type)
+                        schemaAndTypes.addType(type.name, type)
                     }
                 }
             }
+
+        return importsMap.mapValues {
+            ImportImpl(it.value.id, it.value.schema, it.value.types)
+        }
     }
+
+    override fun getImport(id: String) = imports[id]
+
+    override fun getImports() = imports.values.iterator()
 
     private fun validateType(type: Type) {
         if (!schemaSystem.hasParam(IonSchemaSystemImpl.Param.ALLOW_ANONYMOUS_TOP_LEVEL_TYPES)) {
@@ -191,7 +227,7 @@ internal class SchemaImpl private constructor(
         // clone the types map:
         val preLoadedTypes = types.toMutableMap()
         preLoadedTypes[type.name] = type
-        return SchemaImpl(schemaSystem, schemaCore, newIsl.iterator(), preLoadedTypes)
+        return SchemaImpl(schemaSystem, schemaCore, newIsl.iterator(), imports, preLoadedTypes)
     }
 
     override fun getSchemaSystem() = schemaSystem
