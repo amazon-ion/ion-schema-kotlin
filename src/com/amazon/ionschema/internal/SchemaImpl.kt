@@ -23,6 +23,7 @@ import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Import
 import com.amazon.ionschema.InvalidSchemaException
+import com.amazon.ionschema.IonSchemaException
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
 import com.amazon.ionschema.internal.util.markReadOnly
@@ -108,14 +109,14 @@ internal class SchemaImpl private constructor(
     }
 
     private class SchemaAndTypeImports(val id: String, val schema: Schema) {
-        var importEntireSchema = false
-        var types: MutableMap<String,Type>? = null
+        var types: MutableMap<String,Type> = mutableMapOf()
 
         fun addType(name: String, type: Type) {
-            if (types == null) {
-                types = mutableMapOf()
+            if (types.containsKey(name)) {
+                throw InvalidSchemaException(
+                        "Duplicate imported type name/alias encountered:  '$name'")
             }
-            types!![name] = type
+            types[name] = type
         }
     }
 
@@ -145,15 +146,15 @@ internal class SchemaImpl private constructor(
                     addType(typeMap, newType)
                     schemaAndTypes.addType(alias?.stringValue() ?: typeName, newType)
                 } else {
-                    schemaAndTypes.importEntireSchema = true
                     importedSchema.getTypes().forEach { type ->
                         addType(typeMap, type)
+                        schemaAndTypes.addType(type.name, type)
                     }
                 }
             }
 
         return importsMap.mapValues {
-            ImportImpl(it.value.id, it.value.schema, it.value.importEntireSchema, it.value.types)
+            ImportImpl(it.value.id, it.value.schema, it.value.types)
         }
     }
 
