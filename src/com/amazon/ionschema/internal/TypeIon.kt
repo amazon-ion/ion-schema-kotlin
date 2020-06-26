@@ -35,6 +35,8 @@ internal class TypeIon(
 
     override val name = nameSymbol.stringValue()
 
+    override val schemaId: String? = null
+
     override val isl = nameSymbol.markReadOnly()
 
     override fun getBaseType() = this

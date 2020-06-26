@@ -35,6 +35,7 @@ internal class SchemaImpl private constructor(
         private val schemaSystem: IonSchemaSystemImpl,
         private val schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>,
+        val schemaId: String?,
         preloadedImports: Map<String, Import>,
         /*
          * [types] is declared as a MutableMap in order to be populated DURING
@@ -48,8 +49,9 @@ internal class SchemaImpl private constructor(
     internal constructor(
         schemaSystem: IonSchemaSystemImpl,
         schemaCore: SchemaCore,
-        schemaContent: Iterator<IonValue>
-    ) : this(schemaSystem, schemaCore, schemaContent, emptyMap(), mutableMapOf())
+        schemaContent: Iterator<IonValue>,
+        schemaId: String?
+    ) : this(schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), mutableMapOf())
 
     private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
 
@@ -112,9 +114,11 @@ internal class SchemaImpl private constructor(
         var types: MutableMap<String,Type> = mutableMapOf()
 
         fun addType(name: String, type: Type) {
-            if (types.containsKey(name)) {
-                throw InvalidSchemaException(
-                        "Duplicate imported type name/alias encountered:  '$name'")
+            types[name]?.let {
+                if (it.schemaId != type.schemaId) {
+                    throw InvalidSchemaException("Duplicate imported type name/alias encountered: '$name'")
+                }
+                return@addType
             }
             types[name] = type
         }
@@ -174,8 +178,11 @@ internal class SchemaImpl private constructor(
 
     private fun addType(typeMap: MutableMap<String, Type>, type: Type) {
         validateType(type)
-        if (getType(type.name) != null) {
-            throw InvalidSchemaException("Duplicate type name/alias encountered:  '$type.name'")
+        getType(type.name)?.let {
+            if (it.schemaId != type.schemaId) {
+                throw InvalidSchemaException("Duplicate type name/alias encountered: '${it.name}'")
+            }
+            return@addType
         }
         typeMap[type.name] = type
     }
@@ -227,7 +234,7 @@ internal class SchemaImpl private constructor(
         // clone the types map:
         val preLoadedTypes = types.toMutableMap()
         preLoadedTypes[type.name] = type
-        return SchemaImpl(schemaSystem, schemaCore, newIsl.iterator(), imports, preLoadedTypes)
+        return SchemaImpl(schemaSystem, schemaCore, newIsl.iterator(), null, imports, preLoadedTypes)
     }
 
     override fun getSchemaSystem() = schemaSystem

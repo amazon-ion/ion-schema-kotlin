@@ -59,6 +59,8 @@ internal class TypeImpl(
 
     override val name = (ionStruct.get("name") as? IonSymbol)?.stringValue() ?: ionStruct.toString()
 
+    override val schemaId: String? = (schema as? SchemaImpl)?.schemaId
+
     override fun getBaseType(): TypeBuiltin {
         val type = ionStruct["type"]
         if (type != null && type is IonSymbol) {

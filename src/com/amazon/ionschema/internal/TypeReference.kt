@@ -103,6 +103,7 @@ internal class TypeReferenceDeferred(
 
     private var type: TypeInternal? = null
     override val name: String = nameSymbol.stringValue()
+    override val schemaId: String? = (schema as? SchemaImpl)?.schemaId
     override val isl = nameSymbol.markReadOnly()
 
     fun attemptToResolve(): Boolean {
