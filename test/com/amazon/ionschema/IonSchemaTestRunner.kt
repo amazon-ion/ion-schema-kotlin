@@ -70,7 +70,7 @@ class IonSchemaTestRunner(
                     when (annotation) {
                         "schema_header" -> {
                             iter.previous()
-                            schema = SchemaImpl(schemaSystem as IonSchemaSystemImpl, schemaCore, iter)
+                            schema = SchemaImpl(schemaSystem as IonSchemaSystemImpl, schemaCore, iter, testName)
                         }
 
                         "type" ->
@@ -110,7 +110,7 @@ class IonSchemaTestRunner(
                             runTest(notifier, testName, ion) {
                                 try {
                                     SchemaImpl(schemaSystem as IonSchemaSystemImpl, schemaCore,
-                                            (prepareValue(ion) as IonSequence).iterator())
+                                            (prepareValue(ion) as IonSequence).iterator(), testName)
                                     fail("Expected an InvalidSchemaException")
                                 } catch (e: InvalidSchemaException) {
                                 }

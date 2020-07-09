@@ -40,6 +40,8 @@ internal class TypeCore(
 
     override val name = ionTypeName
 
+    override val schemaId: String? = null
+
     override val isl = nameSymbol.markReadOnly()
 
     override fun getBaseType() = this

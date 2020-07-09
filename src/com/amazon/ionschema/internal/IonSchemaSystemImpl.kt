@@ -43,7 +43,7 @@ internal class IonSchemaSystemImpl(
                 try {
                     authority.iteratorFor(this, id).use {
                         if (it.hasNext()) {
-                            return@getOrPut SchemaImpl(this, schemaCore, it)
+                            return@getOrPut SchemaImpl(this, schemaCore, it, id)
                         }
                     }
                 } catch (e: Exception) {
@@ -62,7 +62,7 @@ internal class IonSchemaSystemImpl(
 
     override fun newSchema(isl: String) = newSchema(ION.iterate(isl))
 
-    override fun newSchema(isl: Iterator<IonValue>) = SchemaImpl(this, schemaCore, isl)
+    override fun newSchema(isl: Iterator<IonValue>) = SchemaImpl(this, schemaCore, isl, null)
 
     internal fun isConstraint(name: String)
             = constraintFactory.isConstraint(name)
