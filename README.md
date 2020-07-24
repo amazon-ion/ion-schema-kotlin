@@ -12,8 +12,8 @@ written in Kotlin.
 The following code provides a simple example of how to use this
 API. The Customer type is a struct that requires
 `firstName` and `lastName` fields as strings, while the
-`middleName` field is optional. To keep things simple, the schema is loaded
-inline.
+`middleName` field is optional ( *To keep things simple, the schema is loaded
+inline* ).
 
 
 ```kotlin
