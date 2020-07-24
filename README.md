@@ -10,46 +10,50 @@ written in Kotlin.
 ## Getting Started
 
 The following code provides a simple example of how to use this
-API from Java. The Customer type is a struct that requires
+API. The Customer type is a struct that requires
 `firstName` and `lastName` fields as strings, while the
-`middleName` field is optional.
+`middleName` field is optional. To keep things simple, the schema is loaded
+inline.
 
-Before running, replace `<base_path>` with the path containing
-"/data/test".
 
-```java
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.IonValue;
-import com.amazon.ion.system.IonSystemBuilder;
-import com.amazon.ionschema.AuthorityFilesystem;
-import com.amazon.ionschema.IonSchemaSystem;
-import com.amazon.ionschema.IonSchemaSystemBuilder;
-import com.amazon.ionschema.Schema;
-import com.amazon.ionschema.Type;
-import com.amazon.ionschema.Violations;
+```kotlin
+import com.amazon.ion.system.IonSystemBuilder
+import com.amazon.ionschema.IonSchemaSystemBuilder.Companion.standard
+import com.amazon.ionschema.Type
 
-public class IonSchemaGettingStarted {
-    private static IonSystem ION = IonSystemBuilder.standard().build();
 
-    public static void main(String[] args) {
-        IonSchemaSystem iss = IonSchemaSystemBuilder.standard()
-                .withAuthority(new AuthorityFilesystem("<base_path>/ion-schema-tests"))
-                .build();
+object IonSchemaGettingStarted {
+    private val ION = IonSystemBuilder.standard().build()
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val iss = standard()
+                .build()
 
-        Schema schema = iss.loadSchema("/schema/Customer.isl");
-        Type type = schema.getType("Customer");
-
-        checkValue(type, "{ firstName: \"Susie\", lastName: \"Smith\" }");
-        checkValue(type, "{ firstName: \"Susie\", middleName: \"B\", lastName: \"Smith\" }");
-        checkValue(type, "{ middleName: B, lastName: Washington }");
+        val schema = iss.newSchema(
+                """
+            type::{
+              name: Customer,
+              type: struct,
+              fields: {
+                firstName: { type: string, occurs: required },
+                middleName: string,
+                lastName: { type: string, occurs: required },
+              },
+            }
+        """
+        )
+        val type = schema.getType("Customer")
+        checkValue(type, """ { firstName: "Susie", lastName: "Smith" } """)
+        checkValue(type, """ { firstName: "Susie", middleName: "B", lastName: "Smith" } """)
+        checkValue(type, """ { middleName: B, lastName: Washington } """)
     }
 
-    private static void checkValue(Type type, String str) {
-        IonValue value = ION.singleValue(str);
-        Violations violations = type.validate(value);
+    private fun checkValue(type: Type?, str: String) {
+        val value = ION.singleValue(str)
+        val violations = type!!.validate(value)
         if (!violations.isValid()) {
-            System.out.println(str);
-            System.out.println(violations);
+            println(str)
+            println(violations)
         }
     }
 }
@@ -66,7 +70,6 @@ Validation failed:
     - expected type string, found symbol
   - lastName: Washington
     - expected type string, found symbol
-    - invalid codepoint length 10, expected range::[min,7]
 ```
 
 ## Development
