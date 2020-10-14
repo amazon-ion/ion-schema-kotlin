@@ -59,6 +59,8 @@ internal class SchemaImpl private constructor(
 
     private val imports: Map<String, Import>
 
+    var nocycle = false // this flag helps in not loading types when there is a cycle
+
     init {
         val dgIsl = schemaSystem.getIonSystem().newDatagram()
 
@@ -82,7 +84,6 @@ internal class SchemaImpl private constructor(
                 } else if (!foundFooter && it.hasTypeAnnotation("type") && it is IonStruct) {
                     val newType = TypeImpl(it, this)
                     addType(types, newType)
-
                 } else if (it.hasTypeAnnotation("schema_footer")) {
                     foundFooter = true
                 }
@@ -94,8 +95,9 @@ internal class SchemaImpl private constructor(
             if (!foundHeader && foundFooter) {
                 throw InvalidSchemaException("Found a schema_footer, but not a schema_header")
             }
-
-            resolveDeferredTypeReferences()
+            if(nocycle) {
+                resolveDeferredTypeReferences()
+            }
             imports = importsMap
 
         } else {
@@ -128,35 +130,58 @@ internal class SchemaImpl private constructor(
                            header: IonStruct): Map<String, Import> {
 
         val importsMap = mutableMapOf<String, SchemaAndTypeImports>()
+        val importSet: MutableSet<String> = schemaSystem.getSchemaImportSet()
+
         (header.get("imports") as? IonList)
             ?.filterIsInstance<IonStruct>()
             ?.forEach {
                 val id = it["id"] as IonString
-                val importedSchema = schemaSystem.loadSchema(id.stringValue())
-                val schemaAndTypes = importsMap.getOrPut(id.stringValue()) {
-                    SchemaAndTypeImports(id.stringValue(), importedSchema)
-                }
+                val alias = it["as"] as? IonSymbol
+                // if importSet has an import with this id then do not load schema again to break the cycle.
+                if(!importSet.contains(id.stringValue())) {
+                    nocycle = true
 
-                val typeName = (it["type"] as? IonSymbol)?.stringValue()
-                if (typeName != null) {
-                    var newType = importedSchema.getType(typeName)
-                            ?: throw InvalidSchemaException(
-                                "Schema $id doesn't contain a type named '$typeName'")
-
-                    val alias = it["as"] as? IonSymbol
-                    if (alias != null) {
-                        newType = TypeAliased(alias, newType as TypeInternal)
+                    // normalize schemaId to have .isl at the end as importSet need a common pattern to be followed
+                    // for Ids added into the set
+                    var normalizedId = ""
+                    if(schemaId != null) {
+                        normalizedId = if(schemaId.endsWith(".isl")) schemaId else schemaId + ".isl"
                     }
-                    addType(typeMap, newType)
-                    schemaAndTypes.addType(alias?.stringValue() ?: typeName, newType)
-                } else {
-                    importedSchema.getTypes().forEach { type ->
-                        addType(typeMap, type)
-                        schemaAndTypes.addType(type.name, type)
+
+                    // if Schema is importing itself then throw error
+                    if(normalizedId.equals(id.stringValue())) {
+                        throw InvalidSchemaException("Schema can not import itself.")
+                    }
+
+                    // add parent and current schema to importSet and continue loading current schema
+                    schemaSystem.addToSchemaImportSet(normalizedId)
+                    schemaSystem.addToSchemaImportSet(id.stringValue())
+                    val importedSchema = schemaSystem.loadSchema(id.stringValue())
+                    schemaSystem.resetSchemaImportSet(id.stringValue(), normalizedId)
+
+                    val schemaAndTypes = importsMap.getOrPut(id.stringValue()) {
+                        SchemaAndTypeImports(id.stringValue(), importedSchema)
+                    }
+
+                    val typeName = (it["type"] as? IonSymbol)?.stringValue()
+                    if (typeName != null) {
+                        var newType = importedSchema.getType(typeName)
+                                ?: throw InvalidSchemaException(
+                                        "Schema $id doesn't contain a type named '$typeName'")
+
+                        if (alias != null) {
+                            newType = TypeAliased(alias, newType as TypeInternal)
+                        }
+                        addType(typeMap, newType)
+                        schemaAndTypes.addType(alias?.stringValue() ?: typeName, newType)
+                    } else {
+                        importedSchema.getTypes().forEach { type ->
+                            addType(typeMap, type)
+                            schemaAndTypes.addType(type.name, type)
+                        }
                     }
                 }
             }
-
         return importsMap.mapValues {
             ImportImpl(it.value.id, it.value.schema, it.value.types)
         }
