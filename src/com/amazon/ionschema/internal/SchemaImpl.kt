@@ -20,6 +20,7 @@ import com.amazon.ion.IonList
 import com.amazon.ion.IonString
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
+import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Import
 import com.amazon.ionschema.InvalidSchemaException
@@ -131,7 +132,7 @@ internal class SchemaImpl private constructor(
         (header.get("imports") as? IonList)
             ?.filterIsInstance<IonStruct>()
             ?.forEach {
-                val id = it["id"] as IonString
+                val id = it["id"] as IonText
                 val importedSchema = schemaSystem.loadSchema(id.stringValue())
                 val schemaAndTypes = importsMap.getOrPut(id.stringValue()) {
                     SchemaAndTypeImports(id.stringValue(), importedSchema)
