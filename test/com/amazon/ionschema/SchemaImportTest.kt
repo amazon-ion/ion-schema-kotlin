@@ -47,6 +47,14 @@ class SchemaImportTest {
     }
 
     @Test
+    fun demo() {
+        val test = "schema_header::{ imports: [ {id: 'schema/import/abcde.isl' }] } schema_footer::{}"
+        val ion = IonSystemBuilder.standard().build()
+        val iss = IonSchemaSystemBuilder.standard().addAuthority(AuthorityFilesystem("ion-schema-tests")).withIonSystem(ion).build()
+        val schema = iss.newSchema(ion.iterate(test))
+    }
+
+    @Test
     fun getImport_type() {
         val schema = iss.loadSchema("schema/import/import_type.isl")
         val schemaId = "schema/util/positive_int.isl"
