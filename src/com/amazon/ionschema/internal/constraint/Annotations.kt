@@ -72,7 +72,9 @@ internal class OrderedAnnotations(
     private val stateMachine: StateMachine
 
     init {
-        val stateMachineBuilder = StateMachineBuilder().withOpenContent()
+        val stateMachineBuilder = StateMachineBuilder().apply {
+            if (!ion.hasTypeAnnotation("closed")) withOpenContent()
+        }
         var state: State? = null
         (ion as IonList).forEachIndexed { idx, it ->
             val newState = State(
@@ -106,6 +108,8 @@ internal class UnorderedAnnotations(
         private val annotations: List<Annotation>
 ) : ConstraintBase(ion) {
 
+    private val closedAnnotationStrings: List<String>? = if (ion.hasTypeAnnotation("closed")) (ion as IonList).map { (it as IonSymbol).stringValue() } else null
+
     override fun validate(value: IonValue, issues: Violations) {
         val missingAnnotations = mutableListOf<Annotation>()
         annotations.forEach {
@@ -117,6 +121,12 @@ internal class UnorderedAnnotations(
         if (missingAnnotations.size > 0) {
             issues.add(Violation(ion, "missing_annotation",
                     "missing annotation(s): " + missingAnnotations.joinToString { it.text }))
+        }
+
+        closedAnnotationStrings?.let {
+            if (!it.containsAll(value.typeAnnotations.toList())) {
+                issues.add(Violation(ion, "unexpected_annotation", "found one or more unexpected annotations"))
+            }
         }
     }
 }
