@@ -60,7 +60,7 @@ class IonSchemaTestRunner(
             .filter { it.path.endsWith(".isl") }
             .filter { !blacklist.contains(it.path) }
             .forEach { file ->
-                val testName = file.path.substring(base.length + 1, file.path.length - ".isl".length)
+                val testName = file.path.substring(base.length + 1, file.path.length)
                 var schema: Schema? = null
                 var type: Type? = null
 
