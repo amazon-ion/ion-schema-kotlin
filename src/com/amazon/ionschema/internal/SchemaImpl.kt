@@ -60,8 +60,6 @@ internal class SchemaImpl private constructor(
 
     private val imports: Map<String, Import>
 
-    var nocycle = false // this flag helps in not loading types when there is a cycle
-
     init {
         val dgIsl = schemaSystem.getIonSystem().newDatagram()
 
@@ -96,9 +94,8 @@ internal class SchemaImpl private constructor(
             if (!foundHeader && foundFooter) {
                 throw InvalidSchemaException("Found a schema_footer, but not a schema_header")
             }
-            if(nocycle) {
-                resolveDeferredTypeReferences()
-            }
+
+            resolveDeferredTypeReferences()
             imports = importsMap
 
         } else {
@@ -140,20 +137,12 @@ internal class SchemaImpl private constructor(
                 val alias = it["as"] as? IonSymbol
                 // if importSet has an import with this id then do not load schema again to break the cycle.
                 if(!importSet.contains(id.stringValue())) {
-                    nocycle = true
-
-                    // normalize schemaId to have .isl at the end as importSet need a common pattern to be followed
-                    // for Ids added into the set
-                    var normalizedId = ""
-                    if(schemaId != null) {
-                        normalizedId = if(schemaId.endsWith(".isl")) schemaId else schemaId + ".isl"
-                    }
+                    var normalizedId = schemaId?: "";
 
                     // if Schema is importing itself then throw error
                     if(normalizedId.equals(id.stringValue())) {
                         throw InvalidSchemaException("Schema can not import itself.")
                     }
-
 
                     // add parent and current schema to importSet and continue loading current schema
                     schemaSystem.addToSchemaImportSet(normalizedId)
