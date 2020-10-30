@@ -20,6 +20,7 @@ import com.amazon.ion.IonList
 import com.amazon.ion.IonString
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
+import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Import
 import com.amazon.ionschema.InvalidSchemaException
@@ -135,7 +136,7 @@ internal class SchemaImpl private constructor(
         (header.get("imports") as? IonList)
             ?.filterIsInstance<IonStruct>()
             ?.forEach {
-                val id = it["id"] as IonString
+                val id = it["id"] as IonText
                 val alias = it["as"] as? IonSymbol
                 // if importSet has an import with this id then do not load schema again to break the cycle.
                 if(!importSet.contains(id.stringValue())) {
@@ -152,6 +153,7 @@ internal class SchemaImpl private constructor(
                     if(normalizedId.equals(id.stringValue())) {
                         throw InvalidSchemaException("Schema can not import itself.")
                     }
+
 
                     // add parent and current schema to importSet and continue loading current schema
                     schemaSystem.addToSchemaImportSet(normalizedId)
