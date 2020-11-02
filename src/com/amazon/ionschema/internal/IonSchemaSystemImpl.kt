@@ -74,13 +74,6 @@ internal class IonSchemaSystemImpl(
 
     internal fun getIonSystem() = ION
 
-    internal fun resetSchemaImportSet(id: String, parent_id: String) {
-        schemaImportSet.remove(id)
-        schemaImportSet.remove(parent_id)
-    }
-
-    internal fun addToSchemaImportSet(id: String) = schemaImportSet.add(id)
-
     internal fun getSchemaImportSet() = schemaImportSet;
 
     internal fun hasParam(param: Param) = params.containsKey(param)
