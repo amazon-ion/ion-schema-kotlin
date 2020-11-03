@@ -17,14 +17,12 @@ package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonDatagram
 import com.amazon.ion.IonList
-import com.amazon.ion.IonString
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Import
 import com.amazon.ionschema.InvalidSchemaException
-import com.amazon.ionschema.IonSchemaException
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
 import com.amazon.ionschema.internal.util.markReadOnly
@@ -83,7 +81,6 @@ internal class SchemaImpl private constructor(
                 } else if (!foundFooter && it.hasTypeAnnotation("type") && it is IonStruct) {
                     val newType = TypeImpl(it, this)
                     addType(types, newType)
-
                 } else if (it.hasTypeAnnotation("schema_footer")) {
                     foundFooter = true
                 }
@@ -129,35 +126,52 @@ internal class SchemaImpl private constructor(
                            header: IonStruct): Map<String, Import> {
 
         val importsMap = mutableMapOf<String, SchemaAndTypeImports>()
+        val importSet: MutableSet<String> = schemaSystem.getSchemaImportSet()
+
         (header.get("imports") as? IonList)
             ?.filterIsInstance<IonStruct>()
             ?.forEach {
-                val id = it["id"] as IonText
-                val importedSchema = schemaSystem.loadSchema(id.stringValue())
-                val schemaAndTypes = importsMap.getOrPut(id.stringValue()) {
-                    SchemaAndTypeImports(id.stringValue(), importedSchema)
-                }
+                val childImportId = it["id"] as IonText
+                val alias = it["as"] as? IonSymbol
+                // if importSet has an import with this id then do not load schema again to break the cycle.
+                if(!importSet.contains(childImportId.stringValue())) {
+                    var parentImportId = schemaId?: "";
 
-                val typeName = (it["type"] as? IonSymbol)?.stringValue()
-                if (typeName != null) {
-                    var newType = importedSchema.getType(typeName)
-                            ?: throw InvalidSchemaException(
-                                "Schema $id doesn't contain a type named '$typeName'")
-
-                    val alias = it["as"] as? IonSymbol
-                    if (alias != null) {
-                        newType = TypeAliased(alias, newType as TypeInternal)
+                    // if Schema is importing itself then throw error
+                    if(parentImportId.equals(childImportId.stringValue())) {
+                        throw InvalidSchemaException("Schema can not import itself.")
                     }
-                    addType(typeMap, newType)
-                    schemaAndTypes.addType(alias?.stringValue() ?: typeName, newType)
-                } else {
-                    importedSchema.getTypes().forEach { type ->
-                        addType(typeMap, type)
-                        schemaAndTypes.addType(type.name, type)
+
+                    // add parent and current schema to importSet and continue loading current schema
+                    importSet.add(parentImportId)
+                    importSet.add(childImportId.stringValue())
+                    val importedSchema = schemaSystem.loadSchema(childImportId.stringValue())
+                    importSet.remove(childImportId.stringValue())
+                    importSet.remove(parentImportId)
+
+                    val schemaAndTypes = importsMap.getOrPut(childImportId.stringValue()) {
+                        SchemaAndTypeImports(childImportId.stringValue(), importedSchema)
+                    }
+
+                    val typeName = (it["type"] as? IonSymbol)?.stringValue()
+                    if (typeName != null) {
+                        var newType = importedSchema.getType(typeName)
+                                ?: throw InvalidSchemaException(
+                                        "Schema $childImportId doesn't contain a type named '$typeName'")
+
+                        if (alias != null) {
+                            newType = TypeAliased(alias, newType as TypeInternal)
+                        }
+                        addType(typeMap, newType)
+                        schemaAndTypes.addType(alias?.stringValue() ?: typeName, newType)
+                    } else {
+                        importedSchema.getTypes().forEach { type ->
+                            addType(typeMap, type)
+                            schemaAndTypes.addType(type.name, type)
+                        }
                     }
                 }
             }
-
         return importsMap.mapValues {
             ImportImpl(it.value.id, it.value.schema, it.value.types)
         }

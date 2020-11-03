@@ -35,6 +35,8 @@ internal class IonSchemaSystemImpl(
 ) : IonSchemaSystem {
 
     private val schemaCore = SchemaCore(this)
+    // Set to be used to detect cycle in import dependencies
+    private val schemaImportSet: MutableSet<String> = mutableSetOf<String>()
 
     override fun loadSchema(id: String) =
         schemaCache.getOrPut(id) {
@@ -71,6 +73,8 @@ internal class IonSchemaSystemImpl(
             = constraintFactory.constraintFor(ion, schema)
 
     internal fun getIonSystem() = ION
+
+    internal fun getSchemaImportSet() = schemaImportSet;
 
     internal fun hasParam(param: Param) = params.containsKey(param)
 
