@@ -44,6 +44,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         timestamp_offset,
         timestamp_precision,
         type,
+        utf8_byte_length,
         valid_values,
     }
 
@@ -77,6 +78,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
             Constraints.timestamp_offset    -> TimestampOffset(ion)
             Constraints.timestamp_precision -> TimestampPrecision(ion)
             Constraints.type                -> Type(ion, schema)
+            Constraints.utf8_byte_length    -> Utf8ByteLength(ion)
             Constraints.valid_values        -> ValidValues(ion)
         }
 }
