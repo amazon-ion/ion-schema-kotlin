@@ -16,7 +16,6 @@
 package com.amazon.ionschema.internal.constraint
 
 import com.amazon.ion.IonList
-import com.amazon.ion.IonSequence
 import com.amazon.ion.IonTimestamp
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
@@ -36,17 +35,7 @@ internal class ValidValues(
         ion: IonValue
 ) : ConstraintBase(ion) {
 
-    private val validRange =
-            if (ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")) {
-                if (ion[0] is IonTimestamp || ion[1] is IonTimestamp) {
-                    @Suppress("UNCHECKED_CAST")
-                    RangeFactory.rangeOf<IonTimestamp>(ion, RangeType.ION_TIMESTAMP) as Range<IonValue>
-                } else {
-                    RangeFactory.rangeOf<IonValue>(ion, RangeType.ION_NUMBER)
-                }
-            } else {
-                null
-            }
+    private val validRange = buildRange(ion)
 
     private val validValues =
             if (validRange == null && ion is IonList && !ion.isNullValue) {
@@ -55,14 +44,33 @@ internal class ValidValues(
                 null
             }
 
+    private fun isValidRange(ion: IonValue) = ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")
+
+    private val anyRangeValues = validValues?.any{ isValidRange(it) } ?: false
+
     init {
         if (validRange == null && validValues == null) {
             throw InvalidSchemaException("Invalid valid_values constraint: $ion")
         }
     }
 
+    // build range value from given ion value
+    private fun buildRange(ion: IonValue) =
+        if (ion is IonList && isValidRange(ion)) {
+            if (ion[0] is IonTimestamp || ion[1] is IonTimestamp) {
+                @Suppress("UNCHECKED_CAST")
+                RangeFactory.rangeOf<IonTimestamp>(ion, RangeType.ION_TIMESTAMP) as Range<IonValue>
+            } else {
+                RangeFactory.rangeOf<IonValue>(ion, RangeType.ION_NUMBER)
+            }
+        } else {
+            null
+        }
+
     private fun checkValue(ion: IonValue) =
-        if (ion.typeAnnotations.size > 0) {
+        if (isValidRange(ion)) {
+            true
+        } else if (ion.typeAnnotations.isNotEmpty()) {
             throw InvalidSchemaException("Annotations ($ion) are not allowed in valid_values")
         } else {
             true
@@ -80,8 +88,21 @@ internal class ValidValues(
             }
         } else {
             val v = value.withoutTypeAnnotations()
-            if (!validValues!!.contains(v)) {
-                issues.add(Violation(ion, "invalid_value", "invalid value $v"))
+            // check any range exists in valid_values list and validate
+            if (anyRangeValues) {
+                if (!validValues!!.any {possibility ->
+                            if (isValidRange(possibility)) {
+                                buildRange(possibility)!!.contains(v)
+                            } else {
+                                possibility == v
+                            }
+                        }) {
+                    issues.add(Violation(ion, "invalid_value", "invalid value $v"))
+                }
+            } else {
+                if (!validValues!!.contains(v)) {
+                    issues.add(Violation(ion, "invalid_value", "invalid value $v"))
+                }
             }
         }
     }
