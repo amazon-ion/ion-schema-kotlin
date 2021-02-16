@@ -44,9 +44,10 @@ internal class ValidValues(
                 null
             }
 
-    private fun isValidRange(ion: IonValue) = ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")
+    // store either the ranges that is built or ion value to be used for validation
+    private val builtValues = validValues?.map { if (buildRange(it) == null) it else buildRange(it) }
 
-    private val anyRangeValues = validValues?.any{ isValidRange(it) } ?: false
+    private fun isValidRange(ion: IonValue) = ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")
 
     init {
         if (validRange == null && validValues == null) {
@@ -88,21 +89,14 @@ internal class ValidValues(
             }
         } else {
             val v = value.withoutTypeAnnotations()
-            // check any range exists in valid_values list and validate
-            if (anyRangeValues) {
-                if (!validValues!!.any {possibility ->
-                            if (isValidRange(possibility)) {
-                                buildRange(possibility)!!.contains(v)
-                            } else {
-                                possibility == v
-                            }
-                        }) {
-                    issues.add(Violation(ion, "invalid_value", "invalid value $v"))
-                }
-            } else {
-                if (!validValues!!.contains(v)) {
-                    issues.add(Violation(ion, "invalid_value", "invalid value $v"))
-                }
+            if (!builtValues!!.any {possibility ->
+                        if (possibility is Range<*>) {
+                            (possibility as Range<IonValue>).contains(v)
+                        } else {
+                            possibility == v
+                        }
+                    }) {
+                issues.add(Violation(ion, "invalid_value", "invalid value $v"))
             }
         }
     }
