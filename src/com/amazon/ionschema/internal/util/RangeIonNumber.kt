@@ -35,7 +35,11 @@ internal class RangeIonNumber private constructor (
                 } else {
                     when (ion) {
                         is IonDecimal -> ion.bigDecimalValue()
-                        is IonFloat -> ion.bigDecimalValue()
+                        is IonFloat -> if (ion.isNumericValue) {
+                                ion.bigDecimalValue()
+                            } else {
+                                null
+                            }
                         is IonInt -> BigDecimal(ion.bigIntegerValue())
                         else -> null
                     }

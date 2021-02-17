@@ -34,6 +34,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         content,
         element,
         fields,
+        float_size,
         not,
         occurs,
         one_of,
@@ -67,6 +68,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
             Constraints.content             -> Content(ion)
             Constraints.element             -> Element(ion, schema)
             Constraints.fields              -> Fields(ion, schema)
+            Constraints.float_size          -> FloatSize(ion)
             Constraints.not                 -> Not(ion, schema)
             Constraints.occurs              -> OccursNoop(ion)
             Constraints.one_of              -> OneOf(ion, schema)
