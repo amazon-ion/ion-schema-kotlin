@@ -11,6 +11,9 @@ import java.math.BigDecimal
 
 /**
  * Implements the float_size constraint.
+ *
+ * float32 validation relies on the precision of constants Float.MAX_VALUE.toDouble() and Float.MIN_VALUE.toDouble().
+ * Client code working with floating points should use .toDouble()'s precision for FloatSize validation to work.
  */
 internal class FloatSize(
         ion: IonValue
@@ -18,8 +21,8 @@ internal class FloatSize(
 
     private val validValues = setOf("float16", "float32", "float64")
     private val maxFloat32Range: BigDecimal = BigDecimal.valueOf(Float.MAX_VALUE.toDouble())
+    // Minimum non-negative value (Float.MIN_VALUE) : 1.4E-45
     private val minPosValue: BigDecimal = BigDecimal.valueOf(Float.MIN_VALUE.toDouble())
-
 
     init {
         if (!(ion is IonSymbol
@@ -31,7 +34,6 @@ internal class FloatSize(
         // float16 not implemented yet
         if (ion.stringValue() == "float16") throw InvalidSchemaException("\'float16\' is not currently supported")
     }
-
 
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonFloat>(value, issues) {
@@ -45,7 +47,6 @@ internal class FloatSize(
         }
     }
 
-
     private fun fitsFloat32(value: IonFloat): Boolean {
         if (value.isNumericValue) {
             val absValue = value.bigDecimalValue().abs()
@@ -54,6 +55,7 @@ internal class FloatSize(
                         && (minPosValue <= absValue)
             }
         }
+        // Non numeric values: +/-inf,nan should always fit, regardless of float_size constraint
         return true
     }
 }

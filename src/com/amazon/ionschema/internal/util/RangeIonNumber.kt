@@ -38,6 +38,7 @@ internal class RangeIonNumber private constructor (
                         is IonFloat -> if (ion.isNumericValue) {
                                 ion.bigDecimalValue()
                             } else {
+                            // for special values: nan, +inf, -inf
                                 null
                             }
                         is IonInt -> BigDecimal(ion.bigIntegerValue())
