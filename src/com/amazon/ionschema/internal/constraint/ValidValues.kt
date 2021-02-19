@@ -35,7 +35,7 @@ internal class ValidValues(
         ion: IonValue
 ) : ConstraintBase(ion) {
 
-    // store either the ranges that is built or ion value to be used for validation
+    // store either the ranges that are built or the ion value to be used for validation
     private val validValues =
             (if(isValidRange(ion)) {
                 // convert range::[x,y] to [range::[x,y]] for simplicity in verifying and storing valid_values
