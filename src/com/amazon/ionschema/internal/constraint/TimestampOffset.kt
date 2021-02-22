@@ -43,6 +43,7 @@ internal class TimestampOffset(
      * exactly with values returned by IonTimestamp.localOffset.
      */
     private val validOffsets: Set<Int?>
+    private val negateOffsets: Boolean
 
     init {
         if (ion !is IonList) {
@@ -53,6 +54,18 @@ internal class TimestampOffset(
         }
         if (ion.size == 0) {
             throw InvalidSchemaException("timestamp_offset must contain at least one offset")
+        }
+
+        negateOffsets = if (ion.typeAnnotations.isEmpty()) {
+            false
+        } else {
+            if (ion.typeAnnotations.size != 1) {
+                throw InvalidSchemaException("timestamp_offset allows for only 1 annotation, found ${ion.typeAnnotations}")
+            }
+            if (ion.typeAnnotations[0] != "not") {
+                throw InvalidSchemaException("timestamp_offset can only be annotated with the token \"not\", found ${ion.typeAnnotations} ")
+            }
+            true
         }
 
         validOffsets = ion.map {
@@ -95,7 +108,14 @@ internal class TimestampOffset(
 
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonTimestamp>(value, issues) { v ->
-            if (!validOffsets.contains(v.localOffset)) {
+            val hasViolations =
+                    if (negateOffsets) {
+                        validOffsets.contains(v.localOffset)
+                    } else {
+                        !validOffsets.contains(v.localOffset)
+                    }
+
+            if (hasViolations) {
                 issues.add(Violation(ion, "invalid_timestamp_offset",
                         "invalid timestamp offset %s, expected %s".format(v.localOffset, ion)))
             }
