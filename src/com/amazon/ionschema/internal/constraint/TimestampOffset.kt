@@ -42,8 +42,8 @@ internal class TimestampOffset(
      * An unknown local offset is represented as null.  This approach corresponds
      * exactly with values returned by IonTimestamp.localOffset.
      */
-    private val validOffsets: Set<Int?>
-    private val negateOffsets: Boolean
+    private val offsets: Set<Int?>
+    private val offsetsAreValid: Boolean
 
     init {
         if (ion !is IonList) {
@@ -56,7 +56,7 @@ internal class TimestampOffset(
             throw InvalidSchemaException("timestamp_offset must contain at least one offset")
         }
 
-        negateOffsets = if (ion.typeAnnotations.isEmpty()) {
+        offsetsAreValid = if (ion.typeAnnotations.isEmpty()) {
             false
         } else {
             if (ion.typeAnnotations.size != 1) {
@@ -68,7 +68,7 @@ internal class TimestampOffset(
             true
         }
 
-        validOffsets = ion.map {
+        offsets = ion.map {
             // every timestamp offset must be of the form "[+|-]hh:mm"
 
             if (it !is IonString) {
@@ -109,10 +109,10 @@ internal class TimestampOffset(
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonTimestamp>(value, issues) { v ->
             val hasViolations =
-                    if (negateOffsets) {
-                        validOffsets.contains(v.localOffset)
+                    if (offsetsAreValid) {
+                        offsets.contains(v.localOffset)
                     } else {
-                        !validOffsets.contains(v.localOffset)
+                        !offsets.contains(v.localOffset)
                     }
 
             if (hasViolations) {
