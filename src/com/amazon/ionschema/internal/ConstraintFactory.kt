@@ -34,4 +34,3 @@ internal interface ConstraintFactory {
      */
     fun constraintFor(ion: IonValue, schema: Schema): Constraint
 }
-

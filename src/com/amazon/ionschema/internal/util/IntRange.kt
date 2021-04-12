@@ -47,7 +47,7 @@ internal interface IntRange {
 }
 
 private class IntRangeForIonList(
-        private val ion: IonList
+    private val ion: IonList
 ) : IntRange {
 
     companion object {
@@ -76,7 +76,7 @@ private class IntRangeForIonList(
 }
 
 private class IntRangeForIonInt(
-        private val ion: IonInt
+    private val ion: IonInt
 ) : IntRange {
 
     private val theValue = ion.bigIntegerValue()
@@ -92,20 +92,22 @@ private class IntRangeForIonInt(
 }
 
 private class IntRangeForIonSymbol private constructor(
-        private val ion: IonSymbol,
-        delegate: IntRange
+    private val ion: IonSymbol,
+    delegate: IntRange
 ) : IntRange by delegate {
 
-    internal constructor(ion: IonSymbol)
-            : this(ion, when (ion.stringValue()) {
-                            "optional" -> IntRangeForIonList(ion.system.singleValue("range::[0, 1]") as IonList)
-                            "required" -> IntRangeForIonInt(ion.system.singleValue("1") as IonInt)
-                            else -> throw InvalidSchemaException("Unable to parse $ion as an int range")
-                        })
+    internal constructor(ion: IonSymbol) :
+        this(
+            ion,
+            when (ion.stringValue()) {
+                "optional" -> IntRangeForIonList(ion.system.singleValue("range::[0, 1]") as IonList)
+                "required" -> IntRangeForIonInt(ion.system.singleValue("1") as IonInt)
+                else -> throw InvalidSchemaException("Unable to parse $ion as an int range")
+            }
+        )
 
     override fun toString() = ion.toString()
 }
-
 
 internal interface IntRangeBoundary {
     operator fun compareTo(other: Int) = compareTo(BigInteger.valueOf(other.toLong()))
@@ -113,8 +115,8 @@ internal interface IntRangeBoundary {
 }
 
 private abstract class IntRangeBoundaryBase(
-        ion: IonInt,
-        compareToResponseWhenExclusiveAndEqual: Int
+    ion: IonInt,
+    compareToResponseWhenExclusiveAndEqual: Int
 ) : IntRangeBoundary {
 
     private val value = ion.bigIntegerValue()
@@ -134,8 +136,7 @@ private abstract class IntRangeBoundaryBase(
 }
 
 private class IntRangeLowerBoundary(ion: IonInt) : IntRangeBoundaryBase(ion, -1)
-private class IntRangeUpperBoundary(ion: IonInt) : IntRangeBoundaryBase(ion,  1)
+private class IntRangeUpperBoundary(ion: IonInt) : IntRangeBoundaryBase(ion, 1)
 private class IntRangeBoundaryConstant(private val compareResult: Int) : IntRangeBoundary {
     override operator fun compareTo(other: BigInteger) = compareResult
 }
-

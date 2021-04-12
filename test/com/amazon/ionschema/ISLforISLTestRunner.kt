@@ -18,8 +18,8 @@ package com.amazon.ionschema
 import com.amazon.ion.IonStruct
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.runner.notification.RunNotifier
 import org.junit.runner.RunWith
+import org.junit.runner.notification.RunNotifier
 import org.junit.runners.Suite
 import java.io.File
 import java.io.FileReader
@@ -31,22 +31,22 @@ import java.io.FileReader
 @RunWith(ISLforISLTestRunner::class)
 @Suite.SuiteClasses(ISLforISLTestRunner::class)
 class ISLforISLTestRunner(
-        testClass: Class<Any>
+    testClass: Class<Any>
 ) : AbstractTestRunner(testClass) {
 
     private val schemaSystem = IonSchemaSystemBuilder.standard()
-            .withAuthority(AuthorityFilesystem("ion-schema-schemas"))
-            .build()
+        .withAuthority(AuthorityFilesystem("ion-schema-schemas"))
+        .build()
 
     private val blacklist = setOf(
-            "ion-schema-tests/schema/import/import_schema_with_aliased_type_invalid.isl",
-            "ion-schema-tests/schema/import/import_type_unknown.isl",
-            "ion-schema-tests/schema/import/invalid_duplicate_import.isl",
-            "ion-schema-tests/schema/import/invalid_duplicate_import_type.isl",
-            "ion-schema-tests/schema/import/invalid_duplicate_type.isl",
-            "ion-schema-tests/schema/invalid_missing_schema_footer.isl",
-            "ion-schema-tests/schema/invalid_missing_schema_header.isl",
-            "ion-schema-tests/schema/invalid_unknown_type.isl"
+        "ion-schema-tests/schema/import/import_schema_with_aliased_type_invalid.isl",
+        "ion-schema-tests/schema/import/import_type_unknown.isl",
+        "ion-schema-tests/schema/import/invalid_duplicate_import.isl",
+        "ion-schema-tests/schema/import/invalid_duplicate_import_type.isl",
+        "ion-schema-tests/schema/import/invalid_duplicate_type.isl",
+        "ion-schema-tests/schema/invalid_missing_schema_footer.isl",
+        "ion-schema-tests/schema/invalid_missing_schema_header.isl",
+        "ion-schema-tests/schema/invalid_unknown_type.isl"
     )
 
     override fun run(notifier: RunNotifier) {
@@ -114,4 +114,3 @@ class ISLforISLTestRunner(
             }
     }
 }
-

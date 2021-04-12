@@ -15,11 +15,14 @@
 
 package com.amazon.ionschema
 
-import org.junit.Assert.*
-import org.junit.Test
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.util.CloseableIterator
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
 class IonSchemaSystemTest {
     private class BadAuthorityException : Exception()
@@ -45,12 +48,12 @@ class IonSchemaSystemTest {
     @Test
     fun loadSchema_despite_authority_issues() {
         val schema = IonSchemaSystemBuilder.standard()
-                .addAuthority(AuthorityFilesystem("src"))               // misconfigured
-                .addAuthority(exceptionalAuthority)                     // always throws
-                .addAuthority(AuthorityFilesystem("ion-schema-tests"))  // correctly configured
-                .build()
-                .loadSchema("schema/Customer.isl")
-        assertEquals(2, exceptionalAuthority.invokeCnt)   // for "Customer.isl" and "positive_int.isl"
+            .addAuthority(AuthorityFilesystem("src")) // misconfigured
+            .addAuthority(exceptionalAuthority) // always throws
+            .addAuthority(AuthorityFilesystem("ion-schema-tests")) // correctly configured
+            .build()
+            .loadSchema("schema/Customer.isl")
+        assertEquals(2, exceptionalAuthority.invokeCnt) // for "Customer.isl" and "positive_int.isl"
         assertNotNull(schema)
     }
 
@@ -58,10 +61,10 @@ class IonSchemaSystemTest {
     fun withAuthority_replaces_existing_authorities() {
         // exceptionalAuthority.iteratorFor() should not be invoked by:
         val schema = IonSchemaSystemBuilder.standard()
-                .addAuthority(exceptionalAuthority)
-                .withAuthority(AuthorityFilesystem("ion-schema-tests"))
-                .build()
-                .loadSchema("schema/Customer.isl")
+            .addAuthority(exceptionalAuthority)
+            .withAuthority(AuthorityFilesystem("ion-schema-tests"))
+            .build()
+            .loadSchema("schema/Customer.isl")
         assertEquals(0, exceptionalAuthority.invokeCnt)
         assertNotNull(schema)
     }
@@ -70,10 +73,10 @@ class IonSchemaSystemTest {
     fun withAuthorities_replaces_existing_authorities() {
         // exceptionalAuthority.iteratorFor() should not be invoked by:
         val schema = IonSchemaSystemBuilder.standard()
-                .addAuthority(exceptionalAuthority)
-                .withAuthorities(listOf<Authority>(AuthorityFilesystem("ion-schema-tests")))
-                .build()
-                .loadSchema("schema/Customer.isl")
+            .addAuthority(exceptionalAuthority)
+            .withAuthorities(listOf<Authority>(AuthorityFilesystem("ion-schema-tests")))
+            .build()
+            .loadSchema("schema/Customer.isl")
         assertEquals(0, exceptionalAuthority.invokeCnt)
         assertNotNull(schema)
     }
@@ -81,8 +84,8 @@ class IonSchemaSystemTest {
     @Test
     fun loadSchema_verifyCache() {
         val iss = IonSchemaSystemBuilder.standard()
-                .addAuthority(AuthorityFilesystem("ion-schema-tests"))
-                .build()
+            .addAuthority(AuthorityFilesystem("ion-schema-tests"))
+            .build()
         val schema = iss.loadSchema("schema/Customer.isl")
         val schemaFromCache = iss.loadSchema("schema/Customer.isl")
         assertTrue(schema == schemaFromCache)
@@ -96,37 +99,48 @@ class IonSchemaSystemTest {
 
     @Test
     fun newSchema_string() {
-        val schema = iss.newSchema("""
+        val schema = iss.newSchema(
+            """
                 type::{ name: a }
                 type::{ name: b }
                 type::{ name: c }
-                """)
-        assertEquals(listOf("a", "b", "c"),
-                schema.getTypes().asSequence().toList().map { it.name })
+                """
+        )
+        assertEquals(
+            listOf("a", "b", "c"),
+            schema.getTypes().asSequence().toList().map { it.name }
+        )
     }
 
     @Test
     fun newSchema_iterator() {
         val schema = iss.newSchema(
-                ION.iterate("""
+            ION.iterate(
+                """
                     type::{ name: d }
                     type::{ name: e }
                     type::{ name: f }
-                    """))
-        assertEquals(listOf("d", "e", "f"),
-                schema.getTypes().asSequence().toList().map { it.name })
+                    """
+            )
+        )
+        assertEquals(
+            listOf("d", "e", "f"),
+            schema.getTypes().asSequence().toList().map { it.name }
+        )
     }
 
     @Test(expected = IonSchemaException::class)
     fun newSchema_import_unknown_schema_id() {
-        iss.newSchema("""
+        iss.newSchema(
+            """
             schema_header::{
               imports: [
                 { id: "unknown_schema_id" },
               ],
             }
             schema_footer::{}
-            """)
+            """
+        )
     }
 
     @Test(expected = InvalidSchemaException::class)
@@ -134,4 +148,3 @@ class IonSchemaSystemTest {
         iss.newSchema("type::{ type: unknown_type }")
     }
 }
-

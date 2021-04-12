@@ -27,11 +27,11 @@ import com.amazon.ionschema.SchemaCache
  * Implementation of [IonSchemaSystem].
  */
 internal class IonSchemaSystemImpl(
-        private val ION: IonSystem,
-        private val authorities: List<Authority>,
-        private val constraintFactory: ConstraintFactory,
-        private val schemaCache: SchemaCache,
-        private val params: Map<Param, Any>
+    private val ION: IonSystem,
+    private val authorities: List<Authority>,
+    private val constraintFactory: ConstraintFactory,
+    private val schemaCache: SchemaCache,
+    private val params: Map<Param, Any>
 ) : IonSchemaSystem {
 
     private val schemaCore = SchemaCore(this)
@@ -66,20 +66,17 @@ internal class IonSchemaSystemImpl(
 
     override fun newSchema(isl: Iterator<IonValue>) = SchemaImpl(this, schemaCore, isl, null)
 
-    internal fun isConstraint(name: String)
-            = constraintFactory.isConstraint(name)
+    internal fun isConstraint(name: String) = constraintFactory.isConstraint(name)
 
-    internal fun constraintFor(ion: IonValue, schema: Schema)
-            = constraintFactory.constraintFor(ion, schema)
+    internal fun constraintFor(ion: IonValue, schema: Schema) = constraintFactory.constraintFor(ion, schema)
 
     internal fun getIonSystem() = ION
 
-    internal fun getSchemaImportSet() = schemaImportSet;
+    internal fun getSchemaImportSet() = schemaImportSet
 
     internal fun hasParam(param: Param) = params.containsKey(param)
 
     internal enum class Param {
-        ALLOW_ANONYMOUS_TOP_LEVEL_TYPES,  // for backwards compatibility with v1.0
+        ALLOW_ANONYMOUS_TOP_LEVEL_TYPES, // for backwards compatibility with v1.0
     }
 }
-

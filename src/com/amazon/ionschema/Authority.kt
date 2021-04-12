@@ -48,4 +48,3 @@ val EMPTY_ITERATOR = object : CloseableIterator<IonValue> {
     override fun next(): IonValue = throw NoSuchElementException()
     override fun close() { }
 }
-

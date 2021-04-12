@@ -15,11 +15,13 @@
 
 package com.amazon.ionschema.internal
 
-import com.amazon.ion.*
+import com.amazon.ion.IonStruct
+import com.amazon.ion.IonSymbol
+import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.Schema
-import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
@@ -29,10 +31,10 @@ import com.amazon.ionschema.internal.util.markReadOnly
  * (unless addDefaultTypeConstraint is `false`).
  */
 internal class TypeImpl(
-        private val ionStruct: IonStruct,
-        private val schema: Schema,
-        addDefaultTypeConstraint: Boolean = true
-    ) : TypeInternal, ConstraintBase(ionStruct) {
+    private val ionStruct: IonStruct,
+    private val schema: Schema,
+    addDefaultTypeConstraint: Boolean = true
+) : TypeInternal, ConstraintBase(ionStruct) {
 
     private companion object {
         private val ION = IonSystemBuilder.standard().build()
@@ -46,10 +48,10 @@ internal class TypeImpl(
     init {
         var foundTypeConstraint = false
         constraints = ionStruct.asSequence()
-                .filter { it.fieldName == null || (schema.getSchemaSystem() as IonSchemaSystemImpl).isConstraint(it.fieldName) }
-                .onEach { if (it.fieldName.equals("type")) { foundTypeConstraint = true } }
-                .map { (schema.getSchemaSystem() as IonSchemaSystemImpl).constraintFor(it, schema) }
-                .toMutableList()
+            .filter { it.fieldName == null || (schema.getSchemaSystem() as IonSchemaSystemImpl).isConstraint(it.fieldName) }
+            .onEach { if (it.fieldName == "type") { foundTypeConstraint = true } }
+            .map { (schema.getSchemaSystem() as IonSchemaSystemImpl).constraintFor(it, schema) }
+            .toMutableList()
 
         if (!foundTypeConstraint && addDefaultTypeConstraint) {
             // default type is 'any':

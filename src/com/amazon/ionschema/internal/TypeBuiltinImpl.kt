@@ -28,12 +28,12 @@ import com.amazon.ionschema.internal.constraint.ConstraintBase
  * @see TypeBuiltin
  */
 internal class TypeBuiltinImpl private constructor(
-        ion : IonStruct,
-        private val delegate: TypeInternal
+    ion: IonStruct,
+    private val delegate: TypeInternal
 ) : TypeInternal by delegate, ConstraintBase(ion), TypeBuiltin {
 
-    constructor (ionStruct: IonStruct, schema: Schema)
-            : this(ionStruct, TypeImpl(ionStruct, schema, addDefaultTypeConstraint = false))
+    constructor (ionStruct: IonStruct, schema: Schema) :
+        this(ionStruct, TypeImpl(ionStruct, schema, addDefaultTypeConstraint = false))
 
     override val name = ion.fieldName
 
@@ -48,4 +48,3 @@ internal class TypeBuiltinImpl private constructor(
         }
     }
 }
-

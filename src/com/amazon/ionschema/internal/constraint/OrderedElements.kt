@@ -15,11 +15,14 @@
 
 package com.amazon.ionschema.internal.constraint
 
-import com.amazon.ion.*
+import com.amazon.ion.IonList
+import com.amazon.ion.IonSequence
+import com.amazon.ion.IonStruct
+import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.Schema
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Violation
+import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.TypeReference
 import com.amazon.ionschema.internal.util.IntRange
 
@@ -29,8 +32,8 @@ import com.amazon.ionschema.internal.util.IntRange
  * @see https://amzn.github.io/ion-schema/docs/spec.html#ordered_elements
  */
 internal class OrderedElements(
-        ion: IonValue,
-        private val schema: Schema
+    ion: IonValue,
+    private val schema: Schema
 ) : ConstraintBase(ion) {
 
     private val stateMachine: StateMachine
@@ -57,10 +60,13 @@ internal class OrderedElements(
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonSequence>(value, issues) { v ->
             if (!stateMachine.matches(v.iterator())) {
-                issues.add(Violation(ion, "ordered_elements_mismatch",
-                        "one or more ordered elements don't match specification"))
+                issues.add(
+                    Violation(
+                        ion, "ordered_elements_mismatch",
+                        "one or more ordered elements don't match specification"
+                    )
+                )
             }
         }
     }
 }
-

@@ -6,7 +6,7 @@ import com.amazon.ion.IonValue
  * Implements the utf8_byte_length constraint.
  */
 internal class Utf8ByteLength(
-        ion: IonValue
+    ion: IonValue
 ) : ConstraintBaseIntRange<IonText>(IonText::class.java, ion) {
 
     override val violationCode = "invalid_utf8_byte_length"

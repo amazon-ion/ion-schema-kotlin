@@ -73,15 +73,15 @@ internal class TypeReference private constructor() {
         private fun handleSymbol(ion: IonSymbol, schema: Schema): () -> TypeInternal {
             val t = schema.getType(ion.stringValue())
             return if (t != null) {
-                    val type = t as? TypeBuiltin ?: TypeNamed(ion, t as TypeInternal)
-                    val theType = handleNullable(ion, schema, type);
-                    { theType }
-                } else {
-                    // type can't be resolved yet;  ask the schema to try again later
-                    val deferredType = TypeReferenceDeferred(ion, schema)
-                    (schema as SchemaImpl).addDeferredType(deferredType);
-                    { deferredType.resolve() }
-                }
+                val type = t as? TypeBuiltin ?: TypeNamed(ion, t as TypeInternal)
+                val theType = handleNullable(ion, schema, type);
+                { theType }
+            } else {
+                // type can't be resolved yet;  ask the schema to try again later
+                val deferredType = TypeReferenceDeferred(ion, schema)
+                (schema as SchemaImpl).addDeferredType(deferredType);
+                { deferredType.resolve() }
+            }
         }
 
         private fun handleNullable(ion: IonValue, schema: Schema, type: TypeInternal): TypeInternal =
@@ -97,8 +97,8 @@ internal class TypeReference private constructor() {
  * Represents a type reference that can't be resolved yet.
  */
 internal class TypeReferenceDeferred(
-        nameSymbol: IonSymbol,
-        private val schema: Schema
+    nameSymbol: IonSymbol,
+    private val schema: Schema
 ) : TypeInternal {
 
     private var type: TypeInternal? = null
@@ -119,4 +119,3 @@ internal class TypeReferenceDeferred(
 
     override fun validate(value: IonValue, issues: Violations) = throw UnsupportedOperationException()
 }
-

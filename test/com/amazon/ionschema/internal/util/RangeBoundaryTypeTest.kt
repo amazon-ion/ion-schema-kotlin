@@ -15,21 +15,21 @@
 
 package com.amazon.ionschema.internal.util
 
+import com.amazon.ion.system.IonSystemBuilder
+import com.amazon.ionschema.IonSchemaException
+import com.amazon.ionschema.internal.util.RangeBoundaryType.EXCLUSIVE
+import com.amazon.ionschema.internal.util.RangeBoundaryType.INCLUSIVE
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
-import com.amazon.ion.system.IonSystemBuilder
-import com.amazon.ionschema.IonSchemaException
-import com.amazon.ionschema.internal.util.RangeBoundaryType.INCLUSIVE
-import com.amazon.ionschema.internal.util.RangeBoundaryType.EXCLUSIVE
 
 internal class RangeBoundaryTypeTest {
     private val ION = IonSystemBuilder.standard().build()
 
-    @Test fun exclusive()     { assert(EXCLUSIVE, "exclusive::5") }
-    @Test fun inclusive()     { assert(INCLUSIVE, "min") }
-    @Test fun max()           { assert(INCLUSIVE, "max") }
-    @Test fun min()           { assert(INCLUSIVE, "min") }
+    @Test fun exclusive() { assert(EXCLUSIVE, "exclusive::5") }
+    @Test fun inclusive() { assert(INCLUSIVE, "min") }
+    @Test fun max() { assert(INCLUSIVE, "max") }
+    @Test fun min() { assert(INCLUSIVE, "min") }
     @Test fun max_exclusive() { assertException("exclusive::max") }
     @Test fun min_exclusive() { assertException("exclusive::min") }
 
@@ -45,4 +45,3 @@ internal class RangeBoundaryTypeTest {
         }
     }
 }
-

@@ -8,11 +8,9 @@ import java.util.concurrent.ConcurrentHashMap
 class SchemaCacheDefault : SchemaCache {
     private val cache = ConcurrentHashMap<String, Schema>()
 
-    override fun getOrPut(key: String, resolver: () -> Schema): Schema
-            = cache.getOrPut(key, resolver)
+    override fun getOrPut(key: String, resolver: () -> Schema): Schema = cache.getOrPut(key, resolver)
 
     override fun invalidate(key: String) {
         cache.remove(key)
     }
 }
-

@@ -19,8 +19,8 @@ import com.amazon.ion.IonContainer
 import com.amazon.ion.IonList
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Violation
+import com.amazon.ionschema.Violations
 
 /**
  * Implements the contains constraint.
@@ -28,14 +28,14 @@ import com.amazon.ionschema.Violation
  * @see https://amzn.github.io/ion-schema/docs/spec.html#contains
  */
 internal class Contains(
-        ion: IonValue
+    ion: IonValue
 ) : ConstraintBase(ion) {
 
     private val expectedElements = if (ion !is IonList || ion.isNullValue) {
-            throw InvalidSchemaException("Expected annotations as a list, found: $ion")
-        } else {
-            ion.toArray()
-        }
+        throw InvalidSchemaException("Expected annotations as a list, found: $ion")
+    } else {
+        ion.toArray()
+    }
 
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonContainer>(value, issues) { v ->
@@ -44,10 +44,13 @@ internal class Contains(
                 expectedValues.remove(it)
             }
             if (!expectedValues.isEmpty()) {
-                issues.add(Violation(ion, "missing_values",
-                        "missing value(s): " + expectedValues.joinToString { it.toString() }))
+                issues.add(
+                    Violation(
+                        ion, "missing_values",
+                        "missing value(s): " + expectedValues.joinToString { it.toString() }
+                    )
+                )
             }
         }
     }
 }
-

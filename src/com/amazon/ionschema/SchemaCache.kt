@@ -26,4 +26,3 @@ interface SchemaCache {
      */
     fun invalidate(key: String)
 }
-

@@ -15,30 +15,30 @@
 
 package com.amazon.ionschema.internal.util
 
-import org.junit.Test
 import com.amazon.ion.IonList
+import org.junit.Test
 
-internal class RangeIntNonNegativeTest
-    : AbstractRangeTest(RangeType.INT_NON_NEGATIVE)
-{
+internal class RangeIntNonNegativeTest : AbstractRangeTest(RangeType.INT_NON_NEGATIVE) {
+
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Any> rangeOf(ion: IonList)
-            = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE) as Range<T>
+    override fun <T : Any> rangeOf(ion: IonList) = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE) as Range<T>
 
     @Test
     fun range_int_inclusive() {
         assertValidRangeAndValues(
-                "range::[0, 100]",
-                listOf(0, 100),
-                listOf(-1, 101))
+            "range::[0, 100]",
+            listOf(0, 100),
+            listOf(-1, 101)
+        )
     }
 
     @Test
     fun range_int_exclusive() {
         assertValidRangeAndValues(
-                "range::[exclusive::0, exclusive::100]",
-                listOf(1, 99),
-                listOf(0, 100))
+            "range::[exclusive::0, exclusive::100]",
+            listOf(1, 99),
+            listOf(0, 100)
+        )
     }
 
     @Test
@@ -58,4 +58,3 @@ internal class RangeIntNonNegativeTest
         assertInvalidRange("range::[0, 1e0]")
     }
 }
-

@@ -23,7 +23,7 @@ import com.amazon.ionschema.InvalidSchemaException
  * Implementation of Range<IonTimestamp> which mostly delegates to RangeBigDecimal.
  */
 internal class RangeIonTimestamp private constructor (
-        private val delegate: RangeBigDecimal
+    private val delegate: RangeBigDecimal
 ) : Range<IonTimestamp> {
 
     constructor (ion: IonList) : this(toRangeBigDecimal(ion))
@@ -39,7 +39,8 @@ internal class RangeIonTimestamp private constructor (
                 val newValue = if (ionValue is IonTimestamp) {
                     if (ionValue.localOffset == null) {
                         throw InvalidSchemaException(
-                                "Timestamp range bound doesn't specify a local offset: $ionValue")
+                            "Timestamp range bound doesn't specify a local offset: $ionValue"
+                        )
                     }
                     ion.system.newDecimal(ionValue.decimalMillis)
                 } else {
@@ -63,4 +64,3 @@ internal class RangeIonTimestamp private constructor (
         return delegate.contains(value.decimalMillis)
     }
 }
-

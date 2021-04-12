@@ -26,8 +26,8 @@ import com.amazon.ionschema.internal.util.RangeType
  * against a non-negative int range.
  */
 internal abstract class ConstraintBaseIntRange<T : IonValue>(
-        private val expectedClass: Class<out IonValue>,
-        ion: IonValue
+    private val expectedClass: Class<out IonValue>,
+    ion: IonValue
 ) : ConstraintBase(ion) {
 
     internal val range = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE)
@@ -47,4 +47,3 @@ internal abstract class ConstraintBaseIntRange<T : IonValue>(
 
     abstract fun getIntValue(value: T): Int
 }
-

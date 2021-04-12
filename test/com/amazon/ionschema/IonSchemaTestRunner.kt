@@ -15,10 +15,6 @@
 
 package com.amazon.ionschema
 
-import org.junit.Assert.*
-import org.junit.runner.notification.RunNotifier
-import org.junit.runner.RunWith
-import org.junit.runners.Suite
 import com.amazon.ion.IonContainer
 import com.amazon.ion.IonList
 import com.amazon.ion.IonSequence
@@ -30,6 +26,12 @@ import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import com.amazon.ionschema.internal.SchemaCore
 import com.amazon.ionschema.internal.SchemaImpl
 import com.amazon.ionschema.internal.TypeImpl
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.fail
+import org.junit.runner.RunWith
+import org.junit.runner.notification.RunNotifier
+import org.junit.runners.Suite
 import java.io.File
 import java.io.FileReader
 import java.io.OutputStream
@@ -40,12 +42,12 @@ import java.io.OutputStream
 @RunWith(IonSchemaTestRunner::class)
 @Suite.SuiteClasses(IonSchemaTestRunner::class)
 class IonSchemaTestRunner(
-        testClass: Class<Any>
+    testClass: Class<Any>
 ) : AbstractTestRunner(testClass) {
 
     private val schemaSystem = IonSchemaSystemBuilder.standard()
-            .withAuthority(AuthorityFilesystem("ion-schema-tests"))
-            .build()
+        .withAuthority(AuthorityFilesystem("ion-schema-tests"))
+        .build()
 
     private val schemaCore = SchemaCore(schemaSystem)
 
@@ -110,8 +112,10 @@ class IonSchemaTestRunner(
                         "invalid_schema" -> {
                             runTest(notifier, testName, ion) {
                                 try {
-                                    SchemaImpl(schemaSystem as IonSchemaSystemImpl, schemaCore,
-                                            (prepareValue(ion) as IonSequence).iterator(), testName)
+                                    SchemaImpl(
+                                        schemaSystem as IonSchemaSystemImpl, schemaCore,
+                                        (prepareValue(ion) as IonSequence).iterator(), testName
+                                    )
                                     fail("Expected an InvalidSchemaException")
                                 } catch (e: InvalidSchemaException) {
                                 }
@@ -163,8 +167,7 @@ class IonSchemaTestRunner(
                             }
                         }
 
-                        else -> throw Exception(
-                                "Unrecognized annotation '$annotation' in ${file.path}")
+                        else -> throw Exception("Unrecognized annotation '$annotation' in ${file.path}")
                     }
                 }
             }
@@ -200,14 +203,16 @@ class IonSchemaTestRunner(
         val struct = ION.newEmptyStruct()
         if (constraint != null) {
             val constr = constraint as IonValue
-            if (constr is IonStruct
-                    && !specialFieldNames.contains(constr.fieldName)) {
+            if (constr is IonStruct &&
+                !specialFieldNames.contains(constr.fieldName)
+            ) {
                 struct.put("constraint", constr.clone())
             } else {
                 val constraintStruct = ION.newEmptyStruct()
                 constraintStruct.put(
-                        constr.fieldName ?: "type",
-                        constr.clone())
+                    constr.fieldName ?: "type",
+                    constr.clone()
+                )
                 struct.put("constraint", constraintStruct)
             }
         }
@@ -233,4 +238,3 @@ class IonSchemaTestRunner(
         return struct
     }
 }
-

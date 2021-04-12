@@ -72,4 +72,3 @@ class AuthorityFilesystem(basePath: String) : Authority {
         return EMPTY_ITERATOR
     }
 }
-

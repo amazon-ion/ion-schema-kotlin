@@ -29,7 +29,7 @@ import com.amazon.ionschema.Violations
  * @see https://amzn.github.io/ion-schema/docs/spec.html#timestamp_offset
  */
 internal class TimestampOffset(
-        ion: IonValue
+    ion: IonValue
 ) : ConstraintBase(ion) {
 
     companion object {
@@ -84,7 +84,7 @@ internal class TimestampOffset(
                 try {
                     val sign = when (str[0]) {
                         '-' -> -1
-                        '+' ->  1
+                        '+' -> 1
                         else -> throw InvalidSchemaException("Unrecognized timestamp offset sign '${str[0]}'")
                     }
                     // translate to offset in +/- minutes:
@@ -109,17 +109,20 @@ internal class TimestampOffset(
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonTimestamp>(value, issues) { v ->
             val hasViolations =
-                    if (offsetsAreValid) {
-                        offsets.contains(v.localOffset)
-                    } else {
-                        !offsets.contains(v.localOffset)
-                    }
+                if (offsetsAreValid) {
+                    offsets.contains(v.localOffset)
+                } else {
+                    !offsets.contains(v.localOffset)
+                }
 
             if (hasViolations) {
-                issues.add(Violation(ion, "invalid_timestamp_offset",
-                        "invalid timestamp offset %s, expected %s".format(v.localOffset, ion)))
+                issues.add(
+                    Violation(
+                        ion, "invalid_timestamp_offset",
+                        "invalid timestamp offset %s, expected %s".format(v.localOffset, ion)
+                    )
+                )
             }
         }
     }
 }
-

@@ -49,4 +49,3 @@ interface Import {
      */
     fun getTypes(): Iterator<Type>
 }
-

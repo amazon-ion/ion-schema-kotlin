@@ -17,16 +17,16 @@ package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.internal.constraint.ConstraintBase
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Violation
+import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.constraint.ConstraintBase
 
 /**
  * Implementation of [Type] representing types identified only by name.
  */
 internal class TypeNamed(
-        ion: IonSymbol,
-        internal val type: TypeInternal
+    ion: IonSymbol,
+    internal val type: TypeInternal
 ) : TypeInternal by type, ConstraintBase(ion) {
 
     override fun validate(value: IonValue, issues: Violations) {
