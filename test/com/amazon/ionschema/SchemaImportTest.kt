@@ -15,16 +15,18 @@
 
 package com.amazon.ionschema
 
-import org.junit.Assert.*
-import org.junit.Test
 import com.amazon.ion.system.IonSystemBuilder
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Test
 
 class SchemaImportTest {
     private val ION = IonSystemBuilder.standard().build()
 
     private val iss = IonSchemaSystemBuilder.standard()
-            .addAuthority(AuthorityFilesystem("ion-schema-tests"))
-            .build()
+        .addAuthority(AuthorityFilesystem("ion-schema-tests"))
+        .build()
 
     @Test
     fun getImport_unknown() {
@@ -93,8 +95,9 @@ class SchemaImportTest {
     fun getImports_multiple_aliased_types() {
         val schema = iss.loadSchema("schema/import/import_types.isl")
         val keys = mapOf(
-                "schema/import/abcde.isl"      to setOf("a2", "b", "c2"),
-                "schema/util/positive_int.isl" to setOf("positive_int", "posint"))
+            "schema/import/abcde.isl" to setOf("a2", "b", "c2"),
+            "schema/util/positive_int.isl" to setOf("positive_int", "posint")
+        )
 
         assertEquals(keys.size, schema.getImports().asSequence().count())
         keys.entries.forEach { entry ->
@@ -107,10 +110,15 @@ class SchemaImportTest {
             }
         }
 
-        assertEquals(1, schema.getImport("schema/util/positive_int.isl")!!.getSchema()
-                .getTypes().asSequence().count())
-        assertEquals(5, schema.getImport("schema/import/abcde.isl")!!.getSchema()
-                .getTypes().asSequence().count())
+        assertEquals(
+            1,
+            schema.getImport("schema/util/positive_int.isl")!!.getSchema()
+                .getTypes().asSequence().count()
+        )
+        assertEquals(
+            5,
+            schema.getImport("schema/import/abcde.isl")!!.getSchema()
+                .getTypes().asSequence().count()
+        )
     }
 }
-

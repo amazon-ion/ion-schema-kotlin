@@ -18,20 +18,20 @@ package com.amazon.ionschema.internal
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Schema
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Violation
+import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.constraint.ConstraintBase
 
 /**
  * Implementation of [Type] corresponding to inline type definitions.
  */
 internal class TypeInline private constructor (
-        ion: IonStruct,
-        private val type: TypeInternal
+    ion: IonStruct,
+    private val type: TypeInternal
 ) : ConstraintBase(ion), TypeInternal by type {
 
-    constructor(ionStruct: IonStruct, schema: Schema)
-            : this(ionStruct, TypeImpl(ionStruct, schema))
+    constructor(ionStruct: IonStruct, schema: Schema) :
+        this(ionStruct, TypeImpl(ionStruct, schema))
 
     override val name = type.name
 
@@ -44,4 +44,3 @@ internal class TypeInline private constructor (
         }
     }
 }
-

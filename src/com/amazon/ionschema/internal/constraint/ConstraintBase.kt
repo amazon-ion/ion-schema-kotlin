@@ -24,13 +24,13 @@ import com.amazon.ionschema.internal.Constraint
  * Base class for constraint implementations.
  */
 internal abstract class ConstraintBase(
-        val ion: IonValue
+    val ion: IonValue
 ) : Constraint {
 
     override val name = ion.fieldName
 
-    internal inline fun <reified T> validateAs(value: IonValue, issues: Violations, noinline customValidation: (T) -> Unit)
-            = validateAs(T::class.java, value, issues, customValidation)
+    internal inline fun <reified T> validateAs(value: IonValue, issues: Violations, noinline customValidation: (T) -> Unit) =
+        validateAs(T::class.java, value, issues, customValidation)
 
     internal fun <T> validateAs(expectedClass: Class<T>, value: IonValue, issues: Violations, customValidation: (T) -> Unit) {
         when {
@@ -44,4 +44,3 @@ internal abstract class ConstraintBase(
 
     override fun toString() = ion.toString()
 }
-

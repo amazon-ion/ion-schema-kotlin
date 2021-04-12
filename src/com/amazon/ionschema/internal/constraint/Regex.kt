@@ -19,8 +19,8 @@ import com.amazon.ion.IonString
 import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Violation
+import com.amazon.ionschema.Violations
 import java.util.regex.Pattern
 
 /**
@@ -34,7 +34,7 @@ import java.util.regex.Pattern
  * @see java.util.regex.Pattern
  */
 internal class Regex(
-        ion: IonValue
+    ion: IonValue
 ) : ConstraintBase(ion) {
 
     private val pattern: Pattern
@@ -50,7 +50,8 @@ internal class Regex(
                 "i" -> Pattern.CASE_INSENSITIVE
                 "m" -> Pattern.MULTILINE
                 else -> throw InvalidSchemaException(
-                        "Unrecognized flags for regex ($ion)")
+                    "Unrecognized flags for regex ($ion)"
+                )
             }
             flags = flags.or(flag)
         }
@@ -61,8 +62,12 @@ internal class Regex(
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonText>(value, issues) { v ->
             if (!pattern.matcher(v.stringValue()).find()) {
-                issues.add(Violation(ion, "regex_mismatch",
-                        "'${v.stringValue()}' doesn't match regex '${pattern.pattern()}'"))
+                issues.add(
+                    Violation(
+                        ion, "regex_mismatch",
+                        "'${v.stringValue()}' doesn't match regex '${pattern.pattern()}'"
+                    )
+                )
             }
         }
     }
@@ -80,12 +85,12 @@ internal class Regex(
                 '(' -> {
                     sb.append(ch)
                     ch = si.next()
-                    if (ch == '?') {            // error on "(?..." constructs
+                    if (ch == '?') { // error on "(?..." constructs
                         error(si, "invalid character '$ch'")
                     }
                     sb.append(ch)
                 }
-                '\\' -> {                       // handle escaped chars
+                '\\' -> { // handle escaped chars
                     ch = si.next()
                     when (ch) {
                         '.', '^', '$', '|', '?', '*', '+', '\\',
@@ -96,10 +101,10 @@ internal class Regex(
                         else -> error(si, "invalid escape character '$ch'")
                     }
                 }
-                else -> sb.append(ch)           // otherwise, accept the character
+                else -> sb.append(ch) // otherwise, accept the character
             }
 
-            parseQuantifier(si, sb)   // parse a quantifier, if present
+            parseQuantifier(si, sb) // parse a quantifier, if present
 
             ch = si.next()
         } while (ch != null)
@@ -127,8 +132,10 @@ internal class Regex(
                         '[', ']', '\\' -> sb.append(ch2)
                         // not supporting pre-defined char classes (i.e., \d, \s, \w)
                         // as user is specifying a new char class
-                        else -> error(si,
-                                "invalid sequence '\\$ch2' in character class")
+                        else -> error(
+                            si,
+                            "invalid sequence '\\$ch2' in character class"
+                        )
                     }
                 }
 
@@ -205,4 +212,3 @@ private class StringIterator(private val s: String) {
 
     override fun toString() = s
 }
-

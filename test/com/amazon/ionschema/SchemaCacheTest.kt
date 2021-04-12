@@ -3,7 +3,8 @@ package com.amazon.ionschema
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.util.CloseableIterator
-import org.junit.Assert.*
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 private val ION = IonSystemBuilder.standard().build()
@@ -16,8 +17,8 @@ class SchemaCacheTest {
     @Test
     fun defaultCache() {
         val iss = IonSchemaSystemBuilder.standard()
-                .addAuthority(authority)
-                .build()
+            .addAuthority(authority)
+            .build()
 
         val schema = iss.loadSchema(schemaId)
         checkSchema(schema)
@@ -30,9 +31,9 @@ class SchemaCacheTest {
         val schemaCache = SchemaCacheDefault()
 
         val iss = IonSchemaSystemBuilder.standard()
-                .addAuthority(authority)
-                .withSchemaCache(schemaCache)
-                .build()
+            .addAuthority(authority)
+            .withSchemaCache(schemaCache)
+            .build()
 
         val schema = iss.loadSchema(schemaId)
         checkSchema(schema)
@@ -54,9 +55,9 @@ class SchemaCacheTest {
         }
 
         val iss = IonSchemaSystemBuilder.standard()
-                .addAuthority(authority)
-                .withSchemaCache(noopCache)
-                .build()
+            .addAuthority(authority)
+            .withSchemaCache(noopCache)
+            .build()
 
         val schema = iss.loadSchema(schemaId)
         checkSchema(schema)
@@ -66,8 +67,10 @@ class SchemaCacheTest {
     }
 
     private class CustomAuthority : Authority {
-        override fun iteratorFor(iss: IonSchemaSystem,
-                                 id: String): CloseableIterator<IonValue> =
+        override fun iteratorFor(
+            iss: IonSchemaSystem,
+            id: String
+        ): CloseableIterator<IonValue> =
 
             object : CloseableIterator<IonValue> {
                 private val iter = ION.iterate(isl)
@@ -81,8 +84,7 @@ class SchemaCacheTest {
     private fun checkSchema(schema: Schema) {
         val type = schema.getType("a")!!
         assertFalse(type.isValid(ION.singleValue("ab")))
-        assertTrue (type.isValid(ION.singleValue("abc")))
+        assertTrue(type.isValid(ION.singleValue("abc")))
         assertFalse(type.isValid(ION.singleValue("abcd")))
     }
 }
-

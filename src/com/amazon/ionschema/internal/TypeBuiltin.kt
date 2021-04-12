@@ -23,4 +23,3 @@ package com.amazon.ionschema.internal
  * Builtin types include 'lob', 'number', and 'any', but not 'document'.
  */
 internal interface TypeBuiltin : TypeInternal
-

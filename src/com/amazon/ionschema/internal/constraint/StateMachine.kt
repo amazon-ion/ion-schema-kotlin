@@ -131,9 +131,9 @@ internal class StateMachineBuilder {
  *      http://doi.acm.org/10.1145/363347.363387
  */
 internal class StateMachine(
-        private val states: Set<State>,
-        private val initialState: State,
-        private val openContent: Any?
+    private val states: Set<State>,
+    private val initialState: State,
+    private val openContent: Any?
 ) {
     fun matches(iter: Iterator<IonValue>): Boolean {
         if (DEBUG) { println(this) }
@@ -180,8 +180,8 @@ internal class StateMachine(
 
     // encapsulates state tracking logic, plus intelligent tracking of "are we in a valid end state"
     internal inner class StateSet constructor(
-            initialState: State,
-            private val openContent: Any? = null
+        initialState: State,
+        private val openContent: Any? = null
     ) {
         private val newStates = mutableMapOf(initialState to 0)
 
@@ -215,10 +215,10 @@ internal class StateMachine(
             this@StateMachine.states.size == 1 && newStates.size == 1 -> true
             else -> {
                 newStates.asSequence()
-                        .takeWhile { stateVisit ->
-                            !stateVisit.key.isFinal(stateVisit.value)
-                        }
-                        .count() != newStates.size
+                    .takeWhile { stateVisit ->
+                        !stateVisit.key.isFinal(stateVisit.value)
+                    }
+                    .count() != newStates.size
             }
         }
 
@@ -231,17 +231,17 @@ private var stateCnt = 0
 
 // represents a state in the state machine model
 internal class State private constructor(
-        private val occurs: IntRange,
-        private val type: StateType,
-        private val transitions: MutableMap<Event,State> = mutableMapOf()
+    private val occurs: IntRange,
+    private val type: StateType,
+    private val transitions: MutableMap<Event, State> = mutableMapOf()
 ) {
     internal val stateId = "S$stateCnt"
     init {
         stateCnt += 1
     }
 
-    constructor(occurs: IntRange, isFinal: Boolean = false)
-            : this(occurs, if (isFinal) { StateType.FINAL } else { StateType.INTERMEDIATE })
+    constructor(occurs: IntRange, isFinal: Boolean = false) :
+        this(occurs, if (isFinal) { StateType.FINAL } else { StateType.INTERMEDIATE })
 
     internal fun addTransition(event: Event, toState: State) {
         transitions[event] = toState
@@ -252,8 +252,8 @@ internal class State private constructor(
         val visitCount = stateSet.visitCount(this)
         transitions.forEach { eventCandidate, toState ->
             when {
-                   (toState != this && occurs.lower <= visitCount)       // allow proceeding to the next state if we've reached minOccurs
-                || (toState == this && occurs.upper >  visitCount) -> {  // allow repeat of current state if we haven't yet reached maxOccurs
+                (toState != this && occurs.lower <= visitCount) // allow proceeding to the next state if we've reached minOccurs
+                    || (toState == this && occurs.upper > visitCount) -> { // allow repeat of current state if we haven't yet reached maxOccurs
 
                     if (eventCandidate.matches(value)) {
                         stateSet.visit(toState)
@@ -267,17 +267,17 @@ internal class State private constructor(
     }
 
     internal fun transitionToOptionalStates(stateSet: StateMachine.StateSet): List<State> =
-            transitions.values
-                    .filterNot { it == this }
-                    .filter { it.occurs.contains(0) }
-                    .onEach {
-                        stateSet.visit(it, preemptiveVisit = true)
-                        it.transitionToOptionalStates(stateSet)
-                    }
+        transitions.values
+            .filterNot { it == this }
+            .filter { it.occurs.contains(0) }
+            .onEach {
+                stateSet.visit(it, preemptiveVisit = true)
+                it.transitionToOptionalStates(stateSet)
+            }
 
     internal fun isFinal(visits: Int) =
-            type == StateType.FINAL
-                    && occurs.contains(visits)
+        type == StateType.FINAL &&
+            occurs.contains(visits)
 
     internal fun isRecurring() = occurs.upper > 1
 
@@ -315,4 +315,3 @@ internal data class EventSchemaType(private val typeResolver: () -> com.amazon.i
     override fun matches(value: IonValue?) = if (value == null) { false } else { typeResolver().isValid(value) }
     override fun toString() = "type: ${typeResolver().name}"
 }
-

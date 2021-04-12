@@ -1,6 +1,5 @@
 package com.amazon.ionschema.internal.constraint
 
-
 import com.amazon.ion.IonFloat
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
@@ -15,9 +14,7 @@ import java.math.BigDecimal
  * float32 validation relies on the precision of constants Float.MAX_VALUE.toDouble() and Float.MIN_VALUE.toDouble().
  * Client code working with floating points should use .toDouble()'s precision for FloatSize validation to work.
  */
-internal class FloatSize(
-        ion: IonValue
-) : ConstraintBase(ion) {
+internal class FloatSize(ion: IonValue) : ConstraintBase(ion) {
 
     private val validValues = setOf("float16", "float32", "float64")
     private val maxFloat32Range: BigDecimal = BigDecimal.valueOf(Float.MAX_VALUE.toDouble())
@@ -25,9 +22,12 @@ internal class FloatSize(
     private val minPosValue: BigDecimal = BigDecimal.valueOf(Float.MIN_VALUE.toDouble())
 
     init {
-        if (!(ion is IonSymbol
-                        && !ion.isNullValue
-                        && validValues.contains(ion.stringValue()))) {
+        if (!(
+            ion is IonSymbol &&
+                !ion.isNullValue &&
+                validValues.contains(ion.stringValue())
+            )
+        ) {
             throw InvalidSchemaException("Invalid float_size constraint: $ion")
         }
 
@@ -51,8 +51,7 @@ internal class FloatSize(
         if (value.isNumericValue) {
             val absValue = value.bigDecimalValue().abs()
             if (absValue != BigDecimal.ZERO) {
-                return (maxFloat32Range >= absValue)
-                        && (minPosValue <= absValue)
+                return (maxFloat32Range >= absValue) && (minPosValue <= absValue)
             }
         }
         // Non numeric values: +/-inf,nan should always fit, regardless of float_size constraint

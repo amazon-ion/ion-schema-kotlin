@@ -15,7 +15,11 @@
 
 package com.amazon.ionschema.internal.util
 
-import com.amazon.ion.*
+import com.amazon.ion.IonDecimal
+import com.amazon.ion.IonFloat
+import com.amazon.ion.IonInt
+import com.amazon.ion.IonList
+import com.amazon.ion.IonValue
 import java.math.BigDecimal
 
 /**
@@ -23,37 +27,37 @@ import java.math.BigDecimal
  * and IonInt (numeric) values.  Mostly delegates to RangeBigDecimal.
  */
 internal class RangeIonNumber private constructor (
-        private val delegate: RangeBigDecimal
+    private val delegate: RangeBigDecimal
 ) : Range<IonValue> {
 
     constructor (ion: IonList) : this(RangeBigDecimal(ion))
 
     companion object {
         private fun toBigDecimal(ion: IonValue) =
-                if (ion.isNullValue) {
-                    null
-                } else {
-                    when (ion) {
-                        is IonDecimal -> ion.bigDecimalValue()
-                        is IonFloat -> if (ion.isNumericValue) {
-                                ion.bigDecimalValue()
-                            } else {
+            if (ion.isNullValue) {
+                null
+            } else {
+                when (ion) {
+                    is IonDecimal -> ion.bigDecimalValue()
+                    is IonFloat ->
+                        if (ion.isNumericValue) {
+                            ion.bigDecimalValue()
+                        } else {
                             // for special values: nan, +inf, -inf
-                                null
-                            }
-                        is IonInt -> BigDecimal(ion.bigIntegerValue())
-                        else -> null
-                    }
+                            null
+                        }
+                    is IonInt -> BigDecimal(ion.bigIntegerValue())
+                    else -> null
                 }
+            }
     }
 
     override fun contains(value: IonValue): Boolean {
         val bdValue = toBigDecimal(value)
         return if (bdValue != null) {
-                delegate.contains(bdValue)
-            } else {
-                false
-            }
+            delegate.contains(bdValue)
+        } else {
+            false
+        }
     }
 }
-

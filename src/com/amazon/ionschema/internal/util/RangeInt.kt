@@ -23,9 +23,9 @@ import java.math.BigDecimal
 /**
  * Implementation of Range<Int>, which mostly delegates to RangeBigDecimal.
  */
-internal class RangeInt (
-        private val ion: IonList,
-        private val delegate: RangeBigDecimal = RangeBigDecimal(ion)
+internal class RangeInt(
+    private val ion: IonList,
+    private val delegate: RangeBigDecimal = RangeBigDecimal(ion)
 ) : Range<Int> {
 
     init {
@@ -37,9 +37,12 @@ internal class RangeInt (
             throw InvalidSchemaException("Invalid upper bound in int $ion")
         }
 
-        if (delegate.lower.value != null && delegate.upper.value != null
-                && (delegate.lower.boundaryType == RangeBoundaryType.EXCLUSIVE
-                    || delegate.upper.boundaryType == RangeBoundaryType.EXCLUSIVE)) {
+        if (delegate.lower.value != null && delegate.upper.value != null &&
+            (
+                delegate.lower.boundaryType == RangeBoundaryType.EXCLUSIVE ||
+                    delegate.upper.boundaryType == RangeBoundaryType.EXCLUSIVE
+                )
+        ) {
             val minPlusOne = delegate.lower.value.add(BigDecimal.ONE)
             if (minPlusOne == delegate.upper.value) {
                 throw InvalidSchemaException("No valid values in the int range $ion")
@@ -53,4 +56,3 @@ internal class RangeInt (
 
     override fun toString() = ion.toString()
 }
-

@@ -59,4 +59,3 @@ interface IonSchemaSystem {
      */
     fun newSchema(isl: Iterator<IonValue>): Schema
 }
-

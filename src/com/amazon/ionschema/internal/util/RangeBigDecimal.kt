@@ -15,7 +15,11 @@
 
 package com.amazon.ionschema.internal.util
 
-import com.amazon.ion.*
+import com.amazon.ion.IonDecimal
+import com.amazon.ion.IonFloat
+import com.amazon.ion.IonInt
+import com.amazon.ion.IonList
+import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import java.math.BigDecimal
 
@@ -26,18 +30,19 @@ import java.math.BigDecimal
 internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
     companion object {
         private fun toBigDecimal(ion: IonValue) =
-                if (ion.isNullValue) {
-                    throw InvalidSchemaException("Unable to convert $ion to BigDecimal")
-                } else {
-                    when (ion) {
-                        is IonDecimal -> ion.bigDecimalValue()
-                        is IonFloat -> ion.bigDecimalValue()
-                        is IonInt -> BigDecimal(ion.bigIntegerValue())
-                        else ->
-                            throw InvalidSchemaException(
-                                    "Expected range lower/upper to be a decimal, float, or int (was $ion)")
-                    }
+            if (ion.isNullValue) {
+                throw InvalidSchemaException("Unable to convert $ion to BigDecimal")
+            } else {
+                when (ion) {
+                    is IonDecimal -> ion.bigDecimalValue()
+                    is IonFloat -> ion.bigDecimalValue()
+                    is IonInt -> BigDecimal(ion.bigIntegerValue())
+                    else ->
+                        throw InvalidSchemaException(
+                            "Expected range lower/upper to be a decimal, float, or int (was $ion)"
+                        )
                 }
+            }
     }
 
     internal val lower: Boundary
@@ -47,20 +52,23 @@ internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
 
         lower = when {
             isRangeMin(ion[0]) -> Boundary(null, Infinity.NEGATIVE)
-            else  -> Boundary(ion[0], Infinity.NEGATIVE)
+            else -> Boundary(ion[0], Infinity.NEGATIVE)
         }
         upper = when {
             isRangeMax(ion[1]) -> Boundary(null, Infinity.POSITIVE)
-            else  -> Boundary(ion[1], Infinity.POSITIVE)
+            else -> Boundary(ion[1], Infinity.POSITIVE)
         }
 
         if (lower > upper) {
             throw InvalidSchemaException("Lower bound must be <= upper in $ion")
         }
-        if (lower.value != null && upper.value != null
-                && lower.value == upper.value
-                && (lower.boundaryType == RangeBoundaryType.EXCLUSIVE
-                    || upper.boundaryType == RangeBoundaryType.EXCLUSIVE)) {
+        if (lower.value != null && upper.value != null &&
+            lower.value == upper.value &&
+            (
+                lower.boundaryType == RangeBoundaryType.EXCLUSIVE ||
+                    upper.boundaryType == RangeBoundaryType.EXCLUSIVE
+                )
+        ) {
             throw InvalidSchemaException("No valid values in $ion")
         }
     }
@@ -71,7 +79,7 @@ internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
 
     internal enum class Infinity(val sign: Int) {
         NEGATIVE(-1),
-        POSITIVE( 1),
+        POSITIVE(1),
     }
 
     /**
@@ -124,4 +132,3 @@ internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
             }
     }
 }
-

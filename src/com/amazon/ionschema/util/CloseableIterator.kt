@@ -22,4 +22,3 @@ import java.io.Closeable
  * when [close()] is called, after it is no longer needed.
  */
 interface CloseableIterator<T> : Iterator<T>, Closeable
-

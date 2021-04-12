@@ -102,11 +102,10 @@ class IonSchemaSystemBuilder private constructor() {
      * and IonSystem.
      */
     fun build(): IonSchemaSystem = IonSchemaSystemImpl(
-            ionSystem,
-            authorities,
-            constraintFactory,
-            schemaCache ?: SchemaCacheDefault(),
-            params
+        ionSystem,
+        authorities,
+        constraintFactory,
+        schemaCache ?: SchemaCacheDefault(),
+        params
     )
 }
-

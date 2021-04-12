@@ -25,7 +25,7 @@ import com.amazon.ionschema.InvalidSchemaException
  * @see https://amzn.github.io/ion-schema/docs/spec.html#precision
  */
 internal class Precision(
-        ion: IonValue
+    ion: IonValue
 ) : ConstraintBaseIntRange<IonDecimal>(IonDecimal::class.java, ion) {
 
     init {
@@ -39,4 +39,3 @@ internal class Precision(
 
     override fun getIntValue(value: IonDecimal) = value.bigDecimalValue().precision()
 }
-

@@ -24,15 +24,14 @@ import com.amazon.ionschema.Violation
  */
 internal object CommonViolations {
     fun INVALID_TYPE(constraint: IonValue, value: IonValue) = Violation(
-            constraint,
-            "invalid_type",
-            "not applicable for type %s".format(value.type.toString().toLowerCase())
+        constraint,
+        "invalid_type",
+        "not applicable for type %s".format(value.type.toString().toLowerCase())
     )
 
     fun NULL_VALUE(constraint: IonValue) = Violation(
-            constraint,
-            "null_value",
-            "not applicable for null values"
+        constraint,
+        "null_value",
+        "not applicable for null values"
     )
 }
-

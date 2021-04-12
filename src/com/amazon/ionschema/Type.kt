@@ -50,8 +50,9 @@ interface Type {
 
     private fun validate(type: Type, value: IonValue, shortCircuit: Boolean): Violations {
         val violations = Violations(
-                shortCircuit = shortCircuit,
-                childrenAllowed = false)
+            shortCircuit = shortCircuit,
+            childrenAllowed = false
+        )
         try {
             (type as Constraint).validate(value, violations)
         } catch (e: ShortCircuitValidationException) {
@@ -60,4 +61,3 @@ interface Type {
         return violations
     }
 }
-

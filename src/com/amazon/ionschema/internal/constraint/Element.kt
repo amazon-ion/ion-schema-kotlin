@@ -18,9 +18,9 @@ package com.amazon.ionschema.internal.constraint
 import com.amazon.ion.IonContainer
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Schema
+import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
-import com.amazon.ionschema.Violation
 import com.amazon.ionschema.internal.TypeReference
 
 /**
@@ -29,8 +29,8 @@ import com.amazon.ionschema.internal.TypeReference
  * @see https://amzn.github.io/ion-schema/docs/spec.html#element
  */
 internal class Element(
-        ion: IonValue,
-        schema: Schema
+    ion: IonValue,
+    schema: Schema
 ) : ConstraintBase(ion) {
 
     private val typeReference = TypeReference.create(ion, schema, isField = true)
@@ -40,10 +40,10 @@ internal class Element(
             val elementIssues = Violation(ion, "element_mismatch", "one or more elements don't match expectations")
             v.forEachIndexed { idx, it ->
                 val elementValidation = if (it.fieldName == null) {
-                        ViolationChild(index = idx, value = it)
-                    } else {
-                        ViolationChild(fieldName = it.fieldName, value = it)
-                    }
+                    ViolationChild(index = idx, value = it)
+                } else {
+                    ViolationChild(fieldName = it.fieldName, value = it)
+                }
                 typeReference().validate(it, elementValidation)
                 if (!elementValidation.isValid()) {
                     elementIssues.add(elementValidation)
@@ -55,4 +55,3 @@ internal class Element(
         }
     }
 }
-

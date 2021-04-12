@@ -33,9 +33,9 @@ import com.amazon.ionschema.internal.util.truncate
  *   level of the value.
  */
 open class Violations internal constructor (
-        private var shortCircuit: Boolean = false,
-        private val childrenAllowed: Boolean = true,
-        val violations: MutableList<Violation> = mutableListOf()
+    private var shortCircuit: Boolean = false,
+    private val childrenAllowed: Boolean = true,
+    val violations: MutableList<Violation> = mutableListOf()
 ) : Iterable<Violation> by violations {
 
     /**
@@ -66,11 +66,11 @@ open class Violations internal constructor (
     }
 
     internal inner class Checkpoint(
-            private val violationCount: Int,
-            private val childCount: Int
+        private val violationCount: Int,
+        private val childCount: Int
     ) {
-        fun isValid() = this@Violations.violations.size == violationCount
-                        && this@Violations.children.size == childCount
+        fun isValid() = this@Violations.violations.size == violationCount &&
+            this@Violations.children.size == childCount
     }
 
     internal fun checkpoint() = Checkpoint(violations.size, children.size)
@@ -114,9 +114,9 @@ open class Violations internal constructor (
  * @property[message] A description of the cause of the violation.
  */
 class Violation(
-        var constraint: IonValue? = null,
-        var code: String? = null,
-        var message: String? = null
+    var constraint: IonValue? = null,
+    var code: String? = null,
+    var message: String? = null
 ) : Violations()
 
 /**
@@ -128,9 +128,9 @@ class Violation(
  * @property[value] The child value this object corresponds to.
  */
 class ViolationChild internal constructor (
-        val fieldName: String? = null,
-        val index: Int? = null,
-        var value: IonValue? = null
+    val fieldName: String? = null,
+    val index: Int? = null,
+    var value: IonValue? = null
 ) : Violations() {
 
     internal fun addValue(v: IonValue) {
@@ -155,4 +155,3 @@ class ViolationChild internal constructor (
  * invoked, and at least one constraint has been violated).
  */
 internal class ShortCircuitValidationException : Exception()
-

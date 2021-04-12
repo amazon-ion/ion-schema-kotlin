@@ -47,4 +47,3 @@ class AuthorityFilesystemTest {
         authority.iteratorFor(iss, "../schema_private/some_file.isl")
     }
 }
-

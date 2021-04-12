@@ -24,7 +24,7 @@ import com.amazon.ion.IonValue
  * @see https://amzn.github.io/ion-schema/docs/spec.html#scale
  */
 internal class Scale(
-        ion: IonValue
+    ion: IonValue
 ) : ConstraintBaseIntRange<IonDecimal>(IonDecimal::class.java, ion) {
 
     override val violationCode = "invalid_scale"
@@ -32,4 +32,3 @@ internal class Scale(
 
     override fun getIntValue(value: IonDecimal) = value.bigDecimalValue().scale()
 }
-

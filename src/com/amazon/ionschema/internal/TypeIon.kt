@@ -18,9 +18,9 @@ package com.amazon.ionschema.internal
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonType
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.internal.constraint.ConstraintBase
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Violation
+import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
@@ -28,8 +28,8 @@ import com.amazon.ionschema.internal.util.markReadOnly
  * Ion Schema Specification.
  */
 internal class TypeIon(
-        nameSymbol: IonSymbol
-    ) : TypeInternal, ConstraintBase(nameSymbol), TypeBuiltin {
+    nameSymbol: IonSymbol
+) : TypeInternal, ConstraintBase(nameSymbol), TypeBuiltin {
 
     private val ionType = IonType.valueOf(nameSymbol.stringValue().toUpperCase().substring(1))
 
@@ -45,10 +45,15 @@ internal class TypeIon(
 
     override fun validate(value: IonValue, issues: Violations) {
         if (!ionType.equals(value.type)) {
-            issues.add(Violation(ion, "type_mismatch",
+            issues.add(
+                Violation(
+                    ion, "type_mismatch",
                     "expected type %s, found %s".format(
-                            ionType.toString().toLowerCase(),
-                            value.type.toString().toLowerCase())))
+                        ionType.toString().toLowerCase(),
+                        value.type.toString().toLowerCase()
+                    )
+                )
+            )
         }
     }
 }
