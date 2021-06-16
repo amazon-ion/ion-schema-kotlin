@@ -67,17 +67,23 @@ class IonSchemaTestRunner(
                 var schema: Schema? = null
                 var type: Type? = null
 
-                val iter = ION.iterate(FileReader(file)).asSequence().toList().listIterator()
+                val testFileIon = ION.iterate(FileReader(file)).asSequence().toList()
+
+                val iter = when (testFileIon.count { it.hasTypeAnnotation("schema_header") }) {
+                    0 -> testFileIon.listIterator()
+                    1 -> {
+                        val schemaIon = testFileIon.dropWhile { !it.hasTypeAnnotation("schema_header") }.dropLastWhile { !it.hasTypeAnnotation("schema_footer") }
+                        val testCasesIon = testFileIon.takeWhile { !it.hasTypeAnnotation("schema_header") } + testFileIon.takeLastWhile { !it.hasTypeAnnotation("schema_footer") }
+                        schema = SchemaImpl(schemaSystem as IonSchemaSystemImpl, schemaCore, schemaIon.iterator(), testFile)
+                        testCasesIon.listIterator()
+                    }
+                    else -> throw IllegalArgumentException("IonSchemaTestRunner does not support multiple valid schema definitions in a single test file.")
+                }
+
                 iter.forEach { ion ->
                     val annotation = ion.typeAnnotations[0]
                     when (annotation) {
-                        "schema_header" -> {
-                            iter.previous()
-                            schema = SchemaImpl(schemaSystem as IonSchemaSystemImpl, schemaCore, iter, testFile)
-                        }
-
-                        "type" ->
-                            type = TypeImpl(ion as IonStruct, schemaCore)
+                        "type" -> type = TypeImpl(ion as IonStruct, schemaCore)
 
                         "valid", "invalid" -> {
                             val expectValid = annotation == "valid"

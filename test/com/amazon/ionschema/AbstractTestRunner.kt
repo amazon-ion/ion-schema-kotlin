@@ -46,7 +46,7 @@ abstract class AbstractTestRunner(
             test()
         } catch (ae: AssertionError) {
             notifier.fireTestFailure(Failure(desc, ae))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             notifier.fireTestFailure(Failure(desc, e))
         } finally {
             notifier.fireTestFinished(desc)
