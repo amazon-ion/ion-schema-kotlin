@@ -110,7 +110,7 @@ internal class SchemaImpl private constructor(
 
         fun addType(name: String, type: Type) {
             types[name]?.let {
-                if (it.schemaId != type.schemaId) {
+                if (it.schemaId != type.schemaId || it.isl != type.isl) {
                     throw InvalidSchemaException("Duplicate imported type name/alias encountered: '$name'")
                 }
                 return@addType
@@ -195,7 +195,7 @@ internal class SchemaImpl private constructor(
     private fun addType(typeMap: MutableMap<String, Type>, type: Type) {
         validateType(type)
         getType(type.name)?.let {
-            if (it.schemaId != type.schemaId) {
+            if (it.schemaId != type.schemaId || it.isl != type.isl) {
                 throw InvalidSchemaException("Duplicate type name/alias encountered: '${it.name}'")
             }
             return@addType
