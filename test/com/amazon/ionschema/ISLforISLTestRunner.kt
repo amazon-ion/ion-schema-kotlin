@@ -38,8 +38,10 @@ class ISLforISLTestRunner(
         .withAuthority(AuthorityFilesystem("ion-schema-schemas"))
         .build()
 
-    // There are certain conditions that make a schema invalid that cannot be detected by the ISL for ISL (for example, a schema importing itself).
-    // Test files with "invalid_schema" definitions should be listed here if and only if they are invalid for some reason that cannot be validated by ISL.
+    // There are certain conditions that make a schema invalid that cannot
+    // be detected by the ISL for ISL (for example, a schema importing itself).
+    // Test files with "invalid_schema" definitions should be listed here if and
+    // only if they are invalid for some reason that cannot be validated by ISL.
     private val blacklist = setOf(
         "ion-schema-tests/schema/import/import_schema_with_aliased_type_invalid.isl",
         "ion-schema-tests/schema/import/import_type_unknown.isl",
