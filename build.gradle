@@ -52,6 +52,12 @@ sourceSets {
   test.kotlin.srcDirs = ["test"]
 }
 
+processResources {
+  from('ion-schema-schemas/isl/') {
+    into 'ion-schema-schemas/isl/'
+  }
+}
+
 ktlint {
   outputToConsole = true
 }
