@@ -29,14 +29,15 @@ import com.amazon.ionschema.Violations
  *
  * @see https://amzn.github.io/ion-schema/docs/spec.html#content
  */
-internal class Content(
-        ion: IonValue
-) : ConstraintBase(ion) {
+internal class Content(ion: IonValue) : ConstraintBase(ion) {
 
     init {
-        if (!(ion is IonSymbol
-                    && !ion.isNullValue
-                    && ion.stringValue() == "closed")) {
+        if (!(
+            ion is IonSymbol &&
+                !ion.isNullValue &&
+                ion.stringValue() == "closed"
+            )
+        ) {
             throw InvalidSchemaException("Invalid content constraint: $ion")
         }
     }
@@ -45,4 +46,3 @@ internal class Content(
         // no-op, validation logic for this constraint is performed by the fields constraint
     }
 }
-

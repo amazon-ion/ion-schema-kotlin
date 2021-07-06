@@ -15,18 +15,23 @@
 
 package com.amazon.ionschema
 
-import org.junit.Assert.*
-import org.junit.Test
 import com.amazon.ion.IonStruct
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.internal.SchemaCore
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
 class SchemaTest {
     private val ION = IonSystemBuilder.standard().build()
 
     private val iss = IonSchemaSystemBuilder.standard()
-            .addAuthority(AuthorityFilesystem("ion-schema-tests"))
-            .build()
+        .addAuthority(AuthorityFilesystem("ion-schema-tests"))
+        .build()
 
     @Test
     fun getType() {
@@ -46,12 +51,12 @@ class SchemaTest {
     @Test
     fun getTypes() {
         val types = iss
-                .loadSchema("schema/Customer.isl")
-                .getTypes()
-                .asSequence()
-                .associateBy { it.name }
+            .loadSchema("schema/Customer.isl")
+            .getTypes()
+            .asSequence()
+            .associateBy { it.name }
         assertTrue(types.contains("Customer"))
-        assertTrue(types.contains("positive_int"))   // a type imported into Customer.isl
+        assertTrue(types.contains("positive_int")) // a type imported into Customer.isl
     }
 
     @Test
@@ -62,7 +67,7 @@ class SchemaTest {
     @Test
     fun newType_string() {
         val type = iss.newSchema().newType("type::{ codepoint_length: 5 }")
-        assertTrue (type.isValid(ION.singleValue("abcde")))
+        assertTrue(type.isValid(ION.singleValue("abcde")))
         assertFalse(type.isValid(ION.singleValue("abcd")))
         assertFalse(type.isValid(ION.singleValue("abcdef")))
     }
@@ -70,8 +75,9 @@ class SchemaTest {
     @Test
     fun newType_struct() {
         val type = iss.newSchema().newType(
-                ION.singleValue("type::{ codepoint_length: 5 }") as IonStruct)
-        assertTrue (type.isValid(ION.singleValue("abcde")))
+            ION.singleValue("type::{ codepoint_length: 5 }") as IonStruct
+        )
+        assertTrue(type.isValid(ION.singleValue("abcde")))
         assertFalse(type.isValid(ION.singleValue("abcd")))
         assertFalse(type.isValid(ION.singleValue("abcdef")))
     }
@@ -82,7 +88,7 @@ class SchemaTest {
         // assert that a type created with newType() is able to use it
         val schema = iss.loadSchema("schema/Customer.isl")
         val type = schema.newType("type::{ fields: { a: positive_int } }")
-        assertTrue (type.isValid(ION.singleValue("{ a: 1 }")))
+        assertTrue(type.isValid(ION.singleValue("{ a: 1 }")))
         assertFalse(type.isValid(ION.singleValue("{ a: -1 }")))
     }
 
@@ -104,20 +110,20 @@ class SchemaTest {
         // verify the type remains unchanged in the original schema
         val typeA1 = schema1.getType("A")!!
         assertFalse(typeA1.isValid(ION.singleValue("ab")))
-        assertTrue (typeA1.isValid(ION.singleValue("abc")))
+        assertTrue(typeA1.isValid(ION.singleValue("abc")))
         assertFalse(typeA1.isValid(ION.singleValue("abcd")))
 
         // verify the type reflects new behavior when retrieved from the newer schema instance
         val typeA2 = schema2.getType("A")!!
         assertFalse(typeA2.isValid(ION.singleValue("abcd")))
-        assertTrue (typeA2.isValid(ION.singleValue("abcde")))
+        assertTrue(typeA2.isValid(ION.singleValue("abcde")))
         assertFalse(typeA2.isValid(ION.singleValue("abcdef")))
 
         // verify a new type 'B' isn't available from the earlier schema instances
         val type3 = schema.newType("type::{ name: B }")
         val schema3 = schema2.plusType(type3)
-        assertNull   (schema1.getType("B"))
-        assertNull   (schema2.getType("B"))
+        assertNull(schema1.getType("B"))
+        assertNull(schema2.getType("B"))
         assertNotNull(schema3.getType("B"))
 
         // verify the original schema remains empty
@@ -137,21 +143,24 @@ class SchemaTest {
         assertEquals(2, schema.getImports().asSequence().count())
         val newType = schema.newType("type::{name: three, value_values: [3], open_content: 3}")
         val newSchema = schema.plusType(newType)
-        assertEquals(schema.getImports().asSequence().toList(),
-                newSchema.getImports().asSequence().toList())
+        assertEquals(
+            schema.getImports().asSequence().toList(),
+            newSchema.getImports().asSequence().toList()
+        )
     }
 
     @Test
     fun param_allow_anonymous_top_level_types() {
         val iss = IonSchemaSystemBuilder.standard()
-                .allowAnonymousTopLevelTypes()
-                .build()
+            .allowAnonymousTopLevelTypes()
+            .build()
         val schema = iss.newSchema()
         val unnamedType = schema.newType("type::{ codepoint_length: 3 }")
         schema.plusType(unnamedType)
     }
 
-    private val islTemplate = """
+    private val islTemplate =
+        """
             open_content
             schema_header::{open_content: hi}
             open_content
@@ -211,4 +220,3 @@ class SchemaTest {
         assertNull(schemaCore.isl.container)
     }
 }
-

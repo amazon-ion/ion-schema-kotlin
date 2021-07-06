@@ -23,11 +23,11 @@ import com.amazon.ion.IonValue
  * IonValue extension functions
  */
 internal fun IonValue.withoutTypeAnnotations() =
-        if (typeAnnotations.isNotEmpty()) {
-            clone().apply { clearTypeAnnotations() }
-        } else {
-            this
-        }
+    if (typeAnnotations.isNotEmpty()) {
+        clone().apply { clearTypeAnnotations() }
+    } else {
+        this
+    }
 
 internal fun IonValue.markReadOnly(): IonValue {
     this.makeReadOnly()

@@ -16,8 +16,8 @@
 package com.amazon.ionschema.internal.constraint
 
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Schema
+import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.TypeReference
 
 /**
@@ -26,12 +26,11 @@ import com.amazon.ionschema.internal.TypeReference
  * @see https://amzn.github.io/ion-schema/docs/spec.html#type
  */
 internal class Type(
-        ion: IonValue,
-        schema: Schema
+    ion: IonValue,
+    schema: Schema
 ) : ConstraintBase(ion) {
 
     private val typeReference = TypeReference.create(ion, schema)
 
     override fun validate(value: IonValue, issues: Violations) = typeReference().validate(value, issues)
 }
-

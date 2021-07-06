@@ -29,7 +29,7 @@ import com.amazon.ionschema.Violations
  * @see https://amzn.github.io/ion-schema/docs/spec.html#timestamp_offset
  */
 internal class TimestampOffset(
-        ion: IonValue
+    ion: IonValue
 ) : ConstraintBase(ion) {
 
     companion object {
@@ -42,7 +42,8 @@ internal class TimestampOffset(
      * An unknown local offset is represented as null.  This approach corresponds
      * exactly with values returned by IonTimestamp.localOffset.
      */
-    private val validOffsets: Set<Int?>
+    private val offsets: Set<Int?>
+    private val offsetsAreValid: Boolean
 
     init {
         if (ion !is IonList) {
@@ -55,7 +56,19 @@ internal class TimestampOffset(
             throw InvalidSchemaException("timestamp_offset must contain at least one offset")
         }
 
-        validOffsets = ion.map {
+        offsetsAreValid = if (ion.typeAnnotations.isEmpty()) {
+            false
+        } else {
+            if (ion.typeAnnotations.size != 1) {
+                throw InvalidSchemaException("timestamp_offset allows for only 1 annotation, found ${ion.typeAnnotations}")
+            }
+            if (ion.typeAnnotations[0] != "not") {
+                throw InvalidSchemaException("timestamp_offset can only be annotated with the token \"not\", found ${ion.typeAnnotations} ")
+            }
+            true
+        }
+
+        offsets = ion.map {
             // every timestamp offset must be of the form "[+|-]hh:mm"
 
             if (it !is IonString) {
@@ -71,7 +84,7 @@ internal class TimestampOffset(
                 try {
                     val sign = when (str[0]) {
                         '-' -> -1
-                        '+' ->  1
+                        '+' -> 1
                         else -> throw InvalidSchemaException("Unrecognized timestamp offset sign '${str[0]}'")
                     }
                     // translate to offset in +/- minutes:
@@ -95,11 +108,21 @@ internal class TimestampOffset(
 
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonTimestamp>(value, issues) { v ->
-            if (!validOffsets.contains(v.localOffset)) {
-                issues.add(Violation(ion, "invalid_timestamp_offset",
-                        "invalid timestamp offset %s, expected %s".format(v.localOffset, ion)))
+            val hasViolations =
+                if (offsetsAreValid) {
+                    offsets.contains(v.localOffset)
+                } else {
+                    !offsets.contains(v.localOffset)
+                }
+
+            if (hasViolations) {
+                issues.add(
+                    Violation(
+                        ion, "invalid_timestamp_offset",
+                        "invalid timestamp offset %s, expected %s".format(v.localOffset, ion)
+                    )
+                )
             }
         }
     }
 }
-

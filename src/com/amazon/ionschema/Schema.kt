@@ -93,4 +93,3 @@ interface Schema {
      */
     fun plusType(type: Type): Schema
 }
-

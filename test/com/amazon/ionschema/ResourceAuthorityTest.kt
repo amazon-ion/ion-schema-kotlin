@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -15,21 +15,19 @@
 
 package com.amazon.ionschema
 
+import com.amazon.ion.system.IonSystemBuilder
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
-import java.io.FileNotFoundException
 
-class AuthorityFilesystemTest {
-    @Test(expected = FileNotFoundException::class)
-    fun nonExistentPath() {
-        AuthorityFilesystem("non-existent-path")
-    }
+class ResourceAuthorityTest {
 
     @Test
     fun unknownSchemaId() {
         val iss = IonSchemaSystemBuilder.standard().build()
-        val authority = AuthorityFilesystem("ion-schema-tests")
+        val authority = ResourceAuthority("ion-schema-schemas", ResourceAuthority::class.java.classLoader)
         val iter = authority.iteratorFor(iss, "unknown_schema_id")
         assertFalse(iter.hasNext())
         try {
@@ -40,10 +38,24 @@ class AuthorityFilesystemTest {
         iter.close()
     }
 
-    @Test(expected = AccessDeniedException::class)
-    fun iteratorFor_outsideBasePath() {
+    @Test
+    fun knownSchemaId() {
         val iss = IonSchemaSystemBuilder.standard().build()
-        var authority = AuthorityFilesystem("ion-schema-tests/schema")
-        authority.iteratorFor(iss, "../schema_private/some_file.isl")
+        val authority = ResourceAuthority("ion-schema-schemas", ResourceAuthority::class.java.classLoader)
+        val iter = authority.iteratorFor(iss, "isl/schema.isl")
+        assertTrue(iter.hasNext())
+        iter.close()
+    }
+
+    @Test
+    fun canLoadIonSchemaSchemas() {
+        val ion = IonSystemBuilder.standard().build()
+        val iss = IonSchemaSystemBuilder.standard()
+            .withIonSystem(ion)
+            .withAuthority(ResourceAuthority.forIonSchemaSchemas())
+            .build()
+        val islSchema = iss.loadSchema("isl/schema.isl")
+
+        assertNotNull("Unable to find the schema for 'schema'", islSchema.getType("schema"))
     }
 }

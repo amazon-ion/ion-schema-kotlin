@@ -24,4 +24,3 @@ internal fun String.truncate(limit: Int, truncated: CharSequence = "..."): Strin
     }
     return substring(0, limit) + truncated
 }
-

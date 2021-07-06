@@ -34,4 +34,3 @@ internal interface Constraint {
      */
     fun validate(value: IonValue, issues: Violations)
 }
-

@@ -17,7 +17,29 @@ package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Schema
-import com.amazon.ionschema.internal.constraint.*
+import com.amazon.ionschema.internal.constraint.AllOf
+import com.amazon.ionschema.internal.constraint.Annotations
+import com.amazon.ionschema.internal.constraint.AnyOf
+import com.amazon.ionschema.internal.constraint.ByteLength
+import com.amazon.ionschema.internal.constraint.CodepointLength
+import com.amazon.ionschema.internal.constraint.ContainerLength
+import com.amazon.ionschema.internal.constraint.Contains
+import com.amazon.ionschema.internal.constraint.Content
+import com.amazon.ionschema.internal.constraint.Element
+import com.amazon.ionschema.internal.constraint.Fields
+import com.amazon.ionschema.internal.constraint.FloatSize
+import com.amazon.ionschema.internal.constraint.Not
+import com.amazon.ionschema.internal.constraint.OccursNoop
+import com.amazon.ionschema.internal.constraint.OneOf
+import com.amazon.ionschema.internal.constraint.OrderedElements
+import com.amazon.ionschema.internal.constraint.Precision
+import com.amazon.ionschema.internal.constraint.Regex
+import com.amazon.ionschema.internal.constraint.Scale
+import com.amazon.ionschema.internal.constraint.TimestampOffset
+import com.amazon.ionschema.internal.constraint.TimestampPrecision
+import com.amazon.ionschema.internal.constraint.Type
+import com.amazon.ionschema.internal.constraint.Utf8ByteLength
+import com.amazon.ionschema.internal.constraint.ValidValues
 
 /**
  * Default [ConstraintFactory] implementation.
@@ -34,6 +56,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         content,
         element,
         fields,
+        float_size,
         not,
         occurs,
         one_of,
@@ -44,6 +67,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         timestamp_offset,
         timestamp_precision,
         type,
+        utf8_byte_length,
         valid_values,
     }
 
@@ -57,27 +81,28 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
 
     override fun constraintFor(ion: IonValue, schema: Schema) =
         when (Constraints.valueOf(ion.fieldName)) {
-            Constraints.all_of              -> AllOf(ion, schema)
-            Constraints.annotations         -> Annotations(ion)
-            Constraints.any_of              -> AnyOf(ion, schema)
-            Constraints.byte_length         -> ByteLength(ion)
-            Constraints.codepoint_length    -> CodepointLength(ion)
-            Constraints.container_length    -> ContainerLength(ion)
-            Constraints.contains            -> Contains(ion)
-            Constraints.content             -> Content(ion)
-            Constraints.element             -> Element(ion, schema)
-            Constraints.fields              -> Fields(ion, schema)
-            Constraints.not                 -> Not(ion, schema)
-            Constraints.occurs              -> OccursNoop(ion)
-            Constraints.one_of              -> OneOf(ion, schema)
-            Constraints.ordered_elements    -> OrderedElements(ion, schema)
-            Constraints.precision           -> Precision(ion)
-            Constraints.regex               -> Regex(ion)
-            Constraints.scale               -> Scale(ion)
-            Constraints.timestamp_offset    -> TimestampOffset(ion)
+            Constraints.all_of -> AllOf(ion, schema)
+            Constraints.annotations -> Annotations(ion)
+            Constraints.any_of -> AnyOf(ion, schema)
+            Constraints.byte_length -> ByteLength(ion)
+            Constraints.codepoint_length -> CodepointLength(ion)
+            Constraints.container_length -> ContainerLength(ion)
+            Constraints.contains -> Contains(ion)
+            Constraints.content -> Content(ion)
+            Constraints.element -> Element(ion, schema)
+            Constraints.fields -> Fields(ion, schema)
+            Constraints.float_size -> FloatSize(ion)
+            Constraints.not -> Not(ion, schema)
+            Constraints.occurs -> OccursNoop(ion)
+            Constraints.one_of -> OneOf(ion, schema)
+            Constraints.ordered_elements -> OrderedElements(ion, schema)
+            Constraints.precision -> Precision(ion)
+            Constraints.regex -> Regex(ion)
+            Constraints.scale -> Scale(ion)
+            Constraints.timestamp_offset -> TimestampOffset(ion)
             Constraints.timestamp_precision -> TimestampPrecision(ion)
-            Constraints.type                -> Type(ion, schema)
-            Constraints.valid_values        -> ValidValues(ion)
+            Constraints.type -> Type(ion, schema)
+            Constraints.utf8_byte_length -> Utf8ByteLength(ion)
+            Constraints.valid_values -> ValidValues(ion)
         }
 }
-

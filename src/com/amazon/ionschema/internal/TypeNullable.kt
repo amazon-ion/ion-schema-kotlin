@@ -19,16 +19,16 @@ import com.amazon.ion.IonType
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.Schema
-import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.constraint.ConstraintBase
 
 /**
  * [Type] decorator that implements the nullable:: annotation.
  */
 internal class TypeNullable(
-        ion: IonValue,
-        private val type: TypeInternal,
-        schema: Schema
+    ion: IonValue,
+    private val type: TypeInternal,
+    schema: Schema
 ) : TypeInternal by type, ConstraintBase(ion) {
 
     init {
@@ -38,8 +38,11 @@ internal class TypeNullable(
     }
 
     override fun validate(value: IonValue, issues: Violations) {
-        if (!(value.isNullValue
-                    && (value.type == IonType.NULL || type.isValidForBaseType(value)))) {
+        if (!(
+            value.isNullValue &&
+                (value.type == IonType.NULL || type.isValidForBaseType(value))
+            )
+        ) {
             type.validate(value, issues)
         }
     }

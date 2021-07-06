@@ -15,9 +15,13 @@
 
 package com.amazon.ionschema
 
-import org.junit.Assert.*
-import org.junit.Test
 import com.amazon.ion.system.IonSystemBuilder
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
 class TypeTest {
     private val ION = IonSystemBuilder.standard().build()
@@ -25,9 +29,9 @@ class TypeTest {
     private val typeIsl = "type::{name: a, type: string, open_content: hi}"
 
     private val type = IonSchemaSystemBuilder.standard()
-            .build()
-            .newSchema()
-            .newType(typeIsl)
+        .build()
+        .newSchema()
+        .newType(typeIsl)
 
     @Test
     fun name() = assertEquals("a", type.name)
@@ -88,4 +92,3 @@ class TypeTest {
         assertNull(newSchema.getType("b")!!.isl.container)
     }
 }
-

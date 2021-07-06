@@ -31,18 +31,18 @@ import com.amazon.ionschema.internal.util.markReadOnly
  * Implementation of [Schema] for all user-provided ISL.
  */
 internal class SchemaImpl private constructor(
-        private val schemaSystem: IonSchemaSystemImpl,
-        private val schemaCore: SchemaCore,
-        schemaContent: Iterator<IonValue>,
-        val schemaId: String?,
-        preloadedImports: Map<String, Import>,
+    private val schemaSystem: IonSchemaSystemImpl,
+    private val schemaCore: SchemaCore,
+    schemaContent: Iterator<IonValue>,
+    val schemaId: String?,
+    preloadedImports: Map<String, Import>,
         /*
          * [types] is declared as a MutableMap in order to be populated DURING
          * INITIALIZATION ONLY.  This enables type B to find its already-loaded
          * dependency type A.  After initialization, [types] is expected to
          * be treated as immutable as required by the Schema interface.
          */
-        private val types: MutableMap<String, Type>
+    private val types: MutableMap<String, Type>
 ) : Schema {
 
     internal constructor(
@@ -73,11 +73,9 @@ internal class SchemaImpl private constructor(
 
                 if (it is IonSymbol && it.stringValue() == "\$ion_schema_1_0") {
                     // TBD https://github.com/amzn/ion-schema-kotlin/issues/95
-
                 } else if (it.hasTypeAnnotation("schema_header")) {
                     importsMap = loadHeader(types, it as IonStruct)
                     foundHeader = true
-
                 } else if (!foundFooter && it.hasTypeAnnotation("type") && it is IonStruct) {
                     val newType = TypeImpl(it, this)
                     addType(types, newType)
@@ -95,7 +93,6 @@ internal class SchemaImpl private constructor(
 
             resolveDeferredTypeReferences()
             imports = importsMap
-
         } else {
             // in this case the new Schema is based on an existing Schema and the 'types'
             // map was populated by the caller
@@ -109,11 +106,11 @@ internal class SchemaImpl private constructor(
     }
 
     private class SchemaAndTypeImports(val id: String, val schema: Schema) {
-        var types: MutableMap<String,Type> = mutableMapOf()
+        var types: MutableMap<String, Type> = mutableMapOf()
 
         fun addType(name: String, type: Type) {
             types[name]?.let {
-                if (it.schemaId != type.schemaId) {
+                if (it.schemaId != type.schemaId || it.isl != type.isl) {
                     throw InvalidSchemaException("Duplicate imported type name/alias encountered: '$name'")
                 }
                 return@addType
@@ -122,8 +119,10 @@ internal class SchemaImpl private constructor(
         }
     }
 
-    private fun loadHeader(typeMap: MutableMap<String, Type>,
-                           header: IonStruct): Map<String, Import> {
+    private fun loadHeader(
+        typeMap: MutableMap<String, Type>,
+        header: IonStruct
+    ): Map<String, Import> {
 
         val importsMap = mutableMapOf<String, SchemaAndTypeImports>()
         val importSet: MutableSet<String> = schemaSystem.getSchemaImportSet()
@@ -134,11 +133,11 @@ internal class SchemaImpl private constructor(
                 val childImportId = it["id"] as IonText
                 val alias = it["as"] as? IonSymbol
                 // if importSet has an import with this id then do not load schema again to break the cycle.
-                if(!importSet.contains(childImportId.stringValue())) {
-                    var parentImportId = schemaId?: "";
+                if (!importSet.contains(childImportId.stringValue())) {
+                    var parentImportId = schemaId ?: ""
 
                     // if Schema is importing itself then throw error
-                    if(parentImportId.equals(childImportId.stringValue())) {
+                    if (parentImportId.equals(childImportId.stringValue())) {
                         throw InvalidSchemaException("Schema can not import itself.")
                     }
 
@@ -156,8 +155,9 @@ internal class SchemaImpl private constructor(
                     val typeName = (it["type"] as? IonSymbol)?.stringValue()
                     if (typeName != null) {
                         var newType = importedSchema.getType(typeName)
-                                ?: throw InvalidSchemaException(
-                                        "Schema $childImportId doesn't contain a type named '$typeName'")
+                            ?: throw InvalidSchemaException(
+                                "Schema $childImportId doesn't contain a type named '$typeName'"
+                            )
 
                         if (alias != null) {
                             newType = TypeAliased(alias, newType as TypeInternal)
@@ -186,7 +186,8 @@ internal class SchemaImpl private constructor(
             val name = (type.isl as IonStruct)["name"]
             if (name == null || name.isNullValue) {
                 throw InvalidSchemaException(
-                        "Top-level types of a schema must have a name ($type.isl)")
+                    "Top-level types of a schema must have a name ($type.isl)"
+                )
             }
         }
     }
@@ -194,7 +195,7 @@ internal class SchemaImpl private constructor(
     private fun addType(typeMap: MutableMap<String, Type>, type: Type) {
         validateType(type)
         getType(type.name)?.let {
-            if (it.schemaId != type.schemaId) {
+            if (it.schemaId != type.schemaId || it.isl != type.isl) {
                 throw InvalidSchemaException("Duplicate type name/alias encountered: '${it.name}'")
             }
             return@addType
@@ -205,12 +206,13 @@ internal class SchemaImpl private constructor(
     override fun getType(name: String) = schemaCore.getType(name) ?: types[name]
 
     override fun getTypes(): Iterator<Type> =
-            (schemaCore.getTypes().asSequence() + types.values.asSequence())
-                    .filter { it is TypeNamed || it is TypeAliased || it is TypeImpl }
-                    .iterator()
+        (schemaCore.getTypes().asSequence() + types.values.asSequence())
+            .filter { it is TypeNamed || it is TypeAliased || it is TypeImpl }
+            .iterator()
 
     override fun newType(isl: String) = newType(
-            schemaSystem.getIonSystem().singleValue(isl) as IonStruct)
+        schemaSystem.getIonSystem().singleValue(isl) as IonStruct
+    )
 
     override fun newType(isl: IonStruct): Type {
         val type = TypeImpl(isl, this)
@@ -230,14 +232,14 @@ internal class SchemaImpl private constructor(
             if (!newTypeAdded) {
                 when {
                     value is IonStruct
-                            && (value["name"] as? IonSymbol)?.stringValue().equals(type.name) -> {
+                        && (value["name"] as? IonSymbol)?.stringValue().equals(type.name) -> {
                         // new type replaces existing type of the same name
                         newIsl.add(type.isl.clone())
                         newTypeAdded = true
                         return@forEachIndexed
                     }
                     (value is IonStruct && value.hasTypeAnnotation("schema_footer"))
-                            || idx == isl.lastIndex -> {
+                        || idx == isl.lastIndex -> {
                         newIsl.add(type.isl.clone())
                         newTypeAdded = true
                     }
@@ -260,13 +262,13 @@ internal class SchemaImpl private constructor(
 
     private fun resolveDeferredTypeReferences() {
         val unresolvedDeferredTypeReferences = deferredTypeReferences
-                .filterNot { it.attemptToResolve() }
-                .map { it.name }.toSet()
+            .filterNot { it.attemptToResolve() }
+            .map { it.name }.toSet()
 
         if (unresolvedDeferredTypeReferences.isNotEmpty()) {
             throw InvalidSchemaException(
-                    "Unable to resolve type reference(s): $unresolvedDeferredTypeReferences")
+                "Unable to resolve type reference(s): $unresolvedDeferredTypeReferences"
+            )
         }
     }
 }
-

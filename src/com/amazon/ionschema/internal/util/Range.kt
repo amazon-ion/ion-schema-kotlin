@@ -62,12 +62,12 @@ internal class RangeFactory {
 
             @Suppress("UNCHECKED_CAST")
             return when (rangeType) {
-                    RangeType.INT                     -> RangeInt(ionList)
-                    RangeType.INT_NON_NEGATIVE        -> RangeIntNonNegative(ionList)
-                    RangeType.ION_NUMBER              -> RangeIonNumber(ionList)
-                    RangeType.ION_TIMESTAMP           -> RangeIonTimestamp(ionList)
-                    RangeType.ION_TIMESTAMP_PRECISION -> RangeIonTimestampPrecision(ionList)
-                } as Range<T>
+                RangeType.INT -> RangeInt(ionList)
+                RangeType.INT_NON_NEGATIVE -> RangeIntNonNegative(ionList)
+                RangeType.ION_NUMBER -> RangeIonNumber(ionList)
+                RangeType.ION_TIMESTAMP -> RangeIonTimestamp(ionList)
+                RangeType.ION_TIMESTAMP_PRECISION -> RangeIonTimestampPrecision(ionList)
+            } as Range<T>
         }
     }
 }
@@ -87,4 +87,3 @@ internal fun isRangeMin(ion: IonValue) = (ion as? IonSymbol)?.stringValue().equa
 internal fun isRangeMax(ion: IonValue) = (ion as? IonSymbol)?.stringValue().equals("max")
 
 internal fun toInt(ion: IonValue) = (ion as? IonInt)?.intValue()
-

@@ -19,9 +19,9 @@ import com.amazon.ion.IonList
 import com.amazon.ion.IonTimestamp
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
-import com.amazon.ionschema.internal.util.Range
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.Violation
+import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.util.Range
 import com.amazon.ionschema.internal.util.RangeFactory
 import com.amazon.ionschema.internal.util.RangeType
 import com.amazon.ionschema.internal.util.withoutTypeAnnotations
@@ -32,7 +32,7 @@ import com.amazon.ionschema.internal.util.withoutTypeAnnotations
  * @see https://amzn.github.io/ion-schema/docs/spec.html#valid_values
  */
 internal class ValidValues(
-        ion: IonValue
+    ion: IonValue
 ) : ConstraintBase(ion) {
 
     // store either the ranges that are built or the ion value to be used for validation
@@ -94,4 +94,3 @@ internal class ValidValues(
             }
         }
 }
-

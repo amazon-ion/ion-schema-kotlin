@@ -15,75 +15,95 @@
 
 package com.amazon.ionschema.internal.util
 
-import org.junit.Test
 import com.amazon.ion.IonList
 import com.amazon.ion.IonValue
+import org.junit.Test
 
-internal class RangeIonNumberTest
-    : AbstractRangeTest(RangeType.ION_NUMBER)
-{
+internal class RangeIonNumberTest : AbstractRangeTest(RangeType.ION_NUMBER) {
+
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Any> rangeOf(ion: IonList)
-            = RangeFactory.rangeOf<IonValue>(ion, RangeType.ION_NUMBER) as Range<T>
+    override fun <T : Any> rangeOf(ion: IonList) = RangeFactory.rangeOf<IonValue>(ion, RangeType.ION_NUMBER) as Range<T>
 
     @Test
     fun range_decimal_inclusive() {
         assertValidRangeAndValues(
-                "range::[-100d0, 100d0]",
-                ionListOf("-100", "-100d0", "-100.00000000d0", "-100e0", "-100.00000000e0",
-                           "100",  "100d0",  "100.00000000d0",  "100e0", "100.00000000e0"),
+            "range::[-100d0, 100d0]",
+            ionListOf(
+                "-100", "-100d0", "-100.00000000d0", "-100e0", "-100.00000000e0",
+                "100", "100d0", "100.00000000d0", "100e0", "100.00000000e0"
+            ),
 
-                ionListOf("-101", "-100.00000001d0", "-100.00000001e0",
-                           "101",  "100.00000001d0",  "100.00000001e0"))
+            ionListOf(
+                "-101", "-100.00000001d0", "-100.00000001e0",
+                "101", "100.00000001d0", "100.00000001e0"
+            )
+        )
     }
 
     @Test
     fun range_decimal_exclusive() {
         assertValidRangeAndValues(
-                "range::[exclusive::-100d0, exclusive::100d0]",
-                ionListOf("-99", "-99.99999999d0", "-99.99999999e0",
-                           "99",  "99.99999999d0",  "99.99999999e0"),
+            "range::[exclusive::-100d0, exclusive::100d0]",
+            ionListOf(
+                "-99", "-99.99999999d0", "-99.99999999e0",
+                "99", "99.99999999d0", "99.99999999e0"
+            ),
 
-                ionListOf("-100", "-100d0", "-100.00000000d0", "-100e0", "-100.00000000e0",
-                           "100",  "100d0",  "100.00000000d0",  "100e0",  "100.00000000e0"))
+            ionListOf(
+                "-100", "-100d0", "-100.00000000d0", "-100e0", "-100.00000000e0",
+                "100", "100d0", "100.00000000d0", "100e0", "100.00000000e0"
+            )
+        )
     }
 
     @Test
     fun range_float_inclusive() {
         assertValidRangeAndValues(
-                "range::[-100e0, 100e0]",
-                ionListOf("-100", "-100d0", "-100.00000000d0", "-100e0", "-100.00000000e0",
-                           "100",  "100d0",  "100.00000000d0",  "100e0",  "100.00000000e0"),
+            "range::[-100e0, 100e0]",
+            ionListOf(
+                "-100", "-100d0", "-100.00000000d0", "-100e0", "-100.00000000e0",
+                "100", "100d0", "100.00000000d0", "100e0", "100.00000000e0"
+            ),
 
-                ionListOf("-101", "-100.00000001d0", "-100.00000001e0",
-                           "101",  "100.00000001d0",  "100.00000001e0"))
+            ionListOf(
+                "-101", "-100.00000001d0", "-100.00000001e0",
+                "101", "100.00000001d0", "100.00000001e0"
+            )
+        )
     }
 
     @Test
     fun range_float_exclusive() {
         assertValidRangeAndValues(
-                "range::[exclusive::-100e0, exclusive::100e0]",
-                ionListOf("-99", "-99.99999999d0", "-99.99999999e0",
-                           "99",  "99.99999999d0",  "99.99999999e0"),
+            "range::[exclusive::-100e0, exclusive::100e0]",
+            ionListOf(
+                "-99", "-99.99999999d0", "-99.99999999e0",
+                "99", "99.99999999d0", "99.99999999e0"
+            ),
 
-                ionListOf("-100", "-100d0", "-100.00000000d0", "-100e0", "-100.00000000e0",
-                           "100",  "100d0",  "100.00000000d0",  "100e0",  "100.00000000e0"))
+            ionListOf(
+                "-100", "-100d0", "-100.00000000d0", "-100e0", "-100.00000000e0",
+                "100", "100d0", "100.00000000d0", "100e0", "100.00000000e0"
+            )
+        )
     }
 
     @Test
     fun range_int_inclusive() {
         assertValidRangeAndValues(
-                "range::[-100, 100]",
-                ionListOf("-100", "0", "100"),
-                ionListOf("-101", "101"))
+            "range::[-100, 100]",
+            ionListOf("-100", "0", "100"),
+            ionListOf("-101", "101")
+        )
     }
 
     @Test
     fun range_int_exclusive() {
         assertValidRangeAndValues(
-                "range::[exclusive::-100,exclusive::100]",
-                ionListOf("-99", "0", "99"),
-                ionListOf("-100", "100"))
+            "range::[exclusive::-100,exclusive::100]",
+            ionListOf("-99", "0", "99"),
+            ionListOf("-100", "100")
+        )
     }
 
     @Test
@@ -106,4 +126,3 @@ internal class RangeIonNumberTest
         assertInvalidRange("range::[1.00000000e0, 0.99999999e0]")
     }
 }
-
