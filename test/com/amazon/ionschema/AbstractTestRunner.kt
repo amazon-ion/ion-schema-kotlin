@@ -40,7 +40,7 @@ abstract class AbstractTestRunner(
         test: () -> Unit
     ) {
 
-        val desc = Description.createTestDescription(testName, ion.toString())
+        val desc = Description.createTestDescription("${testClass.simpleName}: $testName", ion.toString())
         try {
             notifier.fireTestStarted(desc)
             test()
