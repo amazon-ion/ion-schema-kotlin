@@ -36,15 +36,16 @@ internal class ValidValues(
 ) : ConstraintBase(ion) {
 
     // store either the ranges that are built or the ion value to be used for validation
-    private val validValues =
-            (if(isValidRange(ion)) {
-                // convert range::[x,y] to [range::[x,y]] for simplicity in verifying and storing valid_values
-                ion.system.newList(ion.clone())
-            } else if (ion is IonList && !ion.isNullValue) {
-                ion.onEach { checkValue(it) }.toSet()
-            } else {
-                null
-            })?.map { buildRange(it) }
+    private val validValues = (
+        if (isValidRange(ion)) {
+            // convert range::[x,y] to [range::[x,y]] for simplicity in verifying and storing valid_values
+            ion.system.newList(ion.clone())
+        } else if (ion is IonList && !ion.isNullValue) {
+            ion.onEach { checkValue(it) }.toSet()
+        } else {
+            null
+        }
+        )?.map { buildRange(it) }
 
     private fun isValidRange(ion: IonValue) = ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")
 
@@ -77,20 +78,23 @@ internal class ValidValues(
         }
 
     override fun validate(value: IonValue, issues: Violations) {
-            val v = value.withoutTypeAnnotations()
-            if (!validValues!!.any {possibility ->
-                        if (possibility is Range<*>) {
-                            if (value is IonTimestamp && value.localOffset == null) {
-                                issues.add(Violation(ion, "unknown_local_offset",
-                                        "unable to compare timestamp with unknown local offset"))
-                                return
-                            }
-                            (possibility as Range<IonValue>).contains(v)
-                        } else {
-                            possibility == v
-                        }
-                    }) {
-                issues.add(Violation(ion, "invalid_value", "invalid value $v"))
+        val v = value.withoutTypeAnnotations()
+        if (!validValues!!.any {
+            possibility ->
+            if (possibility is Range<*>) {
+                if (value is IonTimestamp && value.localOffset == null) {
+                    issues.add(
+                            Violation(ion, "unknown_local_offset", "unable to compare timestamp with unknown local offset")
+                        )
+                    return
+                }
+                (possibility as Range<IonValue>).contains(v)
+            } else {
+                possibility == v
             }
         }
+        ) {
+            issues.add(Violation(ion, "invalid_value", "invalid value $v"))
+        }
+    }
 }
