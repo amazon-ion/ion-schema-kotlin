@@ -35,8 +35,29 @@ internal class ValidValues(
     ion: IonValue
 ) : ConstraintBase(ion) {
 
-    private val validRange =
-        if (ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")) {
+    // store either the ranges that are built or the ion value to be used for validation
+    private val validValues = (
+        if (isValidRange(ion)) {
+            // convert range::[x,y] to [range::[x,y]] for simplicity in verifying and storing valid_values
+            ion.system.newList(ion.clone())
+        } else if (ion is IonList && !ion.isNullValue) {
+            ion.onEach { checkValue(it) }.toSet()
+        } else {
+            null
+        }
+        )?.map { buildRange(it) }
+
+    private fun isValidRange(ion: IonValue) = ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")
+
+    init {
+        if (validValues == null) {
+            throw InvalidSchemaException("Invalid valid_values constraint: $ion")
+        }
+    }
+
+    // build range value from given ion value if valid range or return ion value itself
+    private fun buildRange(ion: IonValue) =
+        if (ion is IonList && isValidRange(ion)) {
             if (ion[0] is IonTimestamp || ion[1] is IonTimestamp) {
                 @Suppress("UNCHECKED_CAST")
                 RangeFactory.rangeOf<IonTimestamp>(ion, RangeType.ION_TIMESTAMP) as Range<IonValue>
@@ -44,48 +65,36 @@ internal class ValidValues(
                 RangeFactory.rangeOf<IonValue>(ion, RangeType.ION_NUMBER)
             }
         } else {
-            null
+            ion
         }
-
-    private val validValues =
-        if (validRange == null && ion is IonList && !ion.isNullValue) {
-            ion.filter { checkValue(it) }.toSet()
-        } else {
-            null
-        }
-
-    init {
-        if (validRange == null && validValues == null) {
-            throw InvalidSchemaException("Invalid valid_values constraint: $ion")
-        }
-    }
 
     private fun checkValue(ion: IonValue) =
-        if (ion.typeAnnotations.size > 0) {
+        if (isValidRange(ion)) {
+            ion
+        } else if (ion.typeAnnotations.isNotEmpty()) {
             throw InvalidSchemaException("Annotations ($ion) are not allowed in valid_values")
         } else {
-            true
+            ion
         }
 
     override fun validate(value: IonValue, issues: Violations) {
-        if (validRange != null) {
-            if (value is IonTimestamp && value.localOffset == null) {
-                issues.add(
-                    Violation(
-                        ion, "unknown_local_offset",
-                        "unable to compare timestamp with unknown local offset"
-                    )
-                )
-                return
+        val v = value.withoutTypeAnnotations()
+        if (!validValues!!.any {
+            possibility ->
+            if (possibility is Range<*>) {
+                if (value is IonTimestamp && value.localOffset == null) {
+                    issues.add(
+                            Violation(ion, "unknown_local_offset", "unable to compare timestamp with unknown local offset")
+                        )
+                    return
+                }
+                (possibility as Range<IonValue>).contains(v)
+            } else {
+                possibility == v
             }
-            if (!validRange.contains(value)) {
-                issues.add(Violation(ion, "invalid_value", "invalid value $value"))
-            }
-        } else {
-            val v = value.withoutTypeAnnotations()
-            if (!validValues!!.contains(v)) {
-                issues.add(Violation(ion, "invalid_value", "invalid value $v"))
-            }
+        }
+        ) {
+            issues.add(Violation(ion, "invalid_value", "invalid value $v"))
         }
     }
 }
