@@ -15,6 +15,7 @@
 
 package com.amazon.ionschema
 
+import com.amazon.ion.IonSystem
 import com.amazon.ion.IonValue
 
 /**
@@ -23,6 +24,20 @@ import com.amazon.ion.IonValue
  * To create an instance, use [IonSchemaSystemBuilder].
  */
 interface IonSchemaSystem {
+
+    /**
+     * The [IonSystem] instance that is being used by this [IonSchemaSystem].
+     *
+     * In general, [IonValue] instances returned from one `IonSystem` instance
+     * are not interoperable with those returned by other instances. (See
+     * documentation for [IonSystem] for more details.)
+     *
+     * This property is an implementation detail, but it is intentionally
+     * exposed so that consumers of this library can conveniently ensure
+     * they are using the same `IonSystem` instance as the `IonSchemaSystem`.
+     */
+    val ionSystem: IonSystem
+
     /**
      * Requests each of the provided [Authority]s, in order, to resolve
      * the requested schema id until one successfully resolves it.

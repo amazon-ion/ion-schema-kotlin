@@ -60,6 +60,31 @@ class SchemaTest {
     }
 
     @Test
+    fun getDeclaredType() {
+        assertNotNull(iss.loadSchema("schema/Customer.isl").getDeclaredType("Customer"))
+    }
+
+    @Test
+    fun getDeclaredType_imported() {
+        assertNull(iss.loadSchema("schema/Customer.isl").getDeclaredType("positive_int"))
+    }
+
+    @Test
+    fun getDeclaredType_unknown() {
+        assertNull(iss.loadSchema("schema/Customer.isl").getDeclaredType("unknown_type"))
+    }
+
+    @Test
+    fun getDeclaredTypes() {
+        val types = iss
+            .loadSchema("schema/Customer.isl")
+            .getDeclaredTypes()
+            .asSequence()
+            .associateBy { it.name }
+        assertEquals(setOf("Customer"), types.keys)
+    }
+
+    @Test
     fun getSchemaSystem() {
         assertTrue(iss === iss.loadSchema("schema/Customer.isl").getSchemaSystem())
     }

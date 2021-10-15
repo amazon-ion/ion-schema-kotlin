@@ -27,11 +27,12 @@ import com.amazon.ionschema.SchemaCache
  * Implementation of [IonSchemaSystem].
  */
 internal class IonSchemaSystemImpl(
-    private val ION: IonSystem,
+    override val ionSystem: IonSystem,
     private val authorities: List<Authority>,
     private val constraintFactory: ConstraintFactory,
     private val schemaCache: SchemaCache,
-    private val params: Map<Param, Any>
+    private val params: Map<Param<out Any>, Any>,
+    internal val logger: IonSchemaSystemLoggerInternal
 ) : IonSchemaSystem {
 
     private val schemaCore = SchemaCore(this)
@@ -62,7 +63,7 @@ internal class IonSchemaSystemImpl(
 
     override fun newSchema() = newSchema("")
 
-    override fun newSchema(isl: String) = newSchema(ION.iterate(isl))
+    override fun newSchema(isl: String) = newSchema(ionSystem.iterate(isl))
 
     override fun newSchema(isl: Iterator<IonValue>) = SchemaImpl(this, schemaCore, isl, null)
 
@@ -70,13 +71,16 @@ internal class IonSchemaSystemImpl(
 
     internal fun constraintFor(ion: IonValue, schema: Schema) = constraintFactory.constraintFor(ion, schema)
 
-    internal fun getIonSystem() = ION
-
     internal fun getSchemaImportSet() = schemaImportSet
 
-    internal fun hasParam(param: Param) = params.containsKey(param)
+    internal inline fun <reified T : Any> getParam(param: Param<T>): T = params[param] as? T ?: param.defaultValue
 
-    internal enum class Param {
-        ALLOW_ANONYMOUS_TOP_LEVEL_TYPES, // for backwards compatibility with v1.0
+    internal sealed class Param<T : Any>(val defaultValue: T) {
+        // for backwards compatibility with v1.0
+        // Default is to NOT support the backwards compatible behavior
+        object ALLOW_ANONYMOUS_TOP_LEVEL_TYPES : Param<Boolean>(false)
+        // for backwards compatibility with v1.1
+        // Default is to keep the backward compatible behavior
+        object ALLOW_TRANSITIVE_IMPORTS : Param<Boolean>(true)
     }
 }

@@ -37,7 +37,7 @@ internal class SchemaCore(
     override val isl: IonDatagram
 
     init {
-        val ION = (schemaSystem as IonSchemaSystemImpl).getIonSystem()
+        val ION = schemaSystem.ionSystem
         typeMap = ION.iterate(CORE_TYPES + ION_TYPES)
             .asSequence()
             .map { (it as IonStruct).first() as IonSymbol }
@@ -68,6 +68,10 @@ internal class SchemaCore(
     override fun getType(name: String): Type? = typeMap[name]
 
     override fun getTypes() = typeMap.values.iterator()
+
+    override fun getDeclaredType(name: String): Type? = getType(name)
+
+    override fun getDeclaredTypes(): Iterator<Type> = getTypes()
 
     override fun getSchemaSystem() = schemaSystem
 

@@ -34,6 +34,14 @@ internal interface TypeInternal : Type, Constraint {
 }
 
 /**
+ * Represents a type that was imported from another schema.
+ */
+internal interface ImportedType : TypeInternal {
+    val importedFromSchemaId: String
+        get() = schemaId!!
+}
+
+/**
  * The name of the schemaId that this type was defined in.
  *
  * Even though it is not part of the public API, it is convenient to have [schemaId] available on [Type] internally.

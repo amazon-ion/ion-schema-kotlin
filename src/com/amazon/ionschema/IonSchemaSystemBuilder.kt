@@ -19,6 +19,7 @@ import com.amazon.ion.IonSystem
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.internal.ConstraintFactoryDefault
 import com.amazon.ionschema.internal.IonSchemaSystemImpl
+import com.amazon.ionschema.internal.IonSchemaSystemLoggerInternal
 
 /**
  * Entry point for Ion Schema.  Provides a builder API for constructing
@@ -39,7 +40,8 @@ class IonSchemaSystemBuilder private constructor() {
     private var constraintFactory = defaultConstraintFactory
     private var ionSystem = IonSystemBuilder.standard().build()
     private var schemaCache: SchemaCache? = null
-    private var params = mutableMapOf<IonSchemaSystemImpl.Param, Any>()
+    private var params = mutableMapOf<IonSchemaSystemImpl.Param<*>, Any>()
+    private var logger: IonSchemaSystemLogger? = null
 
     /**
      * Adds the provided authority to the list of [Authority]s.
@@ -93,7 +95,28 @@ class IonSchemaSystemBuilder private constructor() {
      */
     @Deprecated("For backwards compatibility with v1.0")
     fun allowAnonymousTopLevelTypes(): IonSchemaSystemBuilder {
-        params.put(IonSchemaSystemImpl.Param.ALLOW_ANONYMOUS_TOP_LEVEL_TYPES, Object())
+        params.put(IonSchemaSystemImpl.Param.ALLOW_ANONYMOUS_TOP_LEVEL_TYPES, true)
+        return this
+    }
+
+    /**
+     * Allows forward-compatibility with the fixed, spec-compliant behavior for handling
+     * schema imports that is introduced in `ion-schema-kotlin-2.0.0`.
+     *
+     * @since 1.2
+     */
+    fun allowTransitiveImports(boolean: Boolean): IonSchemaSystemBuilder {
+        params[IonSchemaSystemImpl.Param.ALLOW_TRANSITIVE_IMPORTS] = boolean
+        return this
+    }
+
+    /**
+     * Provides a callback for the IonSchemaSystem to use for writing log messages.
+     *
+     * @since 1.2
+     */
+    fun withLogger(logger: IonSchemaSystemLogger): IonSchemaSystemBuilder {
+        this.logger = logger
         return this
     }
 
@@ -106,6 +129,7 @@ class IonSchemaSystemBuilder private constructor() {
         authorities,
         constraintFactory,
         schemaCache ?: SchemaCacheDefault(),
-        params
+        params,
+        IonSchemaSystemLoggerInternal(logger ?: { _, _ -> })
     )
 }

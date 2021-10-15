@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -15,16 +15,15 @@
 
 package com.amazon.ionschema.internal
 
-import com.amazon.ion.IonSymbol
-import com.amazon.ionschema.internal.constraint.ConstraintBase
+import com.amazon.ionschema.IonSchemaSystemLogger
+import com.amazon.ionschema.LogLevel
 
 /**
- * Implementation of [Type] representing a type imported with an alias.
+ * Logger that adds "[ion-schema-kotlin]" prefix to all lines and then delegates to
+ * a logging callback.
  */
-internal class TypeAliased(
-    ion: IonSymbol,
-    internal val type: TypeInternal
-) : TypeInternal by type, ImportedType, ConstraintBase(ion) {
-
-    override val name = ion.stringValue()
+internal class IonSchemaSystemLoggerInternal(private val delegate: IonSchemaSystemLogger) {
+    operator fun invoke(level: LogLevel, message: () -> String) {
+        delegate.invoke(level) { "[ion-schema-kotlin] " + message() }
+    }
 }
