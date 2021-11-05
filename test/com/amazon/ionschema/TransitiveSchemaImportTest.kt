@@ -237,7 +237,7 @@ class TransitiveSchemaImportLogWarningTest {
         val logLines = collectLogLines(schema, action = validateAValue)
 
         val expectedPrefixes = listOf(
-            "[Warn][ion-schema-kotlin] Use of transitively imported type"
+            "[Warn][ion-schema-kotlin] INVALID_TRANSITIVE_IMPORT"
         )
         assertLogsMatchPrefixes(expectedPrefixes, logLines)
     }
@@ -256,7 +256,7 @@ class TransitiveSchemaImportLogWarningTest {
         val logLines = collectLogLines(schema, action = {})
 
         val expectedPrefixes = listOf(
-            "[Warn][ion-schema-kotlin] Schema declares no types"
+            "[Warn][ion-schema-kotlin] SCHEMA_HAS_NO_TYPES"
         )
         assertLogsMatchPrefixes(expectedPrefixes, logLines)
     }
@@ -322,7 +322,7 @@ class TransitiveSchemaImportLogWarningTest {
         val logLines = collectLogLines(schema, action = validateAValue)
 
         val expectedPrefixes = listOf(
-            "[Warn][ion-schema-kotlin] Import is resolved transitively; type_A is actually declared in schema 'schema_A'"
+            "[Warn][ion-schema-kotlin] INVALID_TRANSITIVE_IMPORT"
         )
         assertLogsMatchPrefixes(expectedPrefixes, logLines)
     }
@@ -346,8 +346,8 @@ class TransitiveSchemaImportLogWarningTest {
         val logLines = collectLogLines(schema, action = validateAValue)
 
         val expectedPrefixes = listOf(
-            "[Warn][ion-schema-kotlin] Import is resolved transitively; type_A is actually declared in schema 'schema_A'",
-            "[Warn][ion-schema-kotlin] Use of transitively imported type 'type_A' in 'test_case_schema'"
+            "[Warn][ion-schema-kotlin] INVALID_TRANSITIVE_IMPORT",
+            "[Warn][ion-schema-kotlin] INVALID_TRANSITIVE_IMPORT"
         )
         assertLogsMatchPrefixes(expectedPrefixes, logLines)
     }

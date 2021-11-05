@@ -110,7 +110,7 @@ internal class SchemaImpl private constructor(
         declaredTypes = types.values.filterIsInstance<TypeImpl>().associateBy { it.name }
 
         if (declaredTypes.isEmpty()) {
-            schemaSystem.logger(Warn) { "Schema declares no types -- '$schemaId'" }
+            schemaSystem.logger(Warn) { "SCHEMA_HAS_NO_TYPES -- '$schemaId'" }
         }
     }
 
@@ -166,23 +166,19 @@ internal class SchemaImpl private constructor(
                     val typeName = (it["type"] as? IonSymbol)?.stringValue()
                     if (typeName != null) {
                         var importedType = importedSchema.getDeclaredType(typeName)
+                            ?.toImportedType(childImportId.stringValue())
 
                         if (importedType == null && allowTransitiveImports) {
-                            importedType = importedSchema.getType(typeName)?.also { type ->
-                                schemaSystem.logger(Warn) {
-                                    "Import is resolved transitively; $typeName is actually declared in " +
-                                        "schema '${type.schemaId}' -- $it"
+                            importedType = importedSchema.getType(typeName)
+                                ?.toImportedType(childImportId.stringValue())
+                                ?.also { type ->
+                                    schemaSystem.logger(Warn) {
+                                        CommonLogMessages.invalidTransitiveImport(type, this.schemaId)
+                                    }
                                 }
-                            }
                         }
 
                         importedType ?: throw InvalidSchemaException("Schema $childImportId doesn't contain a type named '$typeName'")
-
-                        importedType = decorateImportedType(
-                            importedType as TypeInternal,
-                            importedFromSchemaId = (importedSchema as SchemaImpl).schemaId!!,
-                            importedToSchemaId = this.schemaId ?: "<unnamed schema>"
-                        )
 
                         if (alias != null) {
                             importedType = TypeAliased(alias, importedType)
@@ -197,13 +193,7 @@ internal class SchemaImpl private constructor(
                                 importedSchema.getDeclaredTypes()
 
                         typesToAdd.asSequence()
-                            .map { type ->
-                                decorateImportedType(
-                                    type as TypeInternal,
-                                    importedFromSchemaId = (importedSchema as SchemaImpl).schemaId!!,
-                                    importedToSchemaId = this.schemaId ?: "<unnamed schema>"
-                                )
-                            }
+                            .map { type -> type.toImportedType(childImportId.stringValue()) }
                             .forEach { type ->
                                 addType(typeMap, type)
                                 schemaAndTypes.addType(type.name, type)
@@ -325,22 +315,21 @@ internal class SchemaImpl private constructor(
      * Returns a new [ImportedType] instance that decorates [type] so that it will
      * log a transitive import warning every time it is used for validation.
      */
-    private fun decorateImportedType(
-        type: TypeInternal,
-        importedFromSchemaId: String,
-        importedToSchemaId: String
-    ) = object : ImportedType, TypeInternal by type {
-        override fun validate(value: IonValue, issues: Violations) {
-            if (importedFromSchemaId != schemaId)
-                schemaSystem.logger(Warn) {
-                    "Use of transitively imported type '$name'" +
-                        " in '$importedToSchemaId'. '$name' is actually from '$schemaId', " +
-                        "but was imported from '$importedFromSchemaId'"
-                }
-            type.validate(value, issues)
-        }
+    private fun Type.toImportedType(importedFromSchemaId: String): ImportedType {
+        this@toImportedType as TypeInternal
+        return object : ImportedType, TypeInternal by this {
+            override fun validate(value: IonValue, issues: Violations) {
+                if (importedFromSchemaId != schemaId)
+                    schemaSystem.logger(Warn) {
+                        CommonLogMessages.invalidTransitiveImport(this, this@SchemaImpl.schemaId)
+                    }
+                this@toImportedType.validate(value, issues)
+            }
 
-        override val importedFromSchemaId: String
-            get() = importedFromSchemaId
+            override val schemaId: String
+                get() = this@toImportedType.schemaId!!
+            override val importedFromSchemaId: String
+                get() = importedFromSchemaId
+        }
     }
 }

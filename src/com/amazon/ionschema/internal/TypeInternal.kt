@@ -38,7 +38,13 @@ internal interface TypeInternal : Type, Constraint {
  */
 internal interface ImportedType : TypeInternal {
     val importedFromSchemaId: String
-        get() = schemaId!!
+
+    /**
+     * The name of the schemaId that this type was defined in.
+     * Unlike [TypeInternal], this is always non-null since we
+     * can't import types from a schema if that schema has no id.
+     */
+    override val schemaId: String
 }
 
 /**
