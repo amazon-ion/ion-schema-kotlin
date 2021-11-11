@@ -108,7 +108,7 @@ class TransitiveSchemaImportTest(val schemaId: String, val schemaAssertion: Sche
     val iss = IonSchemaSystemBuilder.standard()
         .allowTransitiveImports(true)
         .withAuthority(InMemoryMapAuthority.fromIonText(TEST_SCHEMAS))
-        .withLogger { _, msg -> println(msg) }
+        .withWarningMessageCallback { println(it) }
         .build()
 
     companion object {
@@ -194,7 +194,7 @@ class TransitiveSchemaImportLogWarningTest {
     private fun collectLogLines(schemaString: String, action: Schema.() -> Unit = validateAValue): List<String> {
         val logLines = mutableListOf<String>()
         IonSchemaSystemBuilder.standard()
-            .withLogger { level, message -> logLines.add("[$level]${message()}") }
+            .withWarningMessageCallback { logLines.add(it) }
             .withAuthority(InMemoryMapAuthority.fromIonText(ABC_SCHEMAS + ("test_case_schema" to schemaString)))
             .build()
             .loadSchema("test_case_schema")
@@ -236,9 +236,7 @@ class TransitiveSchemaImportLogWarningTest {
 
         val logLines = collectLogLines(schema, action = validateAValue)
 
-        val expectedPrefixes = listOf(
-            "[Warn][ion-schema-kotlin] INVALID_TRANSITIVE_IMPORT"
-        )
+        val expectedPrefixes = listOf("INVALID_TRANSITIVE_IMPORT")
         assertLogsMatchPrefixes(expectedPrefixes, logLines)
     }
 
@@ -255,9 +253,7 @@ class TransitiveSchemaImportLogWarningTest {
 
         val logLines = collectLogLines(schema, action = {})
 
-        val expectedPrefixes = listOf(
-            "[Warn][ion-schema-kotlin] SCHEMA_HAS_NO_TYPES"
-        )
+        val expectedPrefixes = listOf("SCHEMA_HAS_NO_TYPES")
         assertLogsMatchPrefixes(expectedPrefixes, logLines)
     }
 
@@ -321,9 +317,7 @@ class TransitiveSchemaImportLogWarningTest {
 
         val logLines = collectLogLines(schema, action = validateAValue)
 
-        val expectedPrefixes = listOf(
-            "[Warn][ion-schema-kotlin] INVALID_TRANSITIVE_IMPORT"
-        )
+        val expectedPrefixes = listOf("INVALID_TRANSITIVE_IMPORT")
         assertLogsMatchPrefixes(expectedPrefixes, logLines)
     }
 
@@ -346,8 +340,8 @@ class TransitiveSchemaImportLogWarningTest {
         val logLines = collectLogLines(schema, action = validateAValue)
 
         val expectedPrefixes = listOf(
-            "[Warn][ion-schema-kotlin] INVALID_TRANSITIVE_IMPORT",
-            "[Warn][ion-schema-kotlin] INVALID_TRANSITIVE_IMPORT"
+            "INVALID_TRANSITIVE_IMPORT",
+            "INVALID_TRANSITIVE_IMPORT"
         )
         assertLogsMatchPrefixes(expectedPrefixes, logLines)
     }

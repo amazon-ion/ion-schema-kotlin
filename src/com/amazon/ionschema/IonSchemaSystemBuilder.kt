@@ -19,7 +19,8 @@ import com.amazon.ion.IonSystem
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.internal.ConstraintFactoryDefault
 import com.amazon.ionschema.internal.IonSchemaSystemImpl
-import com.amazon.ionschema.internal.IonSchemaSystemLoggerInternal
+import com.amazon.ionschema.internal.WarningType
+import java.util.function.Consumer
 
 /**
  * Entry point for Ion Schema.  Provides a builder API for constructing
@@ -41,7 +42,7 @@ class IonSchemaSystemBuilder private constructor() {
     private var ionSystem = IonSystemBuilder.standard().build()
     private var schemaCache: SchemaCache? = null
     private var params = mutableMapOf<IonSchemaSystemImpl.Param<*>, Any>()
-    private var logger: IonSchemaSystemLogger? = null
+    private var warningCallback: ((() -> String) -> Unit)? = null
 
     /**
      * Adds the provided authority to the list of [Authority]s.
@@ -100,10 +101,20 @@ class IonSchemaSystemBuilder private constructor() {
     }
 
     /**
-     * Allows forward-compatibility with the fixed, spec-compliant behavior for handling
-     * schema imports that is introduced in `ion-schema-kotlin-2.0.0`.
+     * Allows forward-compatibility with the fixed, spec-compliant behavior for
+     * handling schema imports that is introduced in `ion-schema-kotlin-2.0.0`.
+     * If not set, the default value is `true`.
+     *
+     * When set to `true`, the `IonSchemaSystem` will generate warnings about
+     * usages of transitive imports, which can be consumed by configuring the
+     * `IonSchemaSystem` with a callback function using [withWarningMessageCallback].
+     *
+     * Before setting this option to `false`, you should verify that your schemas
+     * will continue to work as intended, and you may need to update schemas that
+     * rely on the current, incorrect import resolution logic.
      *
      * @since 1.2
+     * @see [WarningType.INVALID_TRANSITIVE_IMPORT]
      */
     fun allowTransitiveImports(boolean: Boolean): IonSchemaSystemBuilder {
         params[IonSchemaSystemImpl.Param.ALLOW_TRANSITIVE_IMPORTS] = boolean
@@ -111,12 +122,42 @@ class IonSchemaSystemBuilder private constructor() {
     }
 
     /**
-     * Provides a callback for the IonSchemaSystem to use for writing log messages.
+     * Provides a callback for the IonSchemaSystem to send a warning message about
+     * things that are not fatal (ie. will not result in an exception being thrown).
+     * Content of the messages may include information about possible errors in
+     * schemas, and usage of features that may be deprecated in future versions of
+     * the Ion Schema Language or the `ion-schema-kotlin` library.
+     *
+     * Clients can use these warnings as they please. Some possible uses are:
+     * - Log the warning messages
+     * - Surface the warnings to an end user who is authoring schemas
+     * - Enforce a "strict mode" by throwing an exception for warnings (ie. like
+     *   `javac -Werror`, but for Ion Schemas)
      *
      * @since 1.2
      */
-    fun withLogger(logger: IonSchemaSystemLogger): IonSchemaSystemBuilder {
-        this.logger = logger
+    fun withWarningMessageCallback(callbackFn: Consumer<String>): IonSchemaSystemBuilder {
+        this.warningCallback = { callbackFn.accept(it()) }
+        return this
+    }
+
+    /**
+     * Provides a callback for the IonSchemaSystem to send a warning message about
+     * things that are not fatal (ie. will not result in an exception being thrown).
+     * Content of the messages may include information about possible errors in
+     * schemas, and usage of features that may be deprecated in future versions of
+     * the Ion Schema Language or the `ion-schema-kotlin` library.
+     *
+     * Clients can use these warnings as they please. Some possible uses are:
+     * - Log the warning messages
+     * - Surface the warnings to an end user who is authoring schemas
+     * - Enforce a "strict mode" by throwing an exception for warnings (ie. like
+     *   `javac -Werror`, but for Ion Schemas)
+     *
+     * @since 1.2
+     */
+    fun withWarningMessageCallback(callbackFn: (String) -> Unit): IonSchemaSystemBuilder {
+        this.warningCallback = { callbackFn(it()) }
         return this
     }
 
@@ -130,6 +171,6 @@ class IonSchemaSystemBuilder private constructor() {
         constraintFactory,
         schemaCache ?: SchemaCacheDefault(),
         params,
-        IonSchemaSystemLoggerInternal(logger ?: { _, _ -> })
+        (warningCallback ?: { })
     )
 }

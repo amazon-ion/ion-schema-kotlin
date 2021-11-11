@@ -32,7 +32,7 @@ internal class IonSchemaSystemImpl(
     private val constraintFactory: ConstraintFactory,
     private val schemaCache: SchemaCache,
     private val params: Map<Param<out Any>, Any>,
-    internal val logger: IonSchemaSystemLoggerInternal
+    private val warnCallback: (() -> String) -> Unit
 ) : IonSchemaSystem {
 
     private val schemaCore = SchemaCore(this)
@@ -72,6 +72,10 @@ internal class IonSchemaSystemImpl(
     internal fun constraintFor(ion: IonValue, schema: Schema) = constraintFactory.constraintFor(ion, schema)
 
     internal fun getSchemaImportSet() = schemaImportSet
+
+    internal fun emitWarning(lazyWarning: () -> String) {
+        warnCallback.invoke(lazyWarning)
+    }
 
     internal inline fun <reified T : Any> getParam(param: Param<T>): T = params[param] as? T ?: param.defaultValue
 

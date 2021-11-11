@@ -23,7 +23,6 @@ import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Import
 import com.amazon.ionschema.InvalidSchemaException
-import com.amazon.ionschema.LogLevel.Warn
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
 import com.amazon.ionschema.Violations
@@ -110,7 +109,7 @@ internal class SchemaImpl private constructor(
         declaredTypes = types.values.filterIsInstance<TypeImpl>().associateBy { it.name }
 
         if (declaredTypes.isEmpty()) {
-            schemaSystem.logger(Warn) { "SCHEMA_HAS_NO_TYPES -- '$schemaId'" }
+            schemaSystem.emitWarning { "${WarningType.SCHEMA_HAS_NO_TYPES} -- '$schemaId'" }
         }
     }
 
@@ -172,8 +171,8 @@ internal class SchemaImpl private constructor(
                             importedType = importedSchema.getType(typeName)
                                 ?.toImportedType(childImportId.stringValue())
                                 ?.also { type ->
-                                    schemaSystem.logger(Warn) {
-                                        CommonLogMessages.invalidTransitiveImport(type, this.schemaId)
+                                    schemaSystem.emitWarning {
+                                        warnInvalidTransitiveImport(type, this.schemaId)
                                     }
                                 }
                         }
@@ -312,17 +311,18 @@ internal class SchemaImpl private constructor(
     }
 
     /**
-     * Returns a new [ImportedType] instance that decorates [type] so that it will
+     * Returns a new [ImportedType] instance that decorates [Type] so that it will
      * log a transitive import warning every time it is used for validation.
      */
     private fun Type.toImportedType(importedFromSchemaId: String): ImportedType {
         this@toImportedType as TypeInternal
         return object : ImportedType, TypeInternal by this {
             override fun validate(value: IonValue, issues: Violations) {
-                if (importedFromSchemaId != schemaId)
-                    schemaSystem.logger(Warn) {
-                        CommonLogMessages.invalidTransitiveImport(this, this@SchemaImpl.schemaId)
+                if (importedFromSchemaId != schemaId) {
+                    schemaSystem.emitWarning {
+                        warnInvalidTransitiveImport(this, this@SchemaImpl.schemaId)
                     }
+                }
                 this@toImportedType.validate(value, issues)
             }
 
