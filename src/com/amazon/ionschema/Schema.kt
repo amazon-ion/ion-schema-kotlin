@@ -54,15 +54,27 @@ interface Schema {
     fun getImports(): Iterator<Import>
 
     /**
-     * Returns the requested type, if present in this schema;
-     * otherwise returns null.
+     * Returns the requested type, if present in this schema, imported
+     * into this schema, or a built-in type; otherwise returns null.
      */
     fun getType(name: String): Type?
 
     /**
-     * Returns an iterator over the types in this schema.
+     * Returns an iterator over all the types declared in this schema or
+     * imported into this schema.
      */
     fun getTypes(): Iterator<Type>
+
+    /**
+     * Returns the requested type, if declared in this schema;
+     * otherwise returns null.
+     */
+    fun getDeclaredType(name: String): Type?
+
+    /**
+     * Returns an iterator over the types declared in this schema.
+     */
+    fun getDeclaredTypes(): Iterator<Type>
 
     /**
      * Returns the IonSchemaSystem this schema was created by.

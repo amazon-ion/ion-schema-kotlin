@@ -47,6 +47,7 @@ class IonSchemaTestRunner(
 
     private val schemaSystem = IonSchemaSystemBuilder.standard()
         .withAuthority(AuthorityFilesystem("ion-schema-tests"))
+        .allowTransitiveImports(false)
         .build()
 
     private val schemaCore = SchemaCore(schemaSystem)

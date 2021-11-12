@@ -23,8 +23,8 @@ import com.amazon.ionschema.internal.constraint.ConstraintBase
  */
 internal class TypeAliased(
     ion: IonSymbol,
-    internal val type: TypeInternal
-) : TypeInternal by type, ConstraintBase(ion) {
+    internal val type: ImportedType
+) : TypeInternal, ImportedType by type, ConstraintBase(ion) {
 
     override val name = ion.stringValue()
 }

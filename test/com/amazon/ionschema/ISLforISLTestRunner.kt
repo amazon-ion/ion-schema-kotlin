@@ -36,6 +36,7 @@ class ISLforISLTestRunner(
 
     private val schemaSystem = IonSchemaSystemBuilder.standard()
         .withAuthority(AuthorityFilesystem("ion-schema-schemas"))
+        .allowTransitiveImports(false)
         .build()
 
     // There are certain conditions that make a schema invalid that cannot
@@ -43,11 +44,13 @@ class ISLforISLTestRunner(
     // Test files with "invalid_schema" definitions should be listed here if and
     // only if they are invalid for some reason that cannot be validated by ISL.
     private val blacklist = setOf(
-        "ion-schema-tests/schema/import/import_schema_with_aliased_type_invalid.isl",
         "ion-schema-tests/schema/import/import_type_unknown.isl",
         "ion-schema-tests/schema/import/invalid_duplicate_import.isl",
         "ion-schema-tests/schema/import/invalid_duplicate_import_type.isl",
         "ion-schema-tests/schema/import/invalid_duplicate_type.isl",
+        "ion-schema-tests/schema/import/invalid_transitive_import_of_schema.isl",
+        "ion-schema-tests/schema/import/invalid_transitive_import_of_type.isl",
+        "ion-schema-tests/schema/import/invalid_transitive_import_of_type_by_alias.isl",
         "ion-schema-tests/schema/invalid_missing_schema_footer.isl",
         "ion-schema-tests/schema/invalid_missing_schema_header.isl",
         "ion-schema-tests/schema/invalid_reuse_of_type_name.isl",

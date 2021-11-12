@@ -1,7 +1,6 @@
 package com.amazon.ionschema
 
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import com.amazon.ionschema.util.CloseableIterator
 import java.io.Closeable
 import java.io.InputStream
@@ -24,7 +23,7 @@ class ResourceAuthority(
         val resourceName = "$rootPackage/$id"
         val stream: InputStream = classLoader.getResourceAsStream(resourceName) ?: return EMPTY_ITERATOR
 
-        val ion = (iss as IonSchemaSystemImpl).getIonSystem()
+        val ion = iss.ionSystem
         val reader = ion.newReader(stream)
 
         return object : CloseableIterator<IonValue>, Iterator<IonValue> by ion.iterate(reader), Closeable by reader {
