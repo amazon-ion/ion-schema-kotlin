@@ -42,8 +42,7 @@ internal class TimestampOffset(
      * An unknown local offset is represented as null.  This approach corresponds
      * exactly with values returned by IonTimestamp.localOffset.
      */
-    private val offsets: Set<Int?>
-    private val offsetsAreValid: Boolean
+    private val validOffsets: Set<Int?>
 
     init {
         if (ion !is IonList) {
@@ -56,19 +55,7 @@ internal class TimestampOffset(
             throw InvalidSchemaException("timestamp_offset must contain at least one offset")
         }
 
-        offsetsAreValid = if (ion.typeAnnotations.isEmpty()) {
-            false
-        } else {
-            if (ion.typeAnnotations.size != 1) {
-                throw InvalidSchemaException("timestamp_offset allows for only 1 annotation, found ${ion.typeAnnotations}")
-            }
-            if (ion.typeAnnotations[0] != "not") {
-                throw InvalidSchemaException("timestamp_offset can only be annotated with the token \"not\", found ${ion.typeAnnotations} ")
-            }
-            true
-        }
-
-        offsets = ion.map {
+        validOffsets = ion.map {
             // every timestamp offset must be of the form "[+|-]hh:mm"
 
             if (it !is IonString) {
@@ -108,18 +95,11 @@ internal class TimestampOffset(
 
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonTimestamp>(value, issues) { v ->
-            val hasViolations =
-                if (offsetsAreValid) {
-                    offsets.contains(v.localOffset)
-                } else {
-                    !offsets.contains(v.localOffset)
-                }
-
-            if (hasViolations) {
+            if (!validOffsets.contains(v.localOffset)) {
                 issues.add(
                     Violation(
                         ion, "invalid_timestamp_offset",
-                        "invalid timestamp offset %s, expected %s".format(v.localOffset, ion)
+                        "invalid timestamp offset ${v.localOffset}, expected $ion"
                     )
                 )
             }
