@@ -27,7 +27,6 @@ import com.amazon.ionschema.internal.constraint.Contains
 import com.amazon.ionschema.internal.constraint.Content
 import com.amazon.ionschema.internal.constraint.Element
 import com.amazon.ionschema.internal.constraint.Fields
-import com.amazon.ionschema.internal.constraint.FloatSize
 import com.amazon.ionschema.internal.constraint.Not
 import com.amazon.ionschema.internal.constraint.OccursNoop
 import com.amazon.ionschema.internal.constraint.OneOf
@@ -56,7 +55,6 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         content,
         element,
         fields,
-        float_size,
         not,
         occurs,
         one_of,
@@ -91,7 +89,6 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
             Constraints.content -> Content(ion)
             Constraints.element -> Element(ion, schema)
             Constraints.fields -> Fields(ion, schema)
-            Constraints.float_size -> FloatSize(ion)
             Constraints.not -> Not(ion, schema)
             Constraints.occurs -> OccursNoop(ion)
             Constraints.one_of -> OneOf(ion, schema)
