@@ -21,12 +21,13 @@ buildscript {
   }
   dependencies {
     classpath "org.jlleitschuh.gradle:ktlint-gradle:10.0.0"
+    classpath "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
   }
 }
 
 plugins {
   id "org.jetbrains.kotlin.jvm" version "1.4.0"
-  id "org.jetbrains.dokka" version "0.9.18"
+  id "org.jetbrains.dokka" version "1.4.32"
   id "maven-publish"
   id "signing"
   id "org.jlleitschuh.gradle.ktlint" version "10.0.0"
@@ -76,19 +77,27 @@ ktlint {
   outputToConsole = true
 }
 
-dokka {
-  outputFormat = "html"
-  outputDirectory = "$buildDir/javadoc"
-  includes = ["src/com/amazon/ionschema/module.md"]
+dokkaJavadoc.configure {
+  dokkaSourceSets {
+    named("main") {
+      includes.from("src/com/amazon/ionschema/module.md")
+      sourceLink {
+        // URL showing where the source code can be accessed through the web browser
+        remoteUrl.set(java.net.URL("https://github.com/amzn/ion-schema-kotlin/blob/master/src"))
+        // Suffix which is used to append the line number to the URL. Use #L for GitHub
+        remoteLineSuffix.set("#L")
+      }
+    }
+  }
 }
 
 task sourcesJar(type: Jar) {
+  classifier 'sources'
   from "src"
-  classifier = "sources"
 }
-task javadocJar(type: Jar) {
-  from dokka
-  classifier = "javadoc"
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+  classifier 'javadoc'
+  from dokkaJavadoc.outputDirectory
 }
 publishing {
   publications {
