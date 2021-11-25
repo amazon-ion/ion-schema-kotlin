@@ -25,7 +25,7 @@ class SchemaImportTest {
     private val ION = IonSystemBuilder.standard().build()
 
     private val iss = IonSchemaSystemBuilder.standard()
-        .addAuthority(AuthorityFilesystem("ion-schema-tests"))
+        .addAuthority(AuthorityFilesystem("../ion-schema-tests"))
         .build()
 
     @Test
@@ -52,7 +52,8 @@ class SchemaImportTest {
     fun getImport_id_is_a_symbol() {
         val test = "schema_header::{ imports: [ {id: 'schema/import/abcde.isl' }] } schema_footer::{}"
         val ion = IonSystemBuilder.standard().build()
-        val iss = IonSchemaSystemBuilder.standard().addAuthority(AuthorityFilesystem("ion-schema-tests")).withIonSystem(ion).build()
+        val iss = IonSchemaSystemBuilder.standard()
+            .addAuthority(AuthorityFilesystem("../ion-schema-tests")).withIonSystem(ion).build()
         val schema = iss.newSchema(ion.iterate(test))
         val schemaId = "schema/import/abcde.isl"
         val import = schema.getImport(schemaId)!!

@@ -50,7 +50,7 @@ class IonSchemaSystemTest {
         val schema = IonSchemaSystemBuilder.standard()
             .addAuthority(AuthorityFilesystem("src")) // misconfigured
             .addAuthority(exceptionalAuthority) // always throws
-            .addAuthority(AuthorityFilesystem("ion-schema-tests")) // correctly configured
+            .addAuthority(AuthorityFilesystem("../ion-schema-tests")) // correctly configured
             .build()
             .loadSchema("schema/Customer.isl")
         assertEquals(2, exceptionalAuthority.invokeCnt) // for "Customer.isl" and "positive_int.isl"
@@ -62,7 +62,7 @@ class IonSchemaSystemTest {
         // exceptionalAuthority.iteratorFor() should not be invoked by:
         val schema = IonSchemaSystemBuilder.standard()
             .addAuthority(exceptionalAuthority)
-            .withAuthority(AuthorityFilesystem("ion-schema-tests"))
+            .withAuthority(AuthorityFilesystem("../ion-schema-tests"))
             .build()
             .loadSchema("schema/Customer.isl")
         assertEquals(0, exceptionalAuthority.invokeCnt)
@@ -74,7 +74,7 @@ class IonSchemaSystemTest {
         // exceptionalAuthority.iteratorFor() should not be invoked by:
         val schema = IonSchemaSystemBuilder.standard()
             .addAuthority(exceptionalAuthority)
-            .withAuthorities(listOf<Authority>(AuthorityFilesystem("ion-schema-tests")))
+            .withAuthorities(listOf<Authority>(AuthorityFilesystem("../ion-schema-tests")))
             .build()
             .loadSchema("schema/Customer.isl")
         assertEquals(0, exceptionalAuthority.invokeCnt)
@@ -84,7 +84,7 @@ class IonSchemaSystemTest {
     @Test
     fun loadSchema_verifyCache() {
         val iss = IonSchemaSystemBuilder.standard()
-            .addAuthority(AuthorityFilesystem("ion-schema-tests"))
+            .addAuthority(AuthorityFilesystem("../ion-schema-tests"))
             .build()
         val schema = iss.loadSchema("schema/Customer.isl")
         val schemaFromCache = iss.loadSchema("schema/Customer.isl")
