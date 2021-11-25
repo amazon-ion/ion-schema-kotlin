@@ -1,2 +1,3 @@
 rootProject.name = 'IonSchema'
 include 'ion-schema-kotlin'
+include 'cli'

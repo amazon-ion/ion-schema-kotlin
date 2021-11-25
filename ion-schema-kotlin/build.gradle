@@ -15,7 +15,7 @@
 
 plugins {
   id "org.jetbrains.kotlin.jvm"
-  id "org.jetbrains.dokka" version "1.4.32"
+  id "org.jetbrains.dokka" version "1.6.20"
   id "maven-publish"
   id "signing"
 }
@@ -29,8 +29,6 @@ repositories {
 dependencies {
   api "com.amazon.ion:ion-java:[1.4,)"
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-  // We're running tests with an old version of kotlin Stdlib to ensure the library is compatible for consumers still using Kotlin 1.3.
-  testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.72"
   testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }
 
@@ -48,18 +46,13 @@ compileKotlin{
   kotlinOptions.languageVersion = "1.4" // Can be read by 1.3 compiler, so consumers on kotlin 1.3 are still supported.
 }
 
-compileTestKotlin {
-  kotlinOptions.apiVersion = "1.3"
-  kotlinOptions.languageVersion = "1.4"
-}
-
 dokkaJavadoc.configure {
   dokkaSourceSets {
     named("main") {
-      includes.from("src/com/amazon/ionschema/module.md")
+      includes.from("src/main/kotlin/com/amazon/ionschema/module.md")
       sourceLink {
         // URL showing where the source code can be accessed through the web browser
-        remoteUrl.set(java.net.URL("https://github.com/amzn/ion-schema-kotlin/blob/master/src"))
+        remoteUrl.set(java.net.URL("https://github.com/amzn/ion-schema-kotlin/blob/master/ion-schema-kotlin/src/main/kotlin"))
         // Suffix which is used to append the line number to the URL. Use #L for GitHub
         remoteLineSuffix.set("#L")
       }
