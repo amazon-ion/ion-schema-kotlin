@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-./gradlew cli:run -q --args="$*"
+./gradlew cli:install --quiet && exec cli/build/install/ion-schema-cli/bin/ion-schema-cli "$@"
