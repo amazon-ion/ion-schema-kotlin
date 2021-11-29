@@ -3,6 +3,7 @@ package com.amazon.ionschema
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.util.CloseableIterator
 import java.io.Closeable
+import java.io.File
 import java.io.InputStream
 
 /**
@@ -14,14 +15,16 @@ import java.io.InputStream
  * @property[classLoader] The [ClassLoader] to use to find the schema resources.
  */
 class ResourceAuthority(
-    rootPackage: String,
+    private val rootPackage: String,
     private val classLoader: ClassLoader
 ) : Authority {
-    private val rootPackage = if (rootPackage.endsWith('/')) rootPackage else "$rootPackage/"
 
     override fun iteratorFor(iss: IonSchemaSystem, id: String): CloseableIterator<IonValue> {
-        val resourceName = "$rootPackage/$id"
-        val stream: InputStream = classLoader.getResourceAsStream(resourceName) ?: return EMPTY_ITERATOR
+        val resourcePath = File(rootPackage, id).toPath().normalize().toString()
+        if (!resourcePath.startsWith(rootPackage)) {
+            throw AccessDeniedException(File(id))
+        }
+        val stream: InputStream = classLoader.getResourceAsStream(resourcePath) ?: return EMPTY_ITERATOR
 
         val ion = iss.ionSystem
         val reader = ion.newReader(stream)
