@@ -48,6 +48,18 @@ class ResourceAuthorityTest {
     }
 
     @Test
+    fun schemaIdOutsideBasePath() {
+        val iss = IonSchemaSystemBuilder.standard().build()
+        val authority = ResourceAuthority("ion-schema-schemas", ResourceAuthority::class.java.classLoader)
+        try {
+            authority.iteratorFor(iss, "../outside_the_base_path")
+            fail()
+        } catch (e: AccessDeniedException) {
+            // Pass
+        }
+    }
+
+    @Test
     fun canLoadIonSchemaSchemas() {
         val ion = IonSystemBuilder.standard().build()
         val iss = IonSchemaSystemBuilder.standard()
