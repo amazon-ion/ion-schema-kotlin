@@ -61,6 +61,10 @@ internal class SchemaImpl private constructor(
 
     private val declaredTypes: Map<String, TypeImpl>
 
+    companion object {
+        private val ISL_VERSION_MARKER = Regex("^\\\$ion_schema_\\d+_\\d+")
+    }
+
     init {
         val dgIsl = schemaSystem.ionSystem.newDatagram()
 
@@ -74,8 +78,11 @@ internal class SchemaImpl private constructor(
 
                 dgIsl.add(it.clone())
 
-                if (it is IonSymbol && it.stringValue() == "\$ion_schema_1_0") {
-                    // TBD https://github.com/amzn/ion-schema-kotlin/issues/95
+                if (it is IonSymbol && ISL_VERSION_MARKER.matches(it.stringValue())) {
+                    // This implementation only supports Ion Schema 1.0
+                    if (it.stringValue() != "\$ion_schema_1_0") {
+                        throw InvalidSchemaException("Unsupported Ion Schema version: ${it.stringValue()}")
+                    }
                 } else if (it.hasTypeAnnotation("schema_header")) {
                     importsMap = loadHeader(types, it as IonStruct)
                     foundHeader = true

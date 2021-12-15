@@ -33,6 +33,16 @@ class SchemaTest {
         .addAuthority(AuthorityFilesystem("ion-schema-tests"))
         .build()
 
+    @Test(expected = InvalidSchemaException::class)
+    fun invalid_schema_version() {
+        iss.newSchema(
+            """
+            ${'$'}ion_schema_2_0
+            type::{ name: foo, type: int }
+            """.trimIndent()
+        )
+    }
+
     @Test
     fun getType() {
         assertNotNull(iss.loadSchema("schema/Customer.isl").getType("Customer"))
