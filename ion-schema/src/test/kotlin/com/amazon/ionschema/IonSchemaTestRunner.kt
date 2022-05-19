@@ -46,7 +46,7 @@ class IonSchemaTestRunner(
 ) : AbstractTestRunner(testClass) {
 
     private val schemaSystem = IonSchemaSystemBuilder.standard()
-        .withAuthority(AuthorityFilesystem("ion-schema-tests"))
+        .withAuthority(AuthorityFilesystem("../ion-schema-tests"))
         .allowTransitiveImports(false)
         .build()
 
@@ -57,7 +57,7 @@ class IonSchemaTestRunner(
     private val specialFieldNames = setOf("fields", "element")
 
     override fun run(notifier: RunNotifier) {
-        val base = "ion-schema-tests"
+        val base = "../ion-schema-tests"
         File(base).walk()
             .filter { it.isFile }
             .filter { it.path.endsWith(".isl") }

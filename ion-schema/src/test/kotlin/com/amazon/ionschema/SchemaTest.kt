@@ -30,7 +30,7 @@ class SchemaTest {
     private val ION = IonSystemBuilder.standard().build()
 
     private val iss = IonSchemaSystemBuilder.standard()
-        .addAuthority(AuthorityFilesystem("ion-schema-tests"))
+        .addAuthority(AuthorityFilesystem("../ion-schema-tests"))
         .build()
 
     @Test(expected = InvalidSchemaException::class)

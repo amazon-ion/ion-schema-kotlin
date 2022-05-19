@@ -35,7 +35,7 @@ class ISLforISLTestRunner(
 ) : AbstractTestRunner(testClass) {
 
     private val schemaSystem = IonSchemaSystemBuilder.standard()
-        .withAuthority(AuthorityFilesystem("ion-schema-schemas"))
+        .withAuthority(AuthorityFilesystem("../ion-schema-schemas"))
         .allowTransitiveImports(false)
         .build()
 
@@ -55,14 +55,14 @@ class ISLforISLTestRunner(
         "ion-schema-tests/schema/invalid_missing_schema_header.isl",
         "ion-schema-tests/schema/invalid_reuse_of_type_name.isl",
         "ion-schema-tests/schema/invalid_unknown_type.isl"
-    )
+    ).map { "../" + it }
 
     override fun run(notifier: RunNotifier) {
         val islSchema = schemaSystem.loadSchema("isl/schema.isl")
         val schema = islSchema.getType("schema")!!
         val type = islSchema.getType("type")!!
 
-        val base = "ion-schema-tests"
+        val base = "../ion-schema-tests"
         File(base).walk()
             .filter { it.isFile }
             .filter { it.path.endsWith(".isl") }

@@ -2,9 +2,9 @@
 /.gradle
 /.idea
 /build
+/*/build
 /out
 /*.iml
 *.swp
 *.~
 ~$*
-

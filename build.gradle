@@ -14,138 +14,64 @@
  */
 
 buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
+    repositories {
+        gradlePluginPortal()
     }
-  }
-  dependencies {
-    classpath "org.jlleitschuh.gradle:ktlint-gradle:10.0.0"
-    classpath "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
-  }
+    dependencies {
+        classpath "org.jlleitschuh.gradle:ktlint-gradle:10.0.0"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.20"
+    }
 }
 
 plugins {
-  id "org.jetbrains.kotlin.jvm" version "1.4.0"
-  id "org.jetbrains.dokka" version "1.4.32"
-  id "maven-publish"
-  id "signing"
-  id "org.jlleitschuh.gradle.ktlint" version "10.0.0"
+    id "org.jetbrains.kotlin.jvm" version "1.6.20" apply false
+    id "org.jlleitschuh.gradle.ktlint" version "10.0.0" apply false
 }
 
-group = "com.amazon.ion"
-version = "1.2.2-SNAPSHOT"
-ext.kotlin_version = "[1.3,1.6["
+subprojects {
+    group = 'com.amazon.ion'
+    ext.kotlin_version = "1.6.20"
 
-repositories {
-  mavenCentral()
-  jcenter()
-}
-
-dependencies {
-  api "com.amazon.ion:ion-java:[1.4,)"
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-  // We're running tests with an old version of kotlin Stdlib to ensure the library is compatible for consumers still using Kotlin 1.3.
-  testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.72"
-  testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-}
-
-sourceSets {
-  main.kotlin.srcDirs = ["src"]
-  test.kotlin.srcDirs = ["test"]
-}
-
-processResources {
-  from('ion-schema-schemas/isl/') {
-    into 'ion-schema-schemas/isl/'
-  }
-  from('ion-schema-schemas/json/') {
-    into 'ion-schema-schemas/json/'
-  }
-}
-
-compileKotlin{
-  kotlinOptions.apiVersion = "1.3"
-  kotlinOptions.languageVersion = "1.4" // Can be read by 1.3 compiler, so consumers on kotlin 1.3 are still supported.
-}
-compileTestKotlin {
-  kotlinOptions.apiVersion = "1.3"
-  kotlinOptions.languageVersion = "1.4"
-}
-
-ktlint {
-  outputToConsole = true
-}
-
-dokkaJavadoc.configure {
-  dokkaSourceSets {
-    named("main") {
-      includes.from("src/com/amazon/ionschema/module.md")
-      sourceLink {
-        // URL showing where the source code can be accessed through the web browser
-        remoteUrl.set(java.net.URL("https://github.com/amzn/ion-schema-kotlin/blob/master/src"))
-        // Suffix which is used to append the line number to the URL. Use #L for GitHub
-        remoteLineSuffix.set("#L")
-      }
+    apply plugin: "org.jlleitschuh.gradle.ktlint"
+    ktlint {
+        outputToConsole = true
     }
-  }
-}
 
-task sourcesJar(type: Jar) {
-  classifier 'sources'
-  from "src"
-}
-task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-  classifier 'javadoc'
-  from dokkaJavadoc.outputDirectory
-}
-publishing {
-  publications {
-    maven(MavenPublication) {
-      artifactId = "ion-schema-kotlin"
-
-      from components.java
-      artifact sourcesJar
-      artifact javadocJar
-
-      pom {
-        name = "Ion Schema Kotlin"
-        packaging = "jar"
-        url = "https://github.com/amzn/ion-schema-kotlin"
-        description = "Reference implementation of the Amazon Ion Schema Specification."
-        scm {
-          connection = "scm:git@github.com:amzn/ion-schema-kotlin.git"
-          developerConnection = "scm:git@github.com:amzn/ion-schema-kotlin.git"
-          url = "git@github.com:amzn/ion-schema-kotlin.git"
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            jvmTarget = "1.8"
         }
-        licenses {
-          license {
-            name = "The Apache License, Version 2.0"
-            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-          }
-        }
-        developers {
-          developer {
-            name = "Amazon Ion Team"
-            email = "ion-team@amazon.com"
-            organization = "Amazon"
-            organizationUrl = "https://github.com/amzn"
-          }
-        }
-      }
     }
-  }
-  repositories {
-    maven {
-      url "https://aws.oss.sonatype.org/service/local/staging/deploy/maven2"
-      credentials {
-        username ossrhUsername
-        password ossrhPassword
-      }
-    }
-  }
-}
 
-signing {
-  sign publishing.publications.maven
+    def generatedVersionDir = "${buildDir}/generated-version"
+
+    plugins.withId('org.jetbrains.kotlin.jvm', { _ ->
+        sourceSets {
+            main {
+                output.dir(generatedVersionDir, builtBy: 'generateVersionAndHashProperties')
+            }
+        }
+
+        // generates a build properties file with the current library version and most recent commit hash
+        task generateVersionAndHashProperties {
+            doLast {
+                def propertiesFile = file "$generatedVersionDir/${project.name}.properties"
+                propertiesFile.parentFile.mkdirs()
+                def properties = new Properties()
+
+                // get current subproject version
+                properties.setProperty("version", version.toString())
+
+                // get most recent short commit hash
+                def commitHash = new ByteArrayOutputStream()
+                exec {
+                    commandLine 'git', 'rev-parse', '--short', 'HEAD'
+                    standardOutput = commitHash
+                }
+                properties.setProperty("commit", commitHash.toString().trim())
+                propertiesFile.withWriter { properties.store(it, null) }
+            }
+        }
+        processResources.dependsOn generateVersionAndHashProperties
+    })
 }
