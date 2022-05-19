@@ -52,7 +52,7 @@ dokkaJavadoc.configure {
       includes.from("src/main/kotlin/com/amazon/ionschema/module.md")
       sourceLink {
         // URL showing where the source code can be accessed through the web browser
-        remoteUrl.set(java.net.URL("https://github.com/amzn/ion-schema-kotlin/blob/master/ion-schema-kotlin/src/main/kotlin"))
+        remoteUrl.set(java.net.URL("https://github.com/amzn/ion-schema-kotlin/blob/master/ion-schema/src/main/kotlin"))
         // Suffix which is used to append the line number to the URL. Use #L for GitHub
         remoteLineSuffix.set("#L")
       }

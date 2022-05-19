@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':ion-schema-kotlin')
+    implementation project(':ion-schema')
     implementation "com.amazon.ion:ion-java:[1.4,)"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "com.github.ajalt.clikt:clikt:3.2.0"
