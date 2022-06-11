@@ -36,7 +36,7 @@ interface UnaryTypeConstraint<T> : AstConstraint<T> where T : AstConstraint<T>, 
 
 /**
  * Common interface for constraints that have a list of N types as their only argument.
- * This allows for code reuse when reading and writing the`any_of`, `all_of`, and `one_of` constraints.
+ * This allows for code reuse when reading and writing the `any_of`, `all_of`, and `one_of` constraints.
  */
 interface NAryTypeConstraint<T> : AstConstraint<T> where T : AstConstraint<T>, T : NAryTypeConstraint<T> {
     val types: Iterable<AstType>
