@@ -36,30 +36,27 @@ internal class OrderedElements(
     private val schema: Schema
 ) : ConstraintBase(ion) {
 
-    private val stateMachine: StateMachine
-
-    init {
+    private val nfa: NFA<IonValue> = run {
         if (ion !is IonList || ion.isNullValue) {
             throw InvalidSchemaException("Invalid ordered_elements constraint: $ion")
         }
 
-        val stateMachineBuilder = StateMachineBuilder()
-
-        var state: State? = null
-        ion.forEachIndexed { idx, it ->
+        val stateBuilder = OrderedElementsNfaStatesBuilder()
+        ion.forEach {
             val occursRange = IntRange.toIntRange((it as? IonStruct)?.get("occurs")) ?: IntRange.REQUIRED
-            val newState = State(occursRange, isFinal = idx == ion.size - 1)
-            val typeResolver = TypeReference.create(it, schema)
-            stateMachineBuilder.addTransition(state, EventSchemaType(typeResolver), newState)
-            state = newState
+            val typeRef = TypeReference.create(it, schema)
+            stateBuilder.addState(
+                min = occursRange.lower,
+                max = occursRange.upper,
+                matches = { typeRef().isValid(it) }
+            )
         }
-
-        stateMachine = stateMachineBuilder.build()
+        NFA(stateBuilder.build())
     }
 
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonSequence>(value, issues) { v ->
-            if (!stateMachine.matches(v.iterator())) {
+            if (!nfa.matches(v)) {
                 issues.add(
                     Violation(
                         ion, "ordered_elements_mismatch",

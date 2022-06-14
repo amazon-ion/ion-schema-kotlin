@@ -109,8 +109,8 @@ private class IntRangeForIonSymbol private constructor(
     override fun toString() = ion.toString()
 }
 
-internal interface IntRangeBoundary {
-    operator fun compareTo(other: Int) = compareTo(BigInteger.valueOf(other.toLong()))
+internal interface IntRangeBoundary : Comparable<Int> {
+    override operator fun compareTo(other: Int) = compareTo(BigInteger.valueOf(other.toLong()))
     operator fun compareTo(other: BigInteger): Int
 }
 
