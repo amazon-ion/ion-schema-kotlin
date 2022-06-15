@@ -13,22 +13,17 @@
  * permissions and limitations under the License.
  */
 
-package com.amazon.ionschema.cli
+package com.amazon.ionschema
 
-import com.github.ajalt.clikt.core.PrintMessage
-import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.matchers.should
-import io.kotest.matchers.string.shouldMatch
-import org.junit.jupiter.api.Test
+import com.amazon.ion.IonString
+import com.amazon.ion.IonValue
+import com.amazon.ion.system.IonSystemBuilder
 
-class VersionTest {
+internal val ION = IonSystemBuilder.standard().build()
 
-    @Test
-    fun testVersionCommand() {
-        shouldThrow<PrintMessage> {
-            IonSchemaCli().parse(arrayOf("--version"))
-        }.should {
-            it.message shouldMatch """ion-schema-cli version \d+\.\d+\.\d+(-SNAPSHOT)?-[0-9a-f]{7}"""
-        }
+internal fun prepareValue(ion: IonValue) =
+    if (ion.hasTypeAnnotation("document") && ion is IonString) {
+        ION.loader.load(ion.stringValue())
+    } else {
+        ion
     }
-}

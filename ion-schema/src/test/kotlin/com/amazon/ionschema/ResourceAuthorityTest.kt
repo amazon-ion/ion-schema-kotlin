@@ -16,11 +16,11 @@
 package com.amazon.ionschema
 
 import com.amazon.ion.system.IonSystemBuilder
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.Test
 
 class ResourceAuthorityTest {
 
@@ -68,6 +68,9 @@ class ResourceAuthorityTest {
             .build()
         val islSchema = iss.loadSchema("isl/schema.isl")
 
-        assertNotNull("Unable to find the schema for 'schema'", islSchema.getType("schema"))
+        assertNotNull(
+            islSchema.getType("schema"),
+            "Unable to find the schema for 'schema'",
+        )
     }
 }

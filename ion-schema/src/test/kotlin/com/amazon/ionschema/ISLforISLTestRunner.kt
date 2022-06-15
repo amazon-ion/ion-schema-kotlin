@@ -15,110 +15,107 @@
 
 package com.amazon.ionschema
 
+import com.amazon.ion.IonDatagram
 import com.amazon.ion.IonStruct
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.runner.RunWith
-import org.junit.runner.notification.RunNotifier
-import org.junit.runners.Suite
+import com.amazon.ion.IonValue
+import com.amazon.ionschema.IonSchemaTestFilesSource.Companion.ION_SCHEMA_TESTS_DIR
+import com.amazon.ionschema.internal.IonSchemaSystemImpl
+import org.junit.jupiter.api.DynamicContainer.dynamicContainer
+import org.junit.jupiter.api.DynamicNode
+import org.junit.jupiter.api.DynamicTest.dynamicTest
+import org.junit.jupiter.api.TestFactory
 import java.io.File
 import java.io.FileReader
+import kotlin.test.assertEquals
 
 /**
  * This test runner uses the ISL for ISL itself to validate the types and schemas
  * defined in the file-based test suite.
  */
-@RunWith(ISLforISLTestRunner::class)
-@Suite.SuiteClasses(ISLforISLTestRunner::class)
-class ISLforISLTestRunner(
-    testClass: Class<Any>
-) : AbstractTestRunner(testClass) {
+class ISLforISLTestRunner {
+
+    companion object {
+        const val ION_SCHEMA_SCHEMAS_DIR = "../ion-schema-schemas"
+
+        // There are certain conditions that make a schema invalid that cannot
+        // be detected by the ISL for ISL (for example, a schema importing itself).
+        // Test files with "invalid_schema" definitions should be listed here if and
+        // only if they are invalid for some reason that cannot be validated by ISL.
+        val EXCLUDE_LIST = listOf(
+            "../ion-schema-tests/schema/import/import_type_unknown.isl",
+            "../ion-schema-tests/schema/import/invalid_duplicate_import.isl",
+            "../ion-schema-tests/schema/import/invalid_duplicate_import_type.isl",
+            "../ion-schema-tests/schema/import/invalid_duplicate_type.isl",
+            "../ion-schema-tests/schema/import/invalid_transitive_import_of_schema.isl",
+            "../ion-schema-tests/schema/import/invalid_transitive_import_of_type.isl",
+            "../ion-schema-tests/schema/import/invalid_transitive_import_of_type_by_alias.isl",
+            "../ion-schema-tests/schema/invalid_missing_schema_footer.isl",
+            "../ion-schema-tests/schema/invalid_missing_schema_header.isl",
+            "../ion-schema-tests/schema/invalid_reuse_of_type_name.isl",
+            "../ion-schema-tests/schema/invalid_unknown_type.isl"
+        )
+    }
 
     private val schemaSystem = IonSchemaSystemBuilder.standard()
-        .withAuthority(AuthorityFilesystem("../ion-schema-schemas"))
+        .withAuthority(AuthorityFilesystem(ION_SCHEMA_SCHEMAS_DIR))
         .allowTransitiveImports(false)
-        .build()
+        .build() as IonSchemaSystemImpl
 
-    // There are certain conditions that make a schema invalid that cannot
-    // be detected by the ISL for ISL (for example, a schema importing itself).
-    // Test files with "invalid_schema" definitions should be listed here if and
-    // only if they are invalid for some reason that cannot be validated by ISL.
-    private val blacklist = setOf(
-        "ion-schema-tests/schema/import/import_type_unknown.isl",
-        "ion-schema-tests/schema/import/invalid_duplicate_import.isl",
-        "ion-schema-tests/schema/import/invalid_duplicate_import_type.isl",
-        "ion-schema-tests/schema/import/invalid_duplicate_type.isl",
-        "ion-schema-tests/schema/import/invalid_transitive_import_of_schema.isl",
-        "ion-schema-tests/schema/import/invalid_transitive_import_of_type.isl",
-        "ion-schema-tests/schema/import/invalid_transitive_import_of_type_by_alias.isl",
-        "ion-schema-tests/schema/invalid_missing_schema_footer.isl",
-        "ion-schema-tests/schema/invalid_missing_schema_header.isl",
-        "ion-schema-tests/schema/invalid_reuse_of_type_name.isl",
-        "ion-schema-tests/schema/invalid_unknown_type.isl"
-    ).map { "../" + it }
+    @TestFactory
+    fun generateIslForIslTestSuite(): Iterable<DynamicNode> {
+        return IonSchemaTestFilesSource.asSequence(excluding = EXCLUDE_LIST)
+            .map { generateTestCasesForFile(it) }
+            .asIterable()
+    }
 
-    override fun run(notifier: RunNotifier) {
+    private fun generateTestCasesForFile(file: File): DynamicNode {
         val islSchema = schemaSystem.loadSchema("isl/schema.isl")
         val schema = islSchema.getType("schema")!!
         val type = islSchema.getType("type")!!
 
-        val base = "../ion-schema-tests"
-        File(base).walk()
-            .filter { it.isFile }
-            .filter { it.path.endsWith(".isl") }
-            .filter { !blacklist.contains(it.path) }
-            .forEach { file ->
-                val testName = file.path.substring(base.length + 1, file.path.length - ".isl".length)
+        val testName = file.relativeTo(File(ION_SCHEMA_TESTS_DIR)).path.dropLast(4) // drop ".isl"
+        val testFileIon = ION.iterate(FileReader(file)).asSequence().toList()
 
-                val iter = ION.iterate(FileReader(file)).asSequence().toList().listIterator()
-                iter.forEach { ion ->
-                    val annotation = ion.typeAnnotations[0]
-                    when (annotation) {
-                        "schema_header" -> {
-                            iter.previous()
-                            val datagram = ION.newDatagram()
-                            do {
-                                val v = iter.next()
-                                datagram.add(v)
-                            } while (iter.hasNext() && !v.hasTypeAnnotation("schema_footer"))
-
-                            runTest(notifier, testName, datagram) {
-                                println(datagram)
-                                val result = schema.validate(datagram)
-                                println(result)
-                                assertTrue(result.isValid())
-                            }
-                        }
-
-                        "invalid_schema" ->
-                            runTest(notifier, testName, ion) {
-                                val value = prepareValue(ion)
-                                println(value)
-                                val result = schema.validate(value)
-                                println(result)
-                                assertFalse(result.isValid())
-                            }
-
-                        "type" ->
-                            runTest(notifier, testName, ion) {
-                                ion as IonStruct
-                                // ensure the type has a name, otherwise it's not valid ISL
-                                ion["name"] ?: ion.put("name", ION.newSymbol(testName))
-                                println(ion)
-                                val result = type.validate(ion)
-                                println(result)
-                                assertTrue(result.isValid())
-                            }
-
-                        "invalid_type" ->
-                            runTest(notifier, testName, ion) {
-                                println(ion)
-                                val result = type.validate(ion)
-                                println(result)
-                                assertFalse(result.isValid())
-                            }
-                    }
+        return dynamicContainer(
+            testName,
+            testFileIon.mapIndexedNotNull { index, ion ->
+                when (ion.typeAnnotations.getOrNull(0)) {
+                    "schema_header" -> createIslTestCase(schema, extractSchemaDatagram(testFileIon, index), expectValid = true)
+                    "invalid_schema" -> createIslTestCase(schema, prepareValue(ion), expectValid = false)
+                    "type" -> createIslTestCase(type, ensureTypeHasName(ion), expectValid = true)
+                    "invalid_type" -> createIslTestCase(type, ion, expectValid = false)
+                    else -> null
                 }
             }
+        )
+    }
+
+    private fun ensureTypeHasName(ion: IonValue): IonStruct {
+        return (ion as IonStruct).also {
+            it["name"] ?: it.put("name", ION.newSymbol("placeholder_name"))
+        }
+    }
+
+    private fun extractSchemaDatagram(testFileIon: List<IonValue>, headerPosition: Int): IonDatagram {
+        var toIndex = testFileIon.size
+        for (i in headerPosition until testFileIon.size) {
+            if (testFileIon[i].hasTypeAnnotation("schema_footer")) {
+                toIndex = i + 1
+                break
+            }
+        }
+        return ION.newDatagram().apply {
+            addAll(testFileIon.subList(headerPosition, toIndex))
+        }
+    }
+
+    private fun createIslTestCase(type: Type, isl: IonValue, expectValid: Boolean): DynamicNode {
+        val testName = "Should${if (expectValid) " " else " not "}be a valid ${type.name}: $isl"
+        return dynamicTest(testName) {
+            println(isl)
+            val result = type.validate(isl)
+            println(result)
+            assertEquals(expectValid, result.isValid())
+        }
     }
 }

@@ -29,7 +29,7 @@ dependencies {
     implementation "com.amazon.ion:ion-java:[1.4,)"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "com.github.ajalt.clikt:clikt:3.2.0"
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation 'io.kotest:kotest-assertions-core-jvm:[4.0,5.0['
 }
 

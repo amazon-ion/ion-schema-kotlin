@@ -1,13 +1,11 @@
 package com.amazon.ionschema
 
 import com.amazon.ion.IonValue
-import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.util.CloseableIterator
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
-private val ION = IonSystemBuilder.standard().build()
 private val isl = "type::{name: a, type: symbol, codepoint_length: 3}"
 private val schemaId = "test_schema"
 

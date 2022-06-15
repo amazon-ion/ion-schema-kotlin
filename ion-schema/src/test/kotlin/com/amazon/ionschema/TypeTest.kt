@@ -16,12 +16,13 @@
 package com.amazon.ionschema
 
 import com.amazon.ion.system.IonSystemBuilder
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class TypeTest {
     private val ION = IonSystemBuilder.standard().build()
@@ -42,13 +43,15 @@ class TypeTest {
     @Test
     fun isValid_false() = assertFalse(type.isValid(ION.singleValue("1")))
 
-    @Test(expected = NoSuchElementException::class)
+    @Test
     fun validate_success() {
         val violations = type.validate(ION.singleValue("\"hello\""))
         assertNotNull(violations)
         assertTrue(violations.isValid())
         assertFalse(violations.iterator().hasNext())
-        violations.iterator().next()
+        assertThrows<NoSuchElementException> {
+            violations.iterator().next()
+        }
     }
 
     @Test

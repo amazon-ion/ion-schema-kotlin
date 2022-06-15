@@ -18,8 +18,9 @@ package com.amazon.ionschema.internal.util
 import com.amazon.ion.IonList
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.InvalidSchemaException
-import org.junit.Assert
-import org.junit.Assert.fail
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.fail
 
 internal abstract class AbstractRangeTest(
     private val rangeType: RangeType
@@ -36,15 +37,15 @@ internal abstract class AbstractRangeTest(
 
         val range = rangeOf<Any>(ION.singleValue(rangeDef) as IonList)
         validValues.forEach {
-            Assert.assertTrue(
+            assertTrue(
+                range.contains(it),
                 "Expected $it to be within $rangeDef",
-                range.contains(it)
             )
         }
         invalidValues.forEach {
-            Assert.assertFalse(
+            assertFalse(
+                range.contains(it),
                 "Didn't expect $it to be within $rangeDef",
-                range.contains(it)
             )
         }
     }
