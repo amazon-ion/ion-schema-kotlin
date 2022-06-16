@@ -16,7 +16,7 @@
 package com.amazon.ionschema.internal.util
 
 import com.amazon.ion.IonList
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 internal class RangeIntNonNegativeTest : AbstractRangeTest(RangeType.INT_NON_NEGATIVE) {
 

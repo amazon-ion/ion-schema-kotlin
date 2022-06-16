@@ -18,13 +18,14 @@ package com.amazon.ionschema
 import com.amazon.ion.IonStruct
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.internal.SchemaCore
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class SchemaTest {
     private val ION = IonSystemBuilder.standard().build()
@@ -33,14 +34,16 @@ class SchemaTest {
         .addAuthority(AuthorityFilesystem("../ion-schema-tests"))
         .build()
 
-    @Test(expected = InvalidSchemaException::class)
+    @Test
     fun invalid_schema_version() {
-        iss.newSchema(
-            """
+        assertThrows<InvalidSchemaException> {
+            iss.newSchema(
+                """
             ${'$'}ion_schema_2_0
             type::{ name: foo, type: int }
-            """.trimIndent()
-        )
+                """.trimIndent()
+            )
+        }
     }
 
     @Test
@@ -127,9 +130,11 @@ class SchemaTest {
         assertFalse(type.isValid(ION.singleValue("{ a: -1 }")))
     }
 
-    @Test(expected = InvalidSchemaException::class)
+    @Test
     fun newType_unknown_type() {
-        iss.newSchema().newType("type::{ type: unknown_type }")
+        assertThrows<InvalidSchemaException> {
+            iss.newSchema().newType("type::{ type: unknown_type }")
+        }
     }
 
     @Test
@@ -165,11 +170,13 @@ class SchemaTest {
         assertEquals(0, schema.getTypes().asSequence().count())
     }
 
-    @Test(expected = InvalidSchemaException::class)
+    @Test
     fun plusType_unnamed_type() {
         val schema = iss.newSchema()
         val unnamedType = schema.newType("type::{ codepoint_length: 3 }")
-        schema.plusType(unnamedType)
+        assertThrows<InvalidSchemaException> {
+            schema.plusType(unnamedType)
+        }
     }
 
     @Test

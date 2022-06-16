@@ -18,11 +18,12 @@ package com.amazon.ionschema
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.util.CloseableIterator
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class IonSchemaSystemTest {
     private class BadAuthorityException : Exception()
@@ -40,9 +41,11 @@ class IonSchemaSystemTest {
 
     private val iss = IonSchemaSystemBuilder.standard().build()
 
-    @Test(expected = IonSchemaException::class)
+    @Test
     fun unresolvableSchema() {
-        iss.loadSchema("")
+        assertThrows<IonSchemaException> {
+            iss.loadSchema("")
+        }
     }
 
     @Test
@@ -129,22 +132,26 @@ class IonSchemaSystemTest {
         )
     }
 
-    @Test(expected = IonSchemaException::class)
+    @Test
     fun newSchema_import_unknown_schema_id() {
-        iss.newSchema(
-            """
-            schema_header::{
-              imports: [
-                { id: "unknown_schema_id" },
-              ],
-            }
-            schema_footer::{}
-            """
-        )
+        assertThrows<IonSchemaException> {
+            iss.newSchema(
+                """
+                schema_header::{
+                  imports: [
+                    { id: "unknown_schema_id" },
+                  ],
+                }
+                schema_footer::{}
+                """
+            )
+        }
     }
 
-    @Test(expected = InvalidSchemaException::class)
+    @Test
     fun newSchema_unknown_type() {
-        iss.newSchema("type::{ type: unknown_type }")
+        assertThrows<InvalidSchemaException> {
+            iss.newSchema("type::{ type: unknown_type }")
+        }
     }
 }

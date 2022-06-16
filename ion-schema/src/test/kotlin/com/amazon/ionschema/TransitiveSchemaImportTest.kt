@@ -2,10 +2,9 @@ package com.amazon.ionschema
 
 import com.amazon.ionschema.TransitiveSchemaImportTest.SchemaAssertion.DoesNotHaveType
 import com.amazon.ionschema.TransitiveSchemaImportTest.SchemaAssertion.HasType
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameters
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -16,8 +15,7 @@ import kotlin.test.assertTrue
  * [amzn/ion-schema-kotlin#178](https://github.com/amzn/ion-schema-kotlin/issues/178)
  * still works as before even after implementing the bugfix.
  */
-@RunWith(Parameterized::class)
-class TransitiveSchemaImportTest(val schemaId: String, val schemaAssertion: SchemaAssertion) {
+class TransitiveSchemaImportTest {
 
     private val TEST_SCHEMAS = mapOf(
         "numbers" to """
@@ -112,7 +110,6 @@ class TransitiveSchemaImportTest(val schemaId: String, val schemaAssertion: Sche
         .build()
 
     companion object {
-        @Parameters(name = "{0} {1}")
         @JvmStatic
         fun testCaseData() = arrayOf(
             arrayOf("import_schema", HasType("positive_int")),
@@ -142,8 +139,9 @@ class TransitiveSchemaImportTest(val schemaId: String, val schemaAssertion: Sche
         )
     }
 
-    @Test
-    fun testSchemaImports() {
+    @ParameterizedTest(name = "{0} {1}")
+    @MethodSource("testCaseData")
+    fun testSchemaImports(schemaId: String, schemaAssertion: SchemaAssertion) {
         val schema = iss.loadSchema(schemaId)
         when (schemaAssertion) {
             is HasType -> assertNotNull(schema.getType(schemaAssertion.typeName))

@@ -17,7 +17,7 @@ package com.amazon.ionschema.internal.util
 
 import com.amazon.ion.IonList
 import com.amazon.ion.IonValue
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 internal class RangeIonNumberTest : AbstractRangeTest(RangeType.ION_NUMBER) {
 

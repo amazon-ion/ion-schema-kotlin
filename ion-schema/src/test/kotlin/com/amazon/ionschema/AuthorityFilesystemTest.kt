@@ -15,15 +15,18 @@
 
 package com.amazon.ionschema
 
-import org.junit.Assert.assertFalse
-import org.junit.Assert.fail
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.io.FileNotFoundException
 
 class AuthorityFilesystemTest {
-    @Test(expected = FileNotFoundException::class)
+    @Test
     fun nonExistentPath() {
-        AuthorityFilesystem("non-existent-path")
+        assertThrows<FileNotFoundException> {
+            AuthorityFilesystem("non-existent-path")
+        }
     }
 
     @Test
@@ -40,10 +43,12 @@ class AuthorityFilesystemTest {
         iter.close()
     }
 
-    @Test(expected = AccessDeniedException::class)
+    @Test
     fun iteratorFor_outsideBasePath() {
         val iss = IonSchemaSystemBuilder.standard().build()
-        var authority = AuthorityFilesystem("../ion-schema-tests/schema")
-        authority.iteratorFor(iss, "../schema_private/some_file.isl")
+        val authority = AuthorityFilesystem("../ion-schema-tests/schema")
+        assertThrows<AccessDeniedException> {
+            authority.iteratorFor(iss, "../schema_private/some_file.isl")
+        }
     }
 }
