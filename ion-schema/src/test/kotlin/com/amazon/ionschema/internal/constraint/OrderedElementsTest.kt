@@ -17,10 +17,10 @@ package com.amazon.ionschema.internal.constraint
 
 import com.amazon.ionschema.IonSchemaSystemBuilder
 import com.amazon.ionschema.Violations
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import kotlin.test.assertEquals
 
 class OrderedElementsTest {
     val ISS = IonSchemaSystemBuilder.standard().build()
@@ -31,7 +31,7 @@ class OrderedElementsTest {
     fun test(ionText: String, ignored: String, value: String, expectValid: Boolean) {
         val constraint = OrderedElements(ION.singleValue(ionText), ISS.newSchema())
         val v = Violations()
-        constraint.validate(ION.singleValue(value), v)
+        constraint.validate(ION.singleValue(value), v, debug = true)
         assertEquals(expectValid, v.isValid())
     }
 

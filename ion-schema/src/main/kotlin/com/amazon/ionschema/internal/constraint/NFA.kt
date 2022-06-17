@@ -17,6 +17,22 @@ package com.amazon.ionschema.internal.constraint
 
 /**
  * A Non-deterministic Finite-State Automaton for evaluating regular languages (and analogues thereof).
+ *
+ * This implementation uses the following algorithm.
+ * > the NFA consumes a string of input symbols, one by one. In each step, whenever two or more transitions are applicable,
+ * > it "clones" itself into appropriately many copies, each one following a different transition. If no transition is
+ * > applicable, the current copy is in a dead end, and it "dies". If, after consuming the complete input, any of the
+ * > copies is in an accept state, the input is accepted, else, it is rejected.
+ *
+ * See [Nondeterministic finite automaton](https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton).
+ *
+ * This implementation is designed to track which state(s) are visited as well as how many consecutive visits have been
+ * made to any given state. This specialization is intended to make it easier to support cases where an event could occur
+ * a variable number of times (eg. regex `a{2,4}`).
+ *
+ * This implementation does not check for matches that are less than the full stream of events.
+ *
+ * For an example of how to model things using this class, see [OrderedElementsNfaStatesBuilder].
  */
 internal class NFA<Event : Any>(
     /**

@@ -55,8 +55,13 @@ internal class OrderedElements(
     }
 
     override fun validate(value: IonValue, issues: Violations) {
+        validate(value, issues, debug = false)
+    }
+
+    // Visible for testing
+    internal fun validate(value: IonValue, issues: Violations, debug: Boolean) {
         validateAs<IonSequence>(value, issues) { v ->
-            if (!nfa.matches(v)) {
+            if (!nfa.matches(v, debug)) {
                 issues.add(
                     Violation(
                         ion, "ordered_elements_mismatch",
