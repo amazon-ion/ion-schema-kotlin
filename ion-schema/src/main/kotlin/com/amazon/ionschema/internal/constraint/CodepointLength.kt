@@ -30,5 +30,5 @@ internal class CodepointLength(
     override val violationCode = "invalid_codepoint_length"
     override val violationMessage = "invalid codepoint length %s, expected %s"
 
-    override fun getIntValue(value: IonText) = value.stringValue().length
+    override fun getIntValue(value: IonText) = value.stringValue().let { it.codePointCount(0, it.length) }
 }
