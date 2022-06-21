@@ -46,11 +46,10 @@ internal class RangeIonTimestampPrecision(
         ion.forEachIndexed { index, ionValue ->
             val isValid = try {
                 if (ionValue is IonSymbol && !ionValue.isNullValue) {
-                    val itp = IonTimestampPrecision.valueOf(ionValue.stringValue())
                     val ionInt = when (ionValue.stringValue()) {
-                        "min" -> ion.system.newInt(Int.MIN_VALUE)
-                        "max" -> ion.system.newInt(Int.MAX_VALUE)
-                        else -> ion.system.newInt(itp.id)
+                        "min" -> ionValue.clone()
+                        "max" -> ionValue.clone()
+                        else -> ion.system.newInt(IonTimestampPrecision.valueOf(ionValue.stringValue()).id)
                     }
                     ionValue.typeAnnotations.forEach { ionInt.addTypeAnnotation(it) }
                     intRangeIon.add(ionInt)
