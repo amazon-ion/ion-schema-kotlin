@@ -16,7 +16,7 @@
 package com.amazon.ionschema.internal.constraint
 
 /**
- * A Non-deterministic Finite-State Automaton for evaluating regular languages (and analogues thereof).
+ * An approximation of a Non-deterministic Finite-State Automaton for evaluating regular languages (and analogues thereof).
  *
  * This implementation uses the following algorithm.
  * > the NFA consumes a string of input symbols, one by one. In each step, whenever two or more transitions are applicable,
