@@ -6,6 +6,7 @@ written in Kotlin.
 [![Build Status](https://travis-ci.org/amzn/ion-schema-kotlin.svg)](https://travis-ci.org/amzn/ion-schema-kotlin)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.amazon.ion/ion-schema-kotlin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.amazon.ion/ion-schema-kotlin)
 [![Javadoc](https://javadoc-badge.appspot.com/com.amazon.ion/ion-schema-kotlin.svg?label=javadoc)](http://www.javadoc.io/doc/com.amazon.ion/ion-schema-kotlin)
+[![codecov](https://codecov.io/gh/amzn/ion-schema-kotlin/branch/master/graph/badge.svg)](https://codecov.io/gh/amzn/ion-schema-kotlin)
 
 ## Getting Started
 

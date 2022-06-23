@@ -26,19 +26,44 @@ buildscript {
 plugins {
     id "org.jetbrains.kotlin.jvm" version "1.6.20" apply false
     id "org.jlleitschuh.gradle.ktlint" version "10.0.0" apply false
+    id 'jacoco'
 }
 
-subprojects {
-    group = 'com.amazon.ion'
-    ext.kotlin_version = "1.6.20"
+allprojects {
 
     apply plugin: "org.jlleitschuh.gradle.ktlint"
     ktlint {
         outputToConsole = true
     }
 
+    apply plugin: "jacoco"
+    jacoco {
+        toolVersion = '0.8.7'
+        reportsDirectory = file("$buildDir/reports/jacoco/")
+    }
+}
+
+subprojects {
+    group = 'com.amazon.ion'
+    ext.kotlin_version = "1.6.20"
+
+    apply plugin: "org.jetbrains.kotlin.jvm"
     tasks.withType(Test) {
         useJUnitPlatform()
+        jacocoTestReport {
+            reports {
+                xml.required.set(true) // Required for codecov upload
+                html.required.set(true) // Required for humans
+                html.outputLocation.set(file("${buildDir}/reports/jacoco/html"))
+            }
+        }
+    }
+
+    tasks.jacocoTestReport {
+        dependsOn(tasks.test) // tests are required to run before generating the report
+        doLast {
+            logger.quiet "Coverage report written to file://${reports.html.destination.toPath()}/index.html"
+        }
     }
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
