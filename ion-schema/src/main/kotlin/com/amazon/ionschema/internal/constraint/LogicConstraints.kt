@@ -77,10 +77,13 @@ internal class AllOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
 internal class AnyOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
         val anyOfViolation = Violation(ion, "no_types_matched", "value matches none of the types")
-        val count = validateTypes(value, anyOfViolation).size
-        if (count == 0) {
-            issues.add(anyOfViolation)
+        types.forEach {
+            val checkpoint = anyOfViolation.checkpoint()
+            it().validate(value, anyOfViolation)
+            // We can exit at the first valid type we encounter
+            if (checkpoint.isValid()) return
         }
+        issues.add(anyOfViolation)
     }
 }
 
