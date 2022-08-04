@@ -42,8 +42,8 @@ internal interface IntRange {
     val lower: IntRangeBoundary
     val upper: IntRangeBoundary
 
-    fun contains(value: Int) = contains(BigInteger.valueOf(value.toLong()))
-    fun contains(value: BigInteger): Boolean
+    operator fun contains(value: Int) = contains(BigInteger.valueOf(value.toLong()))
+    operator fun contains(value: BigInteger): Boolean
 }
 
 private class IntRangeForIonList(
@@ -71,7 +71,7 @@ private class IntRangeForIonList(
         else -> throw InvalidSchemaException("Unable to parse upper bound of $ion")
     }
 
-    override fun contains(value: BigInteger) = lower <= value && upper >= value
+    override operator fun contains(value: BigInteger) = lower <= value && upper >= value
     override fun toString() = ion.toString()
 }
 
@@ -87,7 +87,7 @@ private class IntRangeForIonInt(
 
     override val lower = boundary
     override val upper = boundary
-    override fun contains(value: BigInteger) = theValue == value
+    override operator fun contains(value: BigInteger) = theValue == value
     override fun toString() = ion.toString()
 }
 

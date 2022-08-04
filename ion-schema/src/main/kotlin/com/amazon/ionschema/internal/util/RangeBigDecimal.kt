@@ -73,7 +73,7 @@ internal class RangeBigDecimal(private val ion: IonList) : Range<BigDecimal> {
         }
     }
 
-    override fun contains(value: BigDecimal) = lower <= value && upper >= value
+    override operator fun contains(value: BigDecimal) = lower <= value && upper >= value
 
     override fun toString() = ion.toString()
 

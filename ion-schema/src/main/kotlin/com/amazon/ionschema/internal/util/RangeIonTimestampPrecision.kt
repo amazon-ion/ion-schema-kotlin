@@ -73,7 +73,7 @@ internal class RangeIonTimestampPrecision(
         delegate = RangeFactory.rangeOf<Int>(intRangeIon, RangeType.INT)
     }
 
-    override fun contains(value: IonTimestamp) = delegate.contains(IonTimestampPrecision.toInt(value))
+    override operator fun contains(value: IonTimestamp) = delegate.contains(IonTimestampPrecision.toInt(value))
 }
 
 /**

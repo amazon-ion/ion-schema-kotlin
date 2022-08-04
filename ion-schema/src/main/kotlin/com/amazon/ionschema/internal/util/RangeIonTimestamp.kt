@@ -54,7 +54,7 @@ internal class RangeIonTimestamp private constructor (
         }
     }
 
-    override fun contains(value: IonTimestamp): Boolean {
+    override operator fun contains(value: IonTimestamp): Boolean {
         // ValidValues performs this same check and adds a Violation
         // instead of invoking this method;  this if is here purely
         // as a defensive safety check, and will ideally never be true
