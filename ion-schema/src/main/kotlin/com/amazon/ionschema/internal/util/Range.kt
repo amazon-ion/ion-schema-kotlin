@@ -36,7 +36,7 @@ internal enum class RangeType {
  * Interface for all range implementations.
  */
 internal interface Range<in T> {
-    fun contains(value: T): Boolean
+    operator fun contains(value: T): Boolean
 }
 
 /**

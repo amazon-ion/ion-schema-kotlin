@@ -23,6 +23,8 @@ import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.util.Range
 import com.amazon.ionschema.internal.util.RangeFactory
+import com.amazon.ionschema.internal.util.RangeIonNumber
+import com.amazon.ionschema.internal.util.RangeIonTimestamp
 import com.amazon.ionschema.internal.util.RangeType
 import com.amazon.ionschema.internal.util.withoutTypeAnnotations
 
@@ -79,21 +81,20 @@ internal class ValidValues(
 
     override fun validate(value: IonValue, issues: Violations) {
         val v = value.withoutTypeAnnotations()
-        if (!validValues!!.any {
-            possibility ->
-            if (possibility is Range<*>) {
-                if (value is IonTimestamp && value.localOffset == null) {
-                    issues.add(
-                            Violation(ion, "unknown_local_offset", "unable to compare timestamp with unknown local offset")
-                        )
-                    return
+        val matchesAny = validValues!!.any { possibility ->
+            when (possibility) {
+                is IonValue -> v == possibility
+                is RangeIonNumber -> v in possibility
+                is RangeIonTimestamp -> when {
+                    v !is IonTimestamp -> false
+                    v.localOffset == null -> false
+                    else -> v in possibility
                 }
-                (possibility as Range<IonValue>).contains(v)
-            } else {
-                possibility == v
+                else -> TODO("This is unreachable.")
             }
         }
-        ) {
+
+        if (!matchesAny) {
             issues.add(Violation(ion, "invalid_value", "invalid value $v"))
         }
     }

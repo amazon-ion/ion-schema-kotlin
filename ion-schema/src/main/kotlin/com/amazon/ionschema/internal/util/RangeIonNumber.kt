@@ -46,7 +46,7 @@ internal class RangeIonNumber private constructor (
             }
     }
 
-    override fun contains(value: IonValue): Boolean {
+    override operator fun contains(value: IonValue): Boolean {
         val bdValue = toBigDecimal(value)
         return if (bdValue != null) {
             delegate.contains(bdValue)

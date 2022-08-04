@@ -50,7 +50,7 @@ internal class RangeInt(
         }
     }
 
-    override fun contains(value: Int) = delegate.contains(value.toBigDecimal())
+    override operator fun contains(value: Int) = delegate.contains(value.toBigDecimal())
 
     internal fun isAtMax(value: Int) = delegate.upper.compareTo(value.toBigDecimal()) == 0
 
