@@ -15,12 +15,14 @@
 
 package com.amazon.ionschema.internal.constraint
 
+import com.amazon.ion.IonDatagram
 import com.amazon.ion.IonList
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.CommonViolations
 import com.amazon.ionschema.internal.Constraint
 import com.amazon.ionschema.internal.util.IntRange
 import com.amazon.ionschema.internal.util.withoutTypeAnnotations
@@ -94,6 +96,11 @@ internal class OrderedAnnotations(
     }
 
     override fun validate(value: IonValue, issues: Violations) {
+        if (value is IonDatagram) {
+            issues.add(CommonViolations.INVALID_TYPE(ion, value))
+            return
+        }
+
         if (!stateMachine.matches(value.typeAnnotations.map { ION.newSymbol(it) }.iterator())) {
             issues.add(Violation(ion, "annotations_mismatch", "annotations don't match expectations"))
         }
@@ -111,6 +118,11 @@ internal class UnorderedAnnotations(
     private val closedAnnotationStrings: List<String>? = if (ion.hasTypeAnnotation("closed")) (ion as IonList).map { (it as IonSymbol).stringValue() } else null
 
     override fun validate(value: IonValue, issues: Violations) {
+        if (value is IonDatagram) {
+            issues.add(CommonViolations.INVALID_TYPE(ion, value))
+            return
+        }
+
         val missingAnnotations = mutableListOf<Annotation>()
         annotations.forEach {
             if (it.isRequired && !value.hasTypeAnnotation(it.text)) {

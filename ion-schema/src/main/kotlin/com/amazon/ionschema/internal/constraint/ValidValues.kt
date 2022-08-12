@@ -80,6 +80,10 @@ internal class ValidValues(
         }
 
     override fun validate(value: IonValue, issues: Violations) {
+        // FYI--a document/IonDatagram is never valid for the valid_values constraint.
+        // However, we don't need to test for it because there's no way to construct
+        // a valid_values that could match an IonDatagram.
+
         val v = value.withoutTypeAnnotations()
         val matchesAny = validValues!!.any { possibility ->
             when (possibility) {
