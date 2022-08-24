@@ -55,12 +55,6 @@ internal class RangeIonTimestamp private constructor (
     }
 
     override operator fun contains(value: IonTimestamp): Boolean {
-        // ValidValues performs this same check and adds a Violation
-        // instead of invoking this method;  this if is here purely
-        // as a defensive safety check, and will ideally never be true
-        if (value.localOffset == null) {
-            throw IllegalArgumentException("Unable to compare timestamp with unknown local offset: $value")
-        }
         return delegate.contains(value.decimalMillis)
     }
 }
