@@ -91,7 +91,6 @@ internal class ValidValues(
                 is RangeIonNumber -> v in possibility
                 is RangeIonTimestamp -> when {
                     v !is IonTimestamp -> false
-                    v.localOffset == null -> false
                     else -> v in possibility
                 }
                 else -> TODO("This is unreachable.")
