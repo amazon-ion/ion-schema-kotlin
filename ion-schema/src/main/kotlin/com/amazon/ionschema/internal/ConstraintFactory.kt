@@ -25,7 +25,7 @@ internal interface ConstraintFactory {
     /**
      * If [name] is a recognized constraint name, returns `true`, otherwise `false`.
      */
-    fun isConstraint(name: String): Boolean
+    fun isConstraint(name: String, schema: Schema): Boolean
 
     /**
      * Instantiates a new [Constraint] as defined by [ion].

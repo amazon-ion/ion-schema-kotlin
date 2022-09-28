@@ -17,6 +17,7 @@ package com.amazon.ionschema
 
 import com.amazon.ion.IonStruct
 import com.amazon.ion.system.IonSystemBuilder
+import com.amazon.ionschema.IonSchemaVersion.ION_SCHEMA_1_0
 import com.amazon.ionschema.internal.SchemaCore
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -31,7 +32,7 @@ class SchemaTest {
     private val ION = IonSystemBuilder.standard().build()
 
     private val iss = IonSchemaSystemBuilder.standard()
-        .addAuthority(AuthorityFilesystem("../ion-schema-tests"))
+        .addAuthority(IonSchemaTests.authorityFor(ION_SCHEMA_1_0))
         .build()
 
     @Test
@@ -39,7 +40,7 @@ class SchemaTest {
         assertThrows<InvalidSchemaException> {
             iss.newSchema(
                 """
-            ${'$'}ion_schema_2_0
+            ${'$'}ion_schema_1_99
             type::{ name: foo, type: int }
                 """.trimIndent()
             )
@@ -256,7 +257,7 @@ class SchemaTest {
 
     @Test
     fun isl_SchemaCore() {
-        val schemaCore = SchemaCore(iss)
+        val schemaCore = SchemaCore(iss, ION_SCHEMA_1_0)
         assertEquals(ION.newDatagram(), schemaCore.isl)
         assertTrue(schemaCore.isl.isReadOnly)
         assertNull(schemaCore.isl.container)

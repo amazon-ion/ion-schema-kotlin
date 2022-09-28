@@ -20,6 +20,7 @@ import com.amazon.ion.IonValue
 import com.amazon.ionschema.Authority
 import com.amazon.ionschema.IonSchemaException
 import com.amazon.ionschema.IonSchemaSystem
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.SchemaCache
 
@@ -35,25 +36,31 @@ internal class IonSchemaSystemImpl(
     private val warnCallback: (() -> String) -> Unit
 ) : IonSchemaSystem {
 
-    private val schemaCore = SchemaCore(this)
+    private val schemaCores = mapOf(
+        IonSchemaVersion.ION_SCHEMA_1_0 to SchemaCore(this, IonSchemaVersion.ION_SCHEMA_1_0),
+    )
+
     // Set to be used to detect cycle in import dependencies
-    private val schemaImportSet: MutableSet<String> = mutableSetOf<String>()
+    private val schemaImportSet: MutableSet<String> = mutableSetOf()
 
-    override fun loadSchema(id: String) =
-        schemaCache.getOrPut(id) {
-            val exceptions = mutableListOf<Exception>()
-            authorities.forEach { authority ->
-                try {
-                    authority.iteratorFor(this, id).use {
-                        if (it.hasNext()) {
-                            return@getOrPut SchemaImpl(this, schemaCore, it, id)
-                        }
-                    }
-                } catch (e: Exception) {
-                    exceptions.add(e)
+    override fun loadSchema(id: String): Schema {
+        val exceptions = mutableListOf<Exception>()
+        val schemaIterator = authorities.asSequence().mapNotNull { authority ->
+            try {
+                val iterator = authority.iteratorFor(this, id)
+                if (iterator.hasNext()) {
+                    iterator
+                } else {
+                    iterator.close()
+                    null
                 }
+            } catch (e: Exception) {
+                exceptions.add(e)
+                null
             }
+        }.firstOrNull()
 
+        if (schemaIterator == null) {
             val message = StringBuilder("Unable to resolve schema id '$id'")
             if (exceptions.size > 0) {
                 message.append(" ($exceptions)")
@@ -61,13 +68,16 @@ internal class IonSchemaSystemImpl(
             throw IonSchemaException(message.toString())
         }
 
+        return schemaIterator.use { schemaCache.getOrPut(id) { SchemaImpl(this, schemaCores, it, id) } }
+    }
+
     override fun newSchema() = newSchema("")
 
     override fun newSchema(isl: String) = newSchema(ionSystem.iterate(isl))
 
-    override fun newSchema(isl: Iterator<IonValue>) = SchemaImpl(this, schemaCore, isl, null)
+    override fun newSchema(isl: Iterator<IonValue>) = SchemaImpl(this, schemaCores, isl, null)
 
-    internal fun isConstraint(name: String) = constraintFactory.isConstraint(name)
+    internal fun isConstraint(name: String, schema: Schema) = constraintFactory.isConstraint(name, schema)
 
     internal fun constraintFor(ion: IonValue, schema: Schema) = constraintFactory.constraintFor(ion, schema)
 

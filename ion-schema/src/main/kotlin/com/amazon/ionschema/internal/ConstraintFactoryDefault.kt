@@ -16,6 +16,7 @@
 package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonValue
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.internal.constraint.AllOf
 import com.amazon.ionschema.internal.constraint.Annotations
@@ -39,67 +40,58 @@ import com.amazon.ionschema.internal.constraint.TimestampPrecision
 import com.amazon.ionschema.internal.constraint.Type
 import com.amazon.ionschema.internal.constraint.Utf8ByteLength
 import com.amazon.ionschema.internal.constraint.ValidValues
+import kotlin.TODO
 
 /**
  * Default [ConstraintFactory] implementation.
+ *
+ * Technically, it's a constraint factory factory, but we abstract that detail away.
  */
 internal class ConstraintFactoryDefault : ConstraintFactory {
-    private enum class Constraints {
-        all_of,
-        annotations,
-        any_of,
-        byte_length,
-        codepoint_length,
-        container_length,
-        contains,
-        content,
-        element,
-        fields,
-        not,
-        occurs,
-        one_of,
-        ordered_elements,
-        precision,
-        regex,
-        scale,
-        timestamp_offset,
-        timestamp_precision,
-        type,
-        utf8_byte_length,
-        valid_values,
+
+    // These are the actual constraint factories.
+    private interface Constraints {
+        val newInstance: (ion: IonValue, schema: Schema) -> Constraint
     }
 
-    override fun isConstraint(name: String) =
+    private enum class Constraints_1_0(override val newInstance: (ion: IonValue, schema: Schema) -> Constraint) : Constraints {
+        all_of({ ion, schema -> AllOf(ion, schema) }),
+        annotations({ ion, schema -> Annotations(ion) }),
+        any_of({ ion, schema -> AnyOf(ion, schema) }),
+        byte_length({ ion, schema -> ByteLength(ion) }),
+        codepoint_length({ ion, schema -> CodepointLength(ion) }),
+        container_length({ ion, schema -> ContainerLength(ion) }),
+        contains({ ion, schema -> Contains(ion) }),
+        content({ ion, schema -> Content(ion) }),
+        element({ ion, schema -> Element(ion, schema) }),
+        fields({ ion, schema -> Fields(ion, schema) }),
+        not({ ion, schema -> Not(ion, schema) }),
+        occurs({ ion, schema -> OccursNoop(ion) }),
+        one_of({ ion, schema -> OneOf(ion, schema) }),
+        ordered_elements({ ion, schema -> OrderedElements(ion, schema) }),
+        precision({ ion, schema -> Precision(ion) }),
+        regex({ ion, schema -> Regex(ion) }),
+        scale({ ion, schema -> Scale(ion) }),
+        timestamp_offset({ ion, schema -> TimestampOffset(ion) }),
+        timestamp_precision({ ion, schema -> TimestampPrecision(ion) }),
+        type({ ion, schema -> Type(ion, schema) }),
+        utf8_byte_length({ ion, schema -> Utf8ByteLength(ion) }),
+        valid_values({ ion, schema -> ValidValues(ion) }),
+    }
+
+    override fun isConstraint(name: String, schema: Schema) =
         try {
-            Constraints.valueOf(name)
+            when (schema.ionSchemaLanguageVersion) {
+                IonSchemaVersion.ION_SCHEMA_1_0 -> Constraints_1_0.valueOf(name)
+                else -> TODO("Ion Schema 2.0 support is not complete")
+            }
             true
         } catch (e: IllegalArgumentException) {
             false
         }
 
-    override fun constraintFor(ion: IonValue, schema: Schema) =
-        when (Constraints.valueOf(ion.fieldName)) {
-            Constraints.all_of -> AllOf(ion, schema)
-            Constraints.annotations -> Annotations(ion)
-            Constraints.any_of -> AnyOf(ion, schema)
-            Constraints.byte_length -> ByteLength(ion)
-            Constraints.codepoint_length -> CodepointLength(ion)
-            Constraints.container_length -> ContainerLength(ion)
-            Constraints.contains -> Contains(ion)
-            Constraints.content -> Content(ion)
-            Constraints.element -> Element(ion, schema)
-            Constraints.fields -> Fields(ion, schema)
-            Constraints.not -> Not(ion, schema)
-            Constraints.occurs -> OccursNoop(ion)
-            Constraints.one_of -> OneOf(ion, schema)
-            Constraints.ordered_elements -> OrderedElements(ion, schema)
-            Constraints.precision -> Precision(ion)
-            Constraints.regex -> Regex(ion)
-            Constraints.scale -> Scale(ion)
-            Constraints.timestamp_offset -> TimestampOffset(ion)
-            Constraints.timestamp_precision -> TimestampPrecision(ion)
-            Constraints.type -> Type(ion, schema)
-            Constraints.utf8_byte_length -> Utf8ByteLength(ion)
-            Constraints.valid_values -> ValidValues(ion)
-        }
+    override fun constraintFor(ion: IonValue, schema: Schema) = when (schema.ionSchemaLanguageVersion) {
+        IonSchemaVersion.ION_SCHEMA_1_0 -> Constraints_1_0.valueOf(ion.fieldName).newInstance(ion, schema)
+        else -> TODO("Ion Schema 2.0 support is not complete")
+    }
 }
