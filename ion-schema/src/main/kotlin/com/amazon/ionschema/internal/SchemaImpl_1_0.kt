@@ -63,7 +63,7 @@ internal class SchemaImpl_1_0 private constructor(
     private val declaredTypes: Map<String, TypeImpl>
 
     override val ionSchemaLanguageVersion: IonSchemaVersion
-        get() = IonSchemaVersion.ION_SCHEMA_1_0
+        get() = IonSchemaVersion.v1_0
 
     companion object {
         private val ISL_VERSION_MARKER = Regex("^\\\$ion_schema_\\d+_\\d+")

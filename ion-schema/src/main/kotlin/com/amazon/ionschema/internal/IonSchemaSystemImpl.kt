@@ -37,7 +37,7 @@ internal class IonSchemaSystemImpl(
 ) : IonSchemaSystem {
 
     private val schemaCores = mapOf(
-        IonSchemaVersion.ION_SCHEMA_1_0 to SchemaCore(this, IonSchemaVersion.ION_SCHEMA_1_0),
+        IonSchemaVersion.v1_0 to SchemaCore(this, IonSchemaVersion.v1_0),
     )
 
     // Set to be used to detect cycle in import dependencies
@@ -77,7 +77,7 @@ internal class IonSchemaSystemImpl(
 
     override fun newSchema(isl: Iterator<IonValue>) = SchemaImpl(this, schemaCores, isl, null)
 
-    internal fun isConstraint(name: String, schema: Schema) = constraintFactory.isConstraint(name, schema)
+    internal fun isConstraint(name: String, schema: Schema) = constraintFactory.isConstraint(name, schema.ionSchemaLanguageVersion)
 
     internal fun constraintFor(ion: IonValue, schema: Schema) = constraintFactory.constraintFor(ion, schema)
 

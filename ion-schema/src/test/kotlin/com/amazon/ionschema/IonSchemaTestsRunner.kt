@@ -22,7 +22,7 @@ import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaTests.isInvalidSchemaTestCase
 import com.amazon.ionschema.IonSchemaTests.isInvalidTypesTestCase
 import com.amazon.ionschema.IonSchemaTests.isValueTestCase
-import com.amazon.ionschema.IonSchemaVersion.ION_SCHEMA_1_0
+import com.amazon.ionschema.IonSchemaVersion.v1_0
 import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import org.junit.jupiter.api.DynamicContainer.dynamicContainer
 import org.junit.jupiter.api.DynamicNode
@@ -30,7 +30,7 @@ import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.assertThrows
 import java.io.File
 
-class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(ION_SCHEMA_1_0)
+class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(v1_0)
 
 /**
  * Primary test runner for the file-based test suite.

@@ -1,23 +1,19 @@
 package com.amazon.ionschema
 
 import com.amazon.ion.IonSymbol
-import com.amazon.ion.IonSystem
 
 enum class IonSchemaVersion {
-    ION_SCHEMA_1_0,
-    ION_SCHEMA_2_0;
+    v1_0,
+    v2_0;
 
-    fun toSymbolText() = '$' + name.toLowerCase()
-
-    fun toDirectoryName() = name.toLowerCase()
-
-    fun toIonSymbol(system: IonSystem) = system.newSymbol(toSymbolText())
+    val directoryName = "ion_schema_${name.drop(1)}"
+    val symbolText = "$$directoryName"
 
     companion object {
         @JvmStatic
         fun fromIonSymbol(symbol: IonSymbol): IonSchemaVersion = fromVersionMarkerString(symbol.stringValue())
 
         @JvmStatic
-        fun fromVersionMarkerString(islvm: String) = valueOf(islvm.toUpperCase().substringAfter('$'))
+        fun fromVersionMarkerString(islvm: String) = valueOf('v' + islvm.substringAfter("\$ion_schema"))
     }
 }

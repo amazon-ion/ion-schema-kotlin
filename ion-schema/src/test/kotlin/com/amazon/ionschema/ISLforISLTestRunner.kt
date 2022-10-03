@@ -19,7 +19,7 @@ import com.amazon.ion.IonDatagram
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaTests.ION_SCHEMA_TESTS_DIR
-import com.amazon.ionschema.IonSchemaVersion.ION_SCHEMA_1_0
+import com.amazon.ionschema.IonSchemaVersion.v1_0
 import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import org.junit.jupiter.api.DynamicContainer.dynamicContainer
 import org.junit.jupiter.api.DynamicNode
@@ -64,7 +64,7 @@ class ISLforISLTestRunner {
 
     @TestFactory
     fun generateIslForIslTestSuite(): Iterable<DynamicNode> {
-        return IonSchemaTests.asSequence(excluding = EXCLUDE_LIST, version = ION_SCHEMA_1_0)
+        return IonSchemaTests.asSequence(excluding = EXCLUDE_LIST, version = v1_0)
             .map { generateTestCasesForFile(it) }
             .asIterable()
     }

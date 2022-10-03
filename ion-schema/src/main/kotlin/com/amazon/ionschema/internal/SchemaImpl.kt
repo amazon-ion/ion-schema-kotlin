@@ -21,7 +21,7 @@ internal interface SchemaImpl : Schema {
         ): Schema {
             val content = schemaContent.asSequence().toList()
             return when (val version = findIslVersion(content)) {
-                IonSchemaVersion.ION_SCHEMA_1_0 -> SchemaImpl_1_0(schemaSystem, schemaCores[version]!!, content.iterator(), schemaId)
+                IonSchemaVersion.v1_0 -> SchemaImpl_1_0(schemaSystem, schemaCores[version]!!, content.iterator(), schemaId)
                 else -> TODO("Ion Schema 2.0 support is not complete yet")
             }
         }
@@ -36,18 +36,18 @@ private fun findIslVersion(schemaContent: Iterable<IonValue>): IonSchemaVersion 
         when (value) {
             is IonSymbol -> if (ISL_VERSION_MARKER.matches(value.stringValue())) {
                 return when (value.stringValue()) {
-                    "\$ion_schema_1_0" -> IonSchemaVersion.ION_SCHEMA_1_0
-                    "\$ion_schema_2_0" -> IonSchemaVersion.ION_SCHEMA_2_0
+                    "\$ion_schema_1_0" -> IonSchemaVersion.v1_0
+                    "\$ion_schema_2_0" -> IonSchemaVersion.v2_0
                     else -> throw InvalidSchemaException("Not a supported ISL Version: ${value.stringValue()}")
                 }
             } else {
                 // `value` is open content
             }
             is IonStruct -> if (value.hasTypeAnnotation("type") || value.hasTypeAnnotation("schema_header")) {
-                return IonSchemaVersion.ION_SCHEMA_1_0
+                return IonSchemaVersion.v1_0
             }
             else -> {} // `value` is open content
         }
     }
-    return IonSchemaVersion.ION_SCHEMA_1_0
+    return IonSchemaVersion.v1_0
 }

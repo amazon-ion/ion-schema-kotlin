@@ -16,7 +16,7 @@
 package com.amazon.ionschema
 
 import com.amazon.ion.system.IonSystemBuilder
-import com.amazon.ionschema.IonSchemaVersion.ION_SCHEMA_1_0
+import com.amazon.ionschema.IonSchemaVersion.v1_0
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -26,7 +26,7 @@ class SchemaImportTest {
     private val ION = IonSystemBuilder.standard().build()
 
     private val iss = IonSchemaSystemBuilder.standard()
-        .addAuthority(IonSchemaTests.authorityFor(ION_SCHEMA_1_0))
+        .addAuthority(IonSchemaTests.authorityFor(v1_0))
         .build()
 
     @Test
@@ -54,7 +54,7 @@ class SchemaImportTest {
         val test = "schema_header::{ imports: [ {id: 'schema/import/abcde.isl' }] } schema_footer::{}"
         val ion = IonSystemBuilder.standard().build()
         val iss = IonSchemaSystemBuilder.standard()
-            .addAuthority(IonSchemaTests.authorityFor(ION_SCHEMA_1_0)).withIonSystem(ion).build()
+            .addAuthority(IonSchemaTests.authorityFor(v1_0)).withIonSystem(ion).build()
         val schema = iss.newSchema(ion.iterate(test))
         val schemaId = "schema/import/abcde.isl"
         val import = schema.getImport(schemaId)!!

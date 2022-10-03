@@ -17,7 +17,7 @@ package com.amazon.ionschema
 
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
-import com.amazon.ionschema.IonSchemaVersion.ION_SCHEMA_1_0
+import com.amazon.ionschema.IonSchemaVersion.v1_0
 import com.amazon.ionschema.util.CloseableIterator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -54,7 +54,7 @@ class IonSchemaSystemTest {
         val schema = IonSchemaSystemBuilder.standard()
             .addAuthority(AuthorityFilesystem("src")) // misconfigured
             .addAuthority(exceptionalAuthority) // always throws
-            .addAuthority(IonSchemaTests.authorityFor(ION_SCHEMA_1_0)) // correctly configured
+            .addAuthority(IonSchemaTests.authorityFor(v1_0)) // correctly configured
             .build()
             .loadSchema("schema/Customer.isl")
         assertEquals(2, exceptionalAuthority.invokeCnt) // for "Customer.isl" and "positive_int.isl"
@@ -66,7 +66,7 @@ class IonSchemaSystemTest {
         // exceptionalAuthority.iteratorFor() should not be invoked by:
         val schema = IonSchemaSystemBuilder.standard()
             .addAuthority(exceptionalAuthority)
-            .withAuthority(IonSchemaTests.authorityFor(ION_SCHEMA_1_0))
+            .withAuthority(IonSchemaTests.authorityFor(v1_0))
             .build()
             .loadSchema("schema/Customer.isl")
         assertEquals(0, exceptionalAuthority.invokeCnt)
@@ -78,7 +78,7 @@ class IonSchemaSystemTest {
         // exceptionalAuthority.iteratorFor() should not be invoked by:
         val schema = IonSchemaSystemBuilder.standard()
             .addAuthority(exceptionalAuthority)
-            .withAuthorities(listOf<Authority>(IonSchemaTests.authorityFor(ION_SCHEMA_1_0)))
+            .withAuthorities(listOf<Authority>(IonSchemaTests.authorityFor(v1_0)))
             .build()
             .loadSchema("schema/Customer.isl")
         assertEquals(0, exceptionalAuthority.invokeCnt)
@@ -88,7 +88,7 @@ class IonSchemaSystemTest {
     @Test
     fun loadSchema_verifyCache() {
         val iss = IonSchemaSystemBuilder.standard()
-            .addAuthority(IonSchemaTests.authorityFor(ION_SCHEMA_1_0))
+            .addAuthority(IonSchemaTests.authorityFor(v1_0))
             .build()
         val schema = iss.loadSchema("schema/Customer.isl")
         val schemaFromCache = iss.loadSchema("schema/Customer.isl")

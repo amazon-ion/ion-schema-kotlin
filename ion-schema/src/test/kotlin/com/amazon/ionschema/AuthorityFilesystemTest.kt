@@ -32,7 +32,7 @@ class AuthorityFilesystemTest {
     @Test
     fun unknownSchemaId() {
         val iss = IonSchemaSystemBuilder.standard().build()
-        val authority = IonSchemaTests.authorityFor(IonSchemaVersion.ION_SCHEMA_1_0)
+        val authority = IonSchemaTests.authorityFor(IonSchemaVersion.v1_0)
         val iter = authority.iteratorFor(iss, "unknown_schema_id")
         assertFalse(iter.hasNext())
         try {

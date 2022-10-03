@@ -16,6 +16,7 @@
 package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonValue
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 
 /**
@@ -25,7 +26,7 @@ internal interface ConstraintFactory {
     /**
      * If [name] is a recognized constraint name, returns `true`, otherwise `false` based on the ISL version that given [schema] uses.
      */
-    fun isConstraint(name: String, schema: Schema): Boolean
+    fun isConstraint(name: String, version: IonSchemaVersion): Boolean
 
     /**
      * Instantiates a new [Constraint] as defined by [ion].
