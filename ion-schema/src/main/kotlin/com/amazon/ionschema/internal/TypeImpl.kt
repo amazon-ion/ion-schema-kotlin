@@ -48,7 +48,7 @@ internal class TypeImpl(
     init {
         var foundTypeConstraint = false
         constraints = ionStruct.asSequence()
-            .filter { it.fieldName == null || (schema.getSchemaSystem() as IonSchemaSystemImpl).isConstraint(it.fieldName) }
+            .filter { it.fieldName == null || (schema.getSchemaSystem() as IonSchemaSystemImpl).isConstraint(it.fieldName, schema) }
             .onEach { if (it.fieldName == "type") { foundTypeConstraint = true } }
             .map { (schema.getSchemaSystem() as IonSchemaSystemImpl).constraintFor(it, schema) }
             .toMutableList()

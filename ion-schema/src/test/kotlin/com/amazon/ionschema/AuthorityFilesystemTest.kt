@@ -32,7 +32,7 @@ class AuthorityFilesystemTest {
     @Test
     fun unknownSchemaId() {
         val iss = IonSchemaSystemBuilder.standard().build()
-        val authority = AuthorityFilesystem("../ion-schema-tests")
+        val authority = IonSchemaTests.authorityFor(IonSchemaVersion.v1_0)
         val iter = authority.iteratorFor(iss, "unknown_schema_id")
         assertFalse(iter.hasNext())
         try {
@@ -46,7 +46,7 @@ class AuthorityFilesystemTest {
     @Test
     fun iteratorFor_outsideBasePath() {
         val iss = IonSchemaSystemBuilder.standard().build()
-        val authority = AuthorityFilesystem("../ion-schema-tests/schema")
+        val authority = AuthorityFilesystem("../ion-schema-tests")
         assertThrows<AccessDeniedException> {
             authority.iteratorFor(iss, "../schema_private/some_file.isl")
         }

@@ -104,4 +104,9 @@ interface Schema {
      * from this instance.
      */
     fun plusType(type: Type): Schema
+
+    /**
+     * The Ion Schema version used by this Schema instance.
+     */
+    val ionSchemaLanguageVersion: IonSchemaVersion
 }

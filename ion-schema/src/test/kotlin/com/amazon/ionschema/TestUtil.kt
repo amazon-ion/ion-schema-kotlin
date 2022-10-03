@@ -15,9 +15,15 @@
 
 package com.amazon.ionschema
 
+import com.amazon.ion.IonDatagram
+import com.amazon.ion.IonSexp
 import com.amazon.ion.IonString
+import com.amazon.ion.IonStruct
+import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 
 internal val ION = IonSystemBuilder.standard().build()
 
@@ -27,3 +33,40 @@ internal fun prepareValue(ion: IonValue) =
     } else {
         ion
     }
+
+internal fun IonValue.asDocument(): IonDatagram {
+    require(this is IonSexp) { "Malformed test; expected a sexp, found a $type." }
+    return ION.newDatagram().apply {
+        addAll(this@asDocument.map { it.clone() })
+        makeReadOnly()
+    }
+}
+
+internal fun maybeConvertToDocument(ion: IonValue) =
+    if (ion.hasTypeAnnotation("document") && ion is IonSexp) {
+        ION.newDatagram().apply {
+            addAll(ion.map { it.clone() })
+        }
+    } else {
+        ion
+    }
+
+fun Type.assertValid(value: IonValue) {
+    val violations = this.validate(value)
+    println(violations)
+    assertTrue(violations.isValid()) { "expected valid $name, but was invalid: $value" }
+    assertTrue(this.isValid(value))
+}
+
+fun Type.assertInvalid(value: IonValue) {
+    val violations = this.validate(value)
+    println(violations)
+    assertFalse(violations.isValid()) { "expected invalid $name, but was valid: $value" }
+    assertFalse(this.isValid(value))
+}
+
+fun Type.assertValidity(expectIsValid: Boolean, value: IonValue) {
+    if (expectIsValid) assertValid(value) else assertInvalid(value)
+}
+
+internal fun IonStruct.getTextField(fieldName: String) = (get(fieldName) as IonText).stringValue()

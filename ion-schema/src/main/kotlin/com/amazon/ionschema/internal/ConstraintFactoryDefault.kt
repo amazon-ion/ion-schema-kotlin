@@ -16,6 +16,8 @@
 package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonValue
+import com.amazon.ionschema.IonSchemaVersion
+import com.amazon.ionschema.IonSchemaVersion.v1_0
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.internal.constraint.AllOf
 import com.amazon.ionschema.internal.constraint.Annotations
@@ -44,62 +46,50 @@ import com.amazon.ionschema.internal.constraint.ValidValues
  * Default [ConstraintFactory] implementation.
  */
 internal class ConstraintFactoryDefault : ConstraintFactory {
-    private enum class Constraints {
-        all_of,
-        annotations,
-        any_of,
-        byte_length,
-        codepoint_length,
-        container_length,
-        contains,
-        content,
-        element,
-        fields,
-        not,
-        occurs,
-        one_of,
-        ordered_elements,
-        precision,
-        regex,
-        scale,
-        timestamp_offset,
-        timestamp_precision,
-        type,
-        utf8_byte_length,
-        valid_values,
+
+    /**
+     * Represents a mapping of (constraint name + supported ISL versions) to a constructor function
+     */
+    private data class ConstraintConstructor(
+        val name: String,
+        val versions: ClosedRange<IonSchemaVersion>,
+        val newInstance: (ion: IonValue, schema: Schema) -> Constraint,
+    ) {
+        constructor(name: String, versions: ClosedRange<IonSchemaVersion>, newInstance: (IonValue) -> Constraint) : this(name, versions, { ion, _ -> newInstance(ion) })
+        constructor(name: String, version: IonSchemaVersion, newInstance: (IonValue) -> Constraint) : this(name, version..version, { ion, _ -> newInstance(ion) })
+        constructor(name: String, version: IonSchemaVersion, newInstance: (IonValue, schema: Schema) -> Constraint) : this(name, version..version, newInstance)
     }
 
-    override fun isConstraint(name: String) =
-        try {
-            Constraints.valueOf(name)
-            true
-        } catch (e: IllegalArgumentException) {
-            false
-        }
+    private val constraints = listOf(
+        ConstraintConstructor("all_of", v1_0, ::AllOf),
+        ConstraintConstructor("annotations", v1_0, ::Annotations),
+        ConstraintConstructor("any_of", v1_0, ::AnyOf),
+        ConstraintConstructor("byte_length", v1_0, ::ByteLength),
+        ConstraintConstructor("codepoint_length", v1_0, ::CodepointLength),
+        ConstraintConstructor("container_length", v1_0, ::ContainerLength),
+        ConstraintConstructor("contains", v1_0, ::Contains),
+        ConstraintConstructor("content", v1_0, ::Content),
+        ConstraintConstructor("element", v1_0, ::Element),
+        ConstraintConstructor("fields", v1_0, ::Fields),
+        ConstraintConstructor("not", v1_0, ::Not),
+        ConstraintConstructor("occurs", v1_0, ::OccursNoop),
+        ConstraintConstructor("one_of", v1_0, ::OneOf),
+        ConstraintConstructor("ordered_elements", v1_0, ::OrderedElements),
+        ConstraintConstructor("precision", v1_0, ::Precision),
+        ConstraintConstructor("regex", v1_0, ::Regex),
+        ConstraintConstructor("scale", v1_0, ::Scale),
+        ConstraintConstructor("timestamp_offset", v1_0, ::TimestampOffset),
+        ConstraintConstructor("timestamp_precision", v1_0, ::TimestampPrecision),
+        ConstraintConstructor("type", v1_0, ::Type),
+        ConstraintConstructor("utf8_byte_length", v1_0, ::Utf8ByteLength),
+        ConstraintConstructor("valid_values", v1_0, ::ValidValues),
+    )
 
-    override fun constraintFor(ion: IonValue, schema: Schema) =
-        when (Constraints.valueOf(ion.fieldName)) {
-            Constraints.all_of -> AllOf(ion, schema)
-            Constraints.annotations -> Annotations(ion)
-            Constraints.any_of -> AnyOf(ion, schema)
-            Constraints.byte_length -> ByteLength(ion)
-            Constraints.codepoint_length -> CodepointLength(ion)
-            Constraints.container_length -> ContainerLength(ion)
-            Constraints.contains -> Contains(ion)
-            Constraints.content -> Content(ion)
-            Constraints.element -> Element(ion, schema)
-            Constraints.fields -> Fields(ion, schema)
-            Constraints.not -> Not(ion, schema)
-            Constraints.occurs -> OccursNoop(ion)
-            Constraints.one_of -> OneOf(ion, schema)
-            Constraints.ordered_elements -> OrderedElements(ion, schema)
-            Constraints.precision -> Precision(ion)
-            Constraints.regex -> Regex(ion)
-            Constraints.scale -> Scale(ion)
-            Constraints.timestamp_offset -> TimestampOffset(ion)
-            Constraints.timestamp_precision -> TimestampPrecision(ion)
-            Constraints.type -> Type(ion, schema)
-            Constraints.utf8_byte_length -> Utf8ByteLength(ion)
-            Constraints.valid_values -> ValidValues(ion)
-        }
+    override fun isConstraint(name: String, version: IonSchemaVersion): Boolean {
+        return constraints.any { name == it.name && version in it.versions }
+    }
+
+    override fun constraintFor(ion: IonValue, schema: Schema) = constraints
+        .single { ion.fieldName == it.name && schema.ionSchemaLanguageVersion in it.versions }
+        .newInstance(ion, schema)
 }

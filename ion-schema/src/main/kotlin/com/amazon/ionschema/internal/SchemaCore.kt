@@ -20,6 +20,7 @@ import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ionschema.Import
 import com.amazon.ionschema.IonSchemaSystem
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
 import com.amazon.ionschema.internal.util.markReadOnly
@@ -29,7 +30,8 @@ import com.amazon.ionschema.internal.util.markReadOnly
  * defined by the Ion Schema Specification.
  */
 internal class SchemaCore(
-    private val schemaSystem: IonSchemaSystem
+    private val schemaSystem: IonSchemaSystem,
+    override val ionSchemaLanguageVersion: IonSchemaVersion
 ) : Schema {
 
     private val typeMap: Map<String, Type>

@@ -18,7 +18,8 @@ package com.amazon.ionschema
 import com.amazon.ion.IonDatagram
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.IonSchemaTestFilesSource.Companion.ION_SCHEMA_TESTS_DIR
+import com.amazon.ionschema.IonSchemaTests.ION_SCHEMA_TESTS_DIR
+import com.amazon.ionschema.IonSchemaVersion.v1_0
 import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import org.junit.jupiter.api.DynamicContainer.dynamicContainer
 import org.junit.jupiter.api.DynamicNode
@@ -42,17 +43,17 @@ class ISLforISLTestRunner {
         // Test files with "invalid_schema" definitions should be listed here if and
         // only if they are invalid for some reason that cannot be validated by ISL.
         val EXCLUDE_LIST = listOf(
-            "../ion-schema-tests/schema/import/import_type_unknown.isl",
-            "../ion-schema-tests/schema/import/invalid_duplicate_import.isl",
-            "../ion-schema-tests/schema/import/invalid_duplicate_import_type.isl",
-            "../ion-schema-tests/schema/import/invalid_duplicate_type.isl",
-            "../ion-schema-tests/schema/import/invalid_transitive_import_of_schema.isl",
-            "../ion-schema-tests/schema/import/invalid_transitive_import_of_type.isl",
-            "../ion-schema-tests/schema/import/invalid_transitive_import_of_type_by_alias.isl",
-            "../ion-schema-tests/schema/invalid_missing_schema_footer.isl",
-            "../ion-schema-tests/schema/invalid_missing_schema_header.isl",
-            "../ion-schema-tests/schema/invalid_reuse_of_type_name.isl",
-            "../ion-schema-tests/schema/invalid_unknown_type.isl"
+            "../ion-schema-tests/ion_schema_1_0/schema/import/import_type_unknown.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/import/invalid_duplicate_import.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/import/invalid_duplicate_import_type.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/import/invalid_duplicate_type.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/import/invalid_transitive_import_of_schema.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/import/invalid_transitive_import_of_type.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/import/invalid_transitive_import_of_type_by_alias.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/invalid_missing_schema_footer.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/invalid_missing_schema_header.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/invalid_reuse_of_type_name.isl",
+            "../ion-schema-tests/ion_schema_1_0/schema/invalid_unknown_type.isl"
         )
     }
 
@@ -63,7 +64,7 @@ class ISLforISLTestRunner {
 
     @TestFactory
     fun generateIslForIslTestSuite(): Iterable<DynamicNode> {
-        return IonSchemaTestFilesSource.asSequence(excluding = EXCLUDE_LIST)
+        return IonSchemaTests.asSequence(excluding = EXCLUDE_LIST, version = v1_0)
             .map { generateTestCasesForFile(it) }
             .asIterable()
     }
