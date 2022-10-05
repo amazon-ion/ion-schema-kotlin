@@ -46,6 +46,7 @@ class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
             it.path.endsWith("constraints/exponent.isl") ||
             it.path.endsWith("constraints/field_names.isl") ||
             it.path.endsWith("constraints/fields.isl") ||
+            it.path.endsWith("constraints/ieee754_float.isl") ||
             it.path.endsWith("constraints/not.isl") ||
             // TODO: Add "one_of" tests once annotations support is added
             it.path.endsWith("constraints/ordered_elements.isl") ||

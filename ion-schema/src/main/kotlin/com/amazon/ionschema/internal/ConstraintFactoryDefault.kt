@@ -32,6 +32,7 @@ import com.amazon.ionschema.internal.constraint.Element
 import com.amazon.ionschema.internal.constraint.Exponent
 import com.amazon.ionschema.internal.constraint.FieldNames
 import com.amazon.ionschema.internal.constraint.Fields
+import com.amazon.ionschema.internal.constraint.Ieee754Float
 import com.amazon.ionschema.internal.constraint.Not
 import com.amazon.ionschema.internal.constraint.OccursNoop
 import com.amazon.ionschema.internal.constraint.OneOf
@@ -76,6 +77,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         ConstraintConstructor("exponent", v2_0, ::Exponent),
         ConstraintConstructor("field_names", v2_0, ::FieldNames),
         ConstraintConstructor("fields", v1_0..v2_0, ::Fields),
+        ConstraintConstructor("ieee754_float", v2_0, ::Ieee754Float),
         ConstraintConstructor("not", v1_0..v2_0, ::Not),
         ConstraintConstructor("occurs", v1_0, ::OccursNoop),
         ConstraintConstructor("one_of", v1_0..v2_0, ::OneOf),
