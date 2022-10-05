@@ -19,9 +19,12 @@ import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.constraint.ConstraintBase
+import com.amazon.ionschema.internal.util.ISL_2_0_RESERVED_WORDS_REGEX
+import com.amazon.ionschema.internal.util.islRequire
 import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
@@ -53,9 +56,22 @@ internal class TypeImpl(
             .map { (schema.getSchemaSystem() as IonSchemaSystemImpl).constraintFor(it, schema) }
             .toMutableList()
 
-        if (!foundTypeConstraint && addDefaultTypeConstraint) {
-            // default type is 'any':
-            constraints.add(TypeReference.create(ANY, schema)())
+        if (schema.ionSchemaLanguageVersion == IonSchemaVersion.v1_0) {
+            if (!foundTypeConstraint && addDefaultTypeConstraint) {
+                // default type for ISL 1.0 is 'any':
+                constraints.add(TypeReference.create(ANY, schema)())
+            }
+        }
+
+        if (schema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
+            val illegalOpenContent = ionStruct.asSequence()
+                .map { it.fieldName }
+                .filterNotNull()
+                .filter { !(schema.getSchemaSystem() as IonSchemaSystemImpl).isConstraint(it, schema) }
+                .filter { !(it matches ISL_2_0_RESERVED_WORDS_REGEX) }
+                .toList()
+
+            islRequire(illegalOpenContent.isEmpty()) { "Illegal use of reserved words in a type definition: $illegalOpenContent" }
         }
     }
 
@@ -63,6 +79,7 @@ internal class TypeImpl(
 
     override val schemaId: String? = (schema as? SchemaImpl)?.schemaId
 
+    @Deprecated("Only used for Ion Schema 1.0 code paths. No new usages should be introduced.")
     override fun getBaseType(): TypeBuiltin {
         val type = ionStruct["type"]
         if (type != null && type is IonSymbol) {
@@ -74,6 +91,7 @@ internal class TypeImpl(
         return schema.getType("any")!! as TypeBuiltin
     }
 
+    @Deprecated("Only used for Ion Schema 1.0 code paths. No new usages should be introduced.")
     override fun isValidForBaseType(value: IonValue) = getBaseType().isValidForBaseType(value)
 
     override fun validate(value: IonValue, issues: Violations) {

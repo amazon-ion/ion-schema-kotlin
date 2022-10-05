@@ -18,9 +18,10 @@ package com.amazon.ionschema.internal
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.IonSchemaVersion.v1_0
+import com.amazon.ionschema.IonSchemaVersion.v2_0
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.internal.constraint.AllOf
-import com.amazon.ionschema.internal.constraint.Annotations
+import com.amazon.ionschema.internal.constraint.Annotations_1_0
 import com.amazon.ionschema.internal.constraint.AnyOf
 import com.amazon.ionschema.internal.constraint.ByteLength
 import com.amazon.ionschema.internal.constraint.CodepointLength
@@ -61,28 +62,28 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
     }
 
     private val constraints = listOf(
-        ConstraintConstructor("all_of", v1_0, ::AllOf),
-        ConstraintConstructor("annotations", v1_0, ::Annotations),
-        ConstraintConstructor("any_of", v1_0, ::AnyOf),
-        ConstraintConstructor("byte_length", v1_0, ::ByteLength),
-        ConstraintConstructor("codepoint_length", v1_0, ::CodepointLength),
-        ConstraintConstructor("container_length", v1_0, ::ContainerLength),
-        ConstraintConstructor("contains", v1_0, ::Contains),
+        ConstraintConstructor("all_of", v1_0..v2_0, ::AllOf),
+        ConstraintConstructor("annotations", v1_0, ::Annotations_1_0),
+        ConstraintConstructor("any_of", v1_0..v2_0, ::AnyOf),
+        ConstraintConstructor("byte_length", v1_0..v2_0, ::ByteLength),
+        ConstraintConstructor("codepoint_length", v1_0..v2_0, ::CodepointLength),
+        ConstraintConstructor("container_length", v1_0..v2_0, ::ContainerLength),
+        ConstraintConstructor("contains", v1_0..v2_0, ::Contains),
         ConstraintConstructor("content", v1_0, ::Content),
         ConstraintConstructor("element", v1_0, ::Element),
         ConstraintConstructor("fields", v1_0, ::Fields),
-        ConstraintConstructor("not", v1_0, ::Not),
+        ConstraintConstructor("not", v1_0..v2_0, ::Not),
         ConstraintConstructor("occurs", v1_0, ::OccursNoop),
-        ConstraintConstructor("one_of", v1_0, ::OneOf),
+        ConstraintConstructor("one_of", v1_0..v2_0, ::OneOf),
         ConstraintConstructor("ordered_elements", v1_0, ::OrderedElements),
-        ConstraintConstructor("precision", v1_0, ::Precision),
+        ConstraintConstructor("precision", v1_0..v2_0, ::Precision),
         ConstraintConstructor("regex", v1_0, ::Regex),
         ConstraintConstructor("scale", v1_0, ::Scale),
-        ConstraintConstructor("timestamp_offset", v1_0, ::TimestampOffset),
-        ConstraintConstructor("timestamp_precision", v1_0, ::TimestampPrecision),
-        ConstraintConstructor("type", v1_0, ::Type),
-        ConstraintConstructor("utf8_byte_length", v1_0, ::Utf8ByteLength),
-        ConstraintConstructor("valid_values", v1_0, ::ValidValues),
+        ConstraintConstructor("timestamp_offset", v1_0..v2_0, ::TimestampOffset),
+        ConstraintConstructor("timestamp_precision", v1_0..v2_0, ::TimestampPrecision),
+        ConstraintConstructor("type", v1_0..v2_0, ::Type),
+        ConstraintConstructor("utf8_byte_length", v1_0..v2_0, ::Utf8ByteLength),
+        ConstraintConstructor("valid_values", v1_0..v2_0, ::ValidValues),
     )
 
     override fun isConstraint(name: String, version: IonSchemaVersion): Boolean {

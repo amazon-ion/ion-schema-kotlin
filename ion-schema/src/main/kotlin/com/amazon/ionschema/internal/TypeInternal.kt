@@ -28,8 +28,10 @@ internal interface TypeInternal : Type, Constraint {
      */
     val schemaId: String?
 
+    @Deprecated("Only used for Ion Schema 1.0 code paths. No new usages should be introduced.")
     fun getBaseType(): TypeBuiltin
 
+    @Deprecated("Only used for Ion Schema 1.0 code paths. No new usages should be introduced.")
     fun isValidForBaseType(value: IonValue): Boolean
 }
 

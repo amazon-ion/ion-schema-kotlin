@@ -20,8 +20,10 @@ import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.util.islRequire
 import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
@@ -34,13 +36,41 @@ import com.amazon.ionschema.internal.util.markReadOnly
  */
 internal class TypeReference private constructor() {
     companion object {
-        fun create(ion: IonValue, schema: Schema, isField: Boolean = false): () -> TypeInternal {
+        val DEFAULT_ALLOWED_ANNOTATIONS = setOf("\$null_or")
+
+        fun create(
+            ion: IonValue,
+            schema: Schema,
+            isField: Boolean = false,
+            variablyOccurring: Boolean = false,
+            isNamePermitted: Boolean = false,
+            allowedAnnotations: Set<String> = DEFAULT_ALLOWED_ANNOTATIONS
+        ): () -> TypeInternal {
+
             if (ion.isNullValue) {
                 throw InvalidSchemaException("Unable to resolve type reference '$ion'")
             }
 
+            if (schema.ionSchemaLanguageVersion != IonSchemaVersion.v1_0) {
+                if (!isNamePermitted) islRequire(!ion.hasTypeAnnotation("type")) {
+                    "'type::' annotation not allowed on type references: $ion"
+                }
+                val illegalAnnotations = ion.typeAnnotations.filter { it !in allowedAnnotations }
+                islRequire(illegalAnnotations.isEmpty()) { "Illegal annotations $illegalAnnotations on type reference: $ion" }
+            }
+
             return when (ion) {
-                is IonStruct -> handleStruct(ion, schema, isField)
+                is IonStruct -> {
+                    if (schema.ionSchemaLanguageVersion != IonSchemaVersion.v1_0) {
+                        if (!variablyOccurring) islRequire(!ion.containsKey("occurs")) {
+                            "Variably occurring type reference not permitted: $ion"
+                        }
+                        if (!isNamePermitted) islRequire(!ion.containsKey("name")) {
+                            "Illegal 'name' field in type reference: $ion"
+                        }
+                    }
+                    handleStruct(ion, schema, isField)
+                }
                 is IonSymbol -> handleSymbol(ion, schema)
                 else -> throw InvalidSchemaException("Unable to resolve type reference '$ion'")
             }
@@ -84,12 +114,13 @@ internal class TypeReference private constructor() {
             }
         }
 
-        private fun handleNullable(ion: IonValue, schema: Schema, type: TypeInternal): TypeInternal =
-            if (ion.hasTypeAnnotation("nullable")) {
-                TypeNullable(ion, type, schema)
-            } else {
-                type
+        private fun handleNullable(ion: IonValue, schema: Schema, type: TypeInternal): TypeInternal {
+            return when {
+                ion.hasTypeAnnotation("nullable") -> TypeNullable(ion, type, schema)
+                ion.hasTypeAnnotation("\$null_or") -> TypeOrNullDecorator(ion, type, schema)
+                else -> type
             }
+        }
     }
 }
 

@@ -38,6 +38,7 @@ internal class IonSchemaSystemImpl(
 
     private val schemaCores = mapOf(
         IonSchemaVersion.v1_0 to SchemaCore(this, IonSchemaVersion.v1_0),
+        IonSchemaVersion.v2_0 to SchemaCore(this, IonSchemaVersion.v2_0)
     )
 
     // Set to be used to detect cycle in import dependencies

@@ -22,7 +22,7 @@ internal interface SchemaImpl : Schema {
             val content = schemaContent.asSequence().toList()
             return when (val version = findIslVersion(content)) {
                 IonSchemaVersion.v1_0 -> SchemaImpl_1_0(schemaSystem, schemaCores[version]!!, content.iterator(), schemaId)
-                else -> TODO("Ion Schema 2.0 support is not complete yet")
+                IonSchemaVersion.v2_0 -> SchemaImpl_2_0(schemaSystem, schemaCores[version]!!, content.iterator(), schemaId)
             }
         }
     }

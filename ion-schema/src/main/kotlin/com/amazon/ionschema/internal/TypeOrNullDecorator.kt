@@ -17,32 +17,31 @@ package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonType
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.IonSchemaVersion.v1_0
+import com.amazon.ionschema.IonSchemaVersion.v2_0
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.internal.util.islRequire
 
 /**
- * [Type] decorator that implements the nullable:: annotation.
+ * [Type] decorator that implements the $null_or:: annotation.
+ *
+ * Name of this class is `TypeOrNull...` instead of `NullOrType...` to be consistent with other Type-based classes.
  */
-internal class TypeNullable(
+internal class TypeOrNullDecorator(
     ion: IonValue,
     private val type: TypeInternal,
     schema: Schema
 ) : TypeInternal by type, ConstraintBase(ion) {
 
     init {
-        islRequire(schema.ionSchemaLanguageVersion == v1_0) { "'nullable::' is not supported beyond Ion Schema 1.0" }
-        islRequire(type.getBaseType() != schema.getType("document")) { "The 'document' type is not nullable" }
+        islRequire(schema.ionSchemaLanguageVersion >= v2_0) { "'\$null_or::' not supported before Ion Schema 2.0" }
     }
 
     override fun validate(value: IonValue, issues: Violations) {
-        if (!(
-            value.isNullValue &&
-                (value.type == IonType.NULL || type.isValidForBaseType(value))
-            )
-        ) {
+        if (value.type == IonType.NULL) {
+            return
+        } else {
             type.validate(value, issues)
         }
     }

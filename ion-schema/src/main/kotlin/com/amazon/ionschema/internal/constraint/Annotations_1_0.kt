@@ -34,7 +34,7 @@ import com.amazon.ionschema.internal.util.withoutTypeAnnotations
  *
  * @see https://amzn.github.io/ion-schema/docs/spec.html#annotations
  */
-internal class Annotations private constructor(
+internal class Annotations_1_0 private constructor(
     ion: IonValue,
     private val delegate: Constraint
 ) : ConstraintBase(ion), Constraint by delegate {
