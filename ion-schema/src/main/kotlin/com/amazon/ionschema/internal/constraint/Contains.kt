@@ -32,7 +32,9 @@ internal class Contains(
 ) : ConstraintBase(ion) {
 
     private val expectedElements = if (ion !is IonList || ion.isNullValue) {
-        throw InvalidSchemaException("Expected annotations as a list, found: $ion")
+        throw InvalidSchemaException("Expected values in a list, found: $ion")
+    } else if (ion.typeAnnotations.isNotEmpty()) {
+        throw InvalidSchemaException("List of values may not be annotated.")
     } else {
         ion.toArray()
     }

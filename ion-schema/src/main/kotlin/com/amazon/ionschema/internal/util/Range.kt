@@ -80,6 +80,12 @@ internal fun checkRange(ion: IonList) {
             throw InvalidSchemaException("Invalid range, size of list must be 2:  $ion")
         ion[0].isNullValue || ion[1].isNullValue || (isRangeMin(ion[0]) && isRangeMax(ion[1])) ->
             throw InvalidSchemaException("Invalid range $ion")
+        ion[0].typeAnnotations.any { it != "exclusive" } || ion[1].typeAnnotations.any { it != "exclusive" } ->
+            throw InvalidSchemaException("Invalid range; unknown annotation(s) on range boundary: $ion")
+        isRangeMin(ion[0]) && ion[0].typeAnnotations.isNotEmpty() ->
+            throw InvalidSchemaException("Invalid range; 'min' may not be exclusive: $ion")
+        isRangeMax(ion[1]) && ion[1].typeAnnotations.isNotEmpty() ->
+            throw InvalidSchemaException("Invalid range; 'max' may not be exclusive: $ion")
     }
 }
 

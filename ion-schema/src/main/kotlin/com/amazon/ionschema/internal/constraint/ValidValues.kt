@@ -19,6 +19,8 @@ import com.amazon.ion.IonList
 import com.amazon.ion.IonTimestamp
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
+import com.amazon.ionschema.IonSchemaVersion
+import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.util.Range
@@ -26,6 +28,7 @@ import com.amazon.ionschema.internal.util.RangeFactory
 import com.amazon.ionschema.internal.util.RangeIonNumber
 import com.amazon.ionschema.internal.util.RangeIonTimestamp
 import com.amazon.ionschema.internal.util.RangeType
+import com.amazon.ionschema.internal.util.islRequireNotNull
 import com.amazon.ionschema.internal.util.withoutTypeAnnotations
 
 /**
@@ -34,8 +37,11 @@ import com.amazon.ionschema.internal.util.withoutTypeAnnotations
  * @see https://amzn.github.io/ion-schema/docs/spec.html#valid_values
  */
 internal class ValidValues(
-    ion: IonValue
+    ion: IonValue,
+    schema: Schema
 ) : ConstraintBase(ion) {
+
+    private val ionSchemaVersion = schema.ionSchemaLanguageVersion
 
     // store either the ranges that are built or the ion value to be used for validation
     private val validValues = (
@@ -45,22 +51,24 @@ internal class ValidValues(
         } else if (ion is IonList && !ion.isNullValue) {
             ion.onEach { checkValue(it) }.toSet()
         } else {
-            null
-        }
-        )?.map { buildRange(it) }
-
-    private fun isValidRange(ion: IonValue) = ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")
-
-    init {
-        if (validValues == null) {
             throw InvalidSchemaException("Invalid valid_values constraint: $ion")
         }
-    }
+        ).map { buildRange(it) }
+
+    private fun isValidRange(ion: IonValue) = ion is IonList && !ion.isNullValue && ion.hasTypeAnnotation("range")
 
     // build range value from given ion value if valid range or return ion value itself
     private fun buildRange(ion: IonValue) =
         if (ion is IonList && isValidRange(ion)) {
             if (ion[0] is IonTimestamp || ion[1] is IonTimestamp) {
+                if (ionSchemaVersion == IonSchemaVersion.v1_0) {
+                    ion[0].let {
+                        if (it is IonTimestamp) islRequireNotNull(it.localOffset) { "Timestamp range bound doesn't specify a local offset: ${ion[0]}" }
+                    }
+                    ion[1].let {
+                        if (it is IonTimestamp) islRequireNotNull(it.localOffset) { "Timestamp range bound doesn't specify a local offset: ${ion[1]}" }
+                    }
+                }
                 @Suppress("UNCHECKED_CAST")
                 RangeFactory.rangeOf<IonTimestamp>(ion, RangeType.ION_TIMESTAMP) as Range<IonValue>
             } else {
@@ -85,7 +93,7 @@ internal class ValidValues(
         // a valid_values that could match an IonDatagram.
 
         val v = value.withoutTypeAnnotations()
-        val matchesAny = validValues!!.any { possibility ->
+        val matchesAny = validValues.any { possibility ->
             when (possibility) {
                 is IonValue -> v == possibility
                 is RangeIonNumber -> v in possibility

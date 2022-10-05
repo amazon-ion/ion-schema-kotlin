@@ -19,10 +19,11 @@ import com.amazon.ion.IonList
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.IonSchemaTests.isInvalidSchemaTestCase
+import com.amazon.ionschema.IonSchemaTests.isInvalidSchemasTestCase
 import com.amazon.ionschema.IonSchemaTests.isInvalidTypesTestCase
 import com.amazon.ionschema.IonSchemaTests.isValueTestCase
 import com.amazon.ionschema.IonSchemaVersion.v1_0
+import com.amazon.ionschema.IonSchemaVersion.v2_0
 import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import org.junit.jupiter.api.DynamicContainer.dynamicContainer
 import org.junit.jupiter.api.DynamicNode
@@ -31,16 +32,41 @@ import org.junit.jupiter.api.assertThrows
 import java.io.File
 
 class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(v1_0)
+class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
+    islVersion = v2_0,
+    additionalFileFilter = {
+        it.path.contains("ion_schema_2_0/schema/") ||
+            it.path.endsWith("constraints/all_of.isl") ||
+            it.path.endsWith("constraints/any_of.isl") ||
+            it.path.endsWith("constraints/byte_length.isl") ||
+            it.path.endsWith("constraints/codepoint_length.isl") ||
+            it.path.endsWith("constraints/container_length.isl") ||
+            it.path.endsWith("constraints/contains.isl") ||
+            it.path.endsWith("constraints/not.isl") ||
+            // TODO: Add "one_of" tests once annotations support is added
+            it.path.endsWith("constraints/precision.isl") ||
+            it.path.endsWith("constraints/timestamp_offset.isl") ||
+            it.path.endsWith("constraints/timestamp_precision.isl") ||
+            it.path.endsWith("constraints/type.isl") ||
+            it.path.endsWith("constraints/utf8_byte_length.isl") ||
+            it.path.endsWith("constraints/valid_values.isl") ||
+            it.path.endsWith("constraints/valid_values-ranges.isl")
+    }
+)
 
 /**
  * Primary test runner for the file-based test suite.
  * Use this to create a different class for each Ion Schema version since the IntelliJ and Html
  * reports lose all structure from the [DynamicNode] hierarchy.
  */
-class IonSchemaTestsRunner(islVersion: IonSchemaVersion) : TestFactory {
+class IonSchemaTestsRunner(islVersion: IonSchemaVersion, additionalFileFilter: (File) -> Boolean) : TestFactory {
+
+    companion object {
+        operator fun invoke(islVersion: IonSchemaVersion) = IonSchemaTestsRunner(islVersion) { true }
+    }
 
     private val baseDir = IonSchemaTests.testDirectoryFor(islVersion)
-    private val fileFilter: (File) -> Boolean = { it.path.endsWith(".isl") }
+    private val fileFilter: (File) -> Boolean = { it.path.endsWith(".isl") && additionalFileFilter(it) }
 
     private val schemaSystem = IonSchemaSystemBuilder.standard()
         .withAuthority(IonSchemaTests.authorityFor(islVersion))
@@ -84,7 +110,7 @@ class IonSchemaTestsRunner(islVersion: IonSchemaVersion) : TestFactory {
                     dynamicContainer(schemaId, shouldMatch + shouldNotMatch)
                 }
 
-                isInvalidSchemaTestCase(ion) -> createInvalidSchemaTestCase(schemaId, ion)
+                isInvalidSchemasTestCase(ion) -> createInvalidSchemasTestCases(schemaId, ion)
 
                 isInvalidTypesTestCase(ion) -> {
                     val baseDescription = ion.getTextField("description")
@@ -102,12 +128,14 @@ class IonSchemaTestsRunner(islVersion: IonSchemaVersion) : TestFactory {
         return dynamicContainer(schemaId, f.toURI(), dynamicNodeTestCases.stream())
     }
 
-    private fun createInvalidSchemaTestCase(schemaId: String, testCaseIon: IonStruct): DynamicNode {
-        return dynamicTest("[$schemaId] ${testCaseIon.getTextField("description")}") {
-            assertThrows<InvalidSchemaException> {
-                schemaSystem.newSchema(testCaseIon["invalid_schema"].asDocument().iterator())
+    private fun createInvalidSchemasTestCases(schemaId: String, ion: IonStruct): DynamicNode {
+        val baseDescription = ion.getTextField("description")
+        val cases = (ion["invalid_schemas"] as IonList).mapIndexed { i, it ->
+            dynamicTest("[$schemaId] $baseDescription [$i]") {
+                assertThrows<InvalidSchemaException> { schemaSystem.newSchema(it.asDocument().iterator()) }
             }
         }
+        return dynamicContainer("[$schemaId] $baseDescription", cases)
     }
 
     private fun createValueTestCase(schemaId: String, testType: Type, value: IonValue, expectValid: Boolean): DynamicNode {

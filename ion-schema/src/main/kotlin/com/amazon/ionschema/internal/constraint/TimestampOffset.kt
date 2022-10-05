@@ -54,12 +54,18 @@ internal class TimestampOffset(
         if (ion.size == 0) {
             throw InvalidSchemaException("timestamp_offset must contain at least one offset")
         }
+        if (ion.typeAnnotations.isNotEmpty()) {
+            throw InvalidSchemaException("timestamp_offset list may not be annotated")
+        }
 
         validOffsets = ion.map {
             // every timestamp offset must be of the form "[+|-]hh:mm"
 
-            if (it !is IonString) {
-                throw InvalidSchemaException("timestamp_offset values must be strings, found $it")
+            if (it !is IonString || it.isNullValue) {
+                throw InvalidSchemaException("timestamp_offset values must be non-null strings, found $it")
+            }
+            if (it.typeAnnotations.isNotEmpty()) {
+                throw InvalidSchemaException("timestamp_offset values may not be annotated, found $it")
             }
             val str = it.stringValue()
             if (str == "-00:00") {
