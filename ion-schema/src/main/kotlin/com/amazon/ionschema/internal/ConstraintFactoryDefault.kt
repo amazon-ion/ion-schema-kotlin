@@ -79,7 +79,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         ConstraintConstructor("one_of", v1_0..v2_0, ::OneOf),
         ConstraintConstructor("ordered_elements", v1_0, ::OrderedElements),
         ConstraintConstructor("precision", v1_0..v2_0, ::Precision),
-        ConstraintConstructor("regex", v1_0, ::Regex),
+        ConstraintConstructor("regex", v1_0..v2_0) { ion, schema -> Regex(ion, schema.ionSchemaLanguageVersion) },
         ConstraintConstructor("scale", v1_0, ::Scale),
         ConstraintConstructor("timestamp_offset", v1_0..v2_0, ::TimestampOffset),
         ConstraintConstructor("timestamp_precision", v1_0..v2_0, ::TimestampPrecision),
