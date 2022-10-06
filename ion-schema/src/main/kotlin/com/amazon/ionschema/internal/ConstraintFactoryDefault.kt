@@ -71,7 +71,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         ConstraintConstructor("contains", v1_0..v2_0, ::Contains),
         ConstraintConstructor("content", v1_0, ::Content),
         ConstraintConstructor("element", v1_0, ::Element),
-        ConstraintConstructor("fields", v1_0, ::Fields),
+        ConstraintConstructor("fields", v1_0..v2_0, ::Fields),
         ConstraintConstructor("not", v1_0..v2_0, ::Not),
         ConstraintConstructor("occurs", v1_0, ::OccursNoop),
         ConstraintConstructor("one_of", v1_0..v2_0, ::OneOf),
