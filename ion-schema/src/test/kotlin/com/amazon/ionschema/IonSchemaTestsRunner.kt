@@ -43,6 +43,7 @@ class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
             it.path.endsWith("constraints/container_length.isl") ||
             it.path.endsWith("constraints/contains.isl") ||
             it.path.endsWith("constraints/exponent.isl") ||
+            it.path.endsWith("constraints/field_names.isl") ||
             it.path.endsWith("constraints/not.isl") ||
             // TODO: Add "one_of" tests once annotations support is added
             it.path.endsWith("constraints/precision.isl") ||
