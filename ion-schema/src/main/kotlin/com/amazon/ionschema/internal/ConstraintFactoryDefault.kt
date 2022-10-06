@@ -29,6 +29,7 @@ import com.amazon.ionschema.internal.constraint.ContainerLength
 import com.amazon.ionschema.internal.constraint.Contains
 import com.amazon.ionschema.internal.constraint.Content
 import com.amazon.ionschema.internal.constraint.Element
+import com.amazon.ionschema.internal.constraint.Exponent
 import com.amazon.ionschema.internal.constraint.Fields
 import com.amazon.ionschema.internal.constraint.Not
 import com.amazon.ionschema.internal.constraint.OccursNoop
@@ -71,6 +72,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         ConstraintConstructor("contains", v1_0..v2_0, ::Contains),
         ConstraintConstructor("content", v1_0, ::Content),
         ConstraintConstructor("element", v1_0, ::Element),
+        ConstraintConstructor("exponent", v2_0, ::Exponent),
         ConstraintConstructor("fields", v1_0, ::Fields),
         ConstraintConstructor("not", v1_0..v2_0, ::Not),
         ConstraintConstructor("occurs", v1_0, ::OccursNoop),
