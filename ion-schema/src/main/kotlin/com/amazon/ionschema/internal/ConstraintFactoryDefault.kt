@@ -22,6 +22,7 @@ import com.amazon.ionschema.IonSchemaVersion.v2_0
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.internal.constraint.AllOf
 import com.amazon.ionschema.internal.constraint.Annotations_1_0
+import com.amazon.ionschema.internal.constraint.Annotations_2_0
 import com.amazon.ionschema.internal.constraint.AnyOf
 import com.amazon.ionschema.internal.constraint.ByteLength
 import com.amazon.ionschema.internal.constraint.CodepointLength
@@ -67,6 +68,7 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
     private val constraints = listOf(
         ConstraintConstructor("all_of", v1_0..v2_0, ::AllOf),
         ConstraintConstructor("annotations", v1_0, ::Annotations_1_0),
+        ConstraintConstructor("annotations", v2_0, ::Annotations_2_0),
         ConstraintConstructor("any_of", v1_0..v2_0, ::AnyOf),
         ConstraintConstructor("byte_length", v1_0..v2_0, ::ByteLength),
         ConstraintConstructor("codepoint_length", v1_0..v2_0, ::CodepointLength),
