@@ -19,17 +19,20 @@ import com.amazon.ion.IonList
 import com.amazon.ion.IonSequence
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.InvalidSchemaException
+import com.amazon.ionschema.IonSchemaVersion.v2_0
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.TypeReference
 import com.amazon.ionschema.internal.util.IntRange
+import com.amazon.ionschema.internal.util.islRequire
+import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
 
 /**
  * Implements the ordered_element constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#ordered_elements
+ * @see https://amzn.github.io/ion-schema/docs/isl-1-0/spec#ordered_elements
+ * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#ordered_elements
  */
 internal class OrderedElements(
     ion: IonValue,
@@ -37,14 +40,15 @@ internal class OrderedElements(
 ) : ConstraintBase(ion) {
 
     private val nfa: NFA<IonValue> = run {
-        if (ion !is IonList || ion.isNullValue) {
-            throw InvalidSchemaException("Invalid ordered_elements constraint: $ion")
+        islRequireIonTypeNotNull<IonList>(ion) { "Invalid ordered_elements constraint: $ion" }
+        if (schema.ionSchemaLanguageVersion >= v2_0) {
+            islRequire(ion.typeAnnotations.isEmpty()) { "ordered_elements list may not be annotated. Found: $ion" }
         }
 
         val stateBuilder = OrderedElementsNfaStatesBuilder()
         ion.forEach {
             val occursRange = IntRange.toIntRange((it as? IonStruct)?.get("occurs")) ?: IntRange.REQUIRED
-            val typeRef = TypeReference.create(it, schema)
+            val typeRef = TypeReference.create(it, schema, variablyOccurring = true)
             stateBuilder.addState(
                 min = occursRange.lower,
                 max = occursRange.upper,
