@@ -19,8 +19,10 @@ import com.amazon.ion.IonString
 import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.util.islRequire
 import java.util.regex.Pattern
 
 /**
@@ -30,18 +32,20 @@ import java.util.regex.Pattern
  * caller tries to use a feature of Pattern that is NOT defined
  * in the Ion Schema Specification.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#regex
+ * @see https://amzn.github.io/ion-schema/docs/isl-1-0/spec#regex
+ * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#regex
  * @see java.util.regex.Pattern
  */
 internal class Regex(
-    ion: IonValue
+    ion: IonValue,
+    private val islVersion: IonSchemaVersion
 ) : ConstraintBase(ion) {
 
     private val pattern: Pattern
 
     init {
-        if (ion !is IonString || ion.isNullValue) {
-            throw InvalidSchemaException("Invalid regex constraint: $ion")
+        islRequire(ion is IonString && !ion.isNullValue && ion.stringValue().isNotEmpty()) {
+            "Regex must be a non-empty string; but was: $ion"
         }
 
         var flags = 0
@@ -127,11 +131,17 @@ internal class Regex(
                 '[' -> error(si, "'[' must be escaped within a character class")
 
                 '\\' -> {
-                    val ch2 = si.next()
-                    when (ch2) {
+                    when (val ch2 = si.next()) {
                         '[', ']', '\\' -> sb.append(ch2)
-                        // not supporting pre-defined char classes (i.e., \d, \s, \w)
-                        // as user is specifying a new char class
+                        'd', 's', 'w', 'D', 'S', 'W' -> if (islVersion == IonSchemaVersion.v1_0) {
+                            // For Ion Schema 1.0, this is an error because ISL 1.0 does
+                            // not support pre-defined char classes (i.e., \d, \s, \w)
+                            // while user is specifying a new char class
+                            error(si, "invalid sequence '\\$ch2' in character class")
+                        } else {
+                            // In Ion Schema 2.0, this is allowed
+                            sb.append(ch2)
+                        }
                         else -> error(
                             si,
                             "invalid sequence '\\$ch2' in character class"
@@ -158,10 +168,15 @@ internal class Regex(
                 ch = si.next()
                 sb.append(ch)
                 var complete = false
+                // A quantifier such as {,3} is not an ECMA 262 quantifier (it has no lower bound)
+                // We track whether we've found a number so that we can ensure that a comma is only
+                // allowed if it follows at least one digit.
+                var foundAnyNumber = false
                 do {
                     ch = si.next()
                     when (ch) {
-                        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ',' -> sb.append(ch)
+                        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> { sb.append(ch); foundAnyNumber = true }
+                        ',' -> if (foundAnyNumber) sb.append(ch) else error(si, "range quantifier is missing lower bound")
                         '}' -> {
                             sb.append(ch)
                             complete = true
