@@ -104,7 +104,7 @@ internal open class Occurs(
         } else {
             ion
         }
-        typeReference = TypeReference.create(tmpIon, schema, isField)
+        typeReference = TypeReference.create(tmpIon, schema, isField, variablyOccurring = true)
 
         occursIon =
             if (occurs != null) {
