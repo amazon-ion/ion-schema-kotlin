@@ -18,13 +18,15 @@ package com.amazon.ionschema.internal.constraint
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.InvalidSchemaException
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.Constraint
 import com.amazon.ionschema.internal.constraint.Occurs.Companion.OPTIONAL
+import com.amazon.ionschema.internal.util.islRequire
+import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
 
 /**
  * Implements the fields constraint.
@@ -32,7 +34,8 @@ import com.amazon.ionschema.internal.constraint.Occurs.Companion.OPTIONAL
  * [Content] and [Occurs] constraints in the context of a struct are also
  * handled by this class.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#fields
+ * @see https://amzn.github.io/ion-schema/docs/isl-1-0/spec#fields
+ * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#fields
  */
 internal class Fields(
     ionValue: IonValue,
@@ -44,19 +47,31 @@ internal class Fields(
     private val contentClosed: Boolean
 
     init {
-        if (ionValue.isNullValue || ionValue !is IonStruct || ionValue.size() == 0) {
-            throw InvalidSchemaException(
-                "fields must be a struct that defines at least one field ($ionValue)"
-            )
+        ionStruct = islRequireIonTypeNotNull(ionValue) { "fields must be a struct that defines at least one field: $ionValue" }
+        islRequire(ionStruct.size() != 0) { "fields struct must define at least one field: $ionStruct" }
+
+        val distinctFieldNames = ionStruct.map { it.fieldName }.distinct()
+        islRequire(ionStruct.size() == distinctFieldNames.size) { "fields must be a struct with no repeated field names: $ionStruct" }
+
+        if (schema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
+            islRequire(ionStruct.typeAnnotations.all { it == "closed" }) { "Illegal annotation(s) for fields: $ionStruct" }
+            islRequire(ionStruct.typeAnnotations.size <= 1) { "fields may have at most one annotation: $ionStruct" }
         }
-        ionStruct = ionValue
+
+        // Forces the field definitions to be validated
+        // TODO: See if we can cache these values https://github.com/amzn/ion-schema-kotlin/issues/215
         ionStruct.associateBy(
             { it.fieldName },
             { Occurs(it, schema, OPTIONAL) }
         )
 
-        contentConstraintIon = (ionStruct.container as? IonStruct)?.get("content") as? IonSymbol
-        contentClosed = contentConstraintIon?.stringValue().equals("closed")
+        if (schema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
+            contentConstraintIon = ionStruct // In Ion Schema 2.0, the `fields` constraint determines if content is closed.
+            contentClosed = ionValue.hasTypeAnnotation("closed")
+        } else {
+            contentConstraintIon = (ionValue.container as? IonStruct)?.get("content") as? IonSymbol
+            contentClosed = contentConstraintIon?.stringValue().equals("closed")
+        }
     }
 
     override fun validate(value: IonValue, issues: Violations) {
