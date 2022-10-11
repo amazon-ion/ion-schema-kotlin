@@ -29,6 +29,8 @@ import com.amazon.ionschema.internal.constraint.ContainerLength
 import com.amazon.ionschema.internal.constraint.Contains
 import com.amazon.ionschema.internal.constraint.Content
 import com.amazon.ionschema.internal.constraint.Element
+import com.amazon.ionschema.internal.constraint.Exponent
+import com.amazon.ionschema.internal.constraint.FieldNames
 import com.amazon.ionschema.internal.constraint.Fields
 import com.amazon.ionschema.internal.constraint.Not
 import com.amazon.ionschema.internal.constraint.OccursNoop
@@ -70,14 +72,16 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
         ConstraintConstructor("container_length", v1_0..v2_0, ::ContainerLength),
         ConstraintConstructor("contains", v1_0..v2_0, ::Contains),
         ConstraintConstructor("content", v1_0, ::Content),
-        ConstraintConstructor("element", v1_0, ::Element),
+        ConstraintConstructor("element", v1_0..v2_0, ::Element),
+        ConstraintConstructor("exponent", v2_0, ::Exponent),
+        ConstraintConstructor("field_names", v2_0, ::FieldNames),
         ConstraintConstructor("fields", v1_0..v2_0, ::Fields),
         ConstraintConstructor("not", v1_0..v2_0, ::Not),
         ConstraintConstructor("occurs", v1_0, ::OccursNoop),
         ConstraintConstructor("one_of", v1_0..v2_0, ::OneOf),
-        ConstraintConstructor("ordered_elements", v1_0, ::OrderedElements),
+        ConstraintConstructor("ordered_elements", v1_0..v2_0, ::OrderedElements),
         ConstraintConstructor("precision", v1_0..v2_0, ::Precision),
-        ConstraintConstructor("regex", v1_0, ::Regex),
+        ConstraintConstructor("regex", v1_0..v2_0) { ion, schema -> Regex(ion, schema.ionSchemaLanguageVersion) },
         ConstraintConstructor("scale", v1_0, ::Scale),
         ConstraintConstructor("timestamp_offset", v1_0..v2_0, ::TimestampOffset),
         ConstraintConstructor("timestamp_precision", v1_0..v2_0, ::TimestampPrecision),
