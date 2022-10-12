@@ -34,7 +34,7 @@ class IonSchemaSystemBuilder private constructor() {
         @JvmStatic
         fun standard() = IonSchemaSystemBuilder()
 
-        private val defaultConstraintFactory = ConstraintFactoryDefault()
+        private val defaultConstraintFactory = ConstraintFactoryDefault
     }
 
     private var authorities = mutableListOf<Authority>()

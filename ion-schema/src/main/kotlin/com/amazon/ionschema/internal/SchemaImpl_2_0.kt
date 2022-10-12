@@ -27,17 +27,18 @@ import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
 import com.amazon.ionschema.Violations
-import com.amazon.ionschema.internal.util.ISL_2_0_RESERVED_WORDS_REGEX
+import com.amazon.ionschema.internal.util.IonSchema_2_0
+import com.amazon.ionschema.internal.util.getFields
 import com.amazon.ionschema.internal.util.islRequire
+import com.amazon.ionschema.internal.util.islRequireElementType
 import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
+import com.amazon.ionschema.internal.util.islRequireZeroOrOneElements
 import com.amazon.ionschema.internal.util.markReadOnly
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 /**
- * Implementation of [Schema] for all user-provided ISL.
- *
- * TODO: Handle user content in header, footer.
+ * Implementation of [Schema] for Ion Schema 2.0.
  */
 internal class SchemaImpl_2_0 private constructor(
     private val schemaSystem: IonSchemaSystemImpl,
@@ -45,27 +46,40 @@ internal class SchemaImpl_2_0 private constructor(
     schemaContent: Iterator<IonValue>,
     override val schemaId: String?,
     preloadedImports: Map<String, Import>,
+    preloadedUserReservedFields: UserReservedFields,
         /*
          * [types] is declared as a MutableMap in order to be populated DURING
          * INITIALIZATION ONLY.  This enables type B to find its already-loaded
          * dependency type A.  After initialization, [types] is expected to
          * be treated as immutable as required by the Schema interface.
          */
-    private val types: MutableMap<String, Type>
+    private val types: MutableMap<String, Type>,
 ) : SchemaImpl {
+
+    /**
+     * Represents reserved words that the user is reserving for their own open content.
+     */
+    private data class UserReservedFields(val headerWords: Set<String>, val typeWords: Set<String>, val footerWords: Set<String>) {
+        companion object {
+            @JvmStatic
+            val NONE = UserReservedFields(emptySet(), emptySet(), emptySet())
+        }
+    }
 
     internal constructor(
         schemaSystem: IonSchemaSystemImpl,
         schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>,
         schemaId: String?
-    ) : this(schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), mutableMapOf())
+    ) : this(schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), UserReservedFields.NONE, mutableMapOf())
 
     private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
 
     override val isl: IonDatagram
 
     private val imports: Map<String, Import>
+
+    private var userReservedFields: UserReservedFields = UserReservedFields.NONE
 
     private val declaredTypes: Map<String, TypeImpl>
 
@@ -104,11 +118,14 @@ internal class SchemaImpl_2_0 private constructor(
                         islRequire(!foundAnyType) { "Schema header must appear before any types." }
                         islRequire(!foundHeader) { "Only one schema header is allowed in a schema document." }
                         importsMap = loadHeaderImports(types, it)
+                        userReservedFields = loadUserReservedFieldNames(it)
+                        validateFieldNamesInHeader(it)
                         foundHeader = true
                     }
                     isFooter(it) -> {
                         islRequire(foundHeader) { "Found a schema_footer, but no schema header precedes it." }
                         islRequire(!foundFooter) { "Only one schema footer is allowed in a schema document." }
+                        validateFieldNamesInFooter(it)
                         foundFooter = true
                     }
                     isType(it) -> {
@@ -117,6 +134,7 @@ internal class SchemaImpl_2_0 private constructor(
                         val name = islRequireIonTypeNotNull<IonSymbol>(it["name"]) { "Type names must be a non-null symbol." }
                         islRequire(name.typeAnnotations.isEmpty()) { "Type names must not have annotations." }
                         val newType = TypeImpl(it, this)
+                        islRequire(newType.name !in types.keys) { "Invalid duplicate type name: '${newType.name}'" }
                         addType(types, newType)
                         foundAnyType = true
                     }
@@ -137,6 +155,7 @@ internal class SchemaImpl_2_0 private constructor(
                 dgIsl.add(it.clone())
             }
             imports = preloadedImports
+            userReservedFields = preloadedUserReservedFields
         }
 
         isl = dgIsl.markReadOnly()
@@ -163,13 +182,14 @@ internal class SchemaImpl_2_0 private constructor(
     }
 
     /**
+     * Checks whether a given value is allowed as top-level open content.
      * See https://amzn.github.io/ion-schema/docs/isl-2-0/spec#open-content
      */
     private fun isTopLevelOpenContent(value: IonValue): Boolean {
         if (value is IonSymbol && ISL_VERSION_MARKER.matches(value.stringValue())) {
             return false
         }
-        if (value.typeAnnotations.any { ISL_2_0_RESERVED_WORDS_REGEX.matches(it) }) {
+        if (value.typeAnnotations.any { IonSchema_2_0.RESERVED_WORDS_REGEX.matches(it) }) {
             return false
         }
         return true
@@ -197,6 +217,68 @@ internal class SchemaImpl_2_0 private constructor(
     private fun isType(value: IonValue): Boolean {
         contract { returns(true) implies (value is IonStruct) }
         return value is IonStruct && !value.isNullValue && arrayOf("type").contentDeepEquals(value.typeAnnotations)
+    }
+
+    /**
+     * Constructs a [UserReservedFields] instance for the given Ion Schema header struct.
+     */
+    private fun loadUserReservedFieldNames(header: IonStruct): UserReservedFields {
+        val userContent = header.getFields("user_reserved_fields")
+            .islRequireZeroOrOneElements { "'user_reserved_fields' must only appear 0 or 1 times in the schema header" }
+
+        userContent ?: return UserReservedFields.NONE
+
+        islRequireIonTypeNotNull<IonStruct>(userContent) { "'user_reserved_fields' must be a non-null struct" }
+        islRequire(userContent.typeAnnotations.isEmpty()) { "'user_reserved_fields' may not have any annotations" }
+        return UserReservedFields(
+            headerWords = loadUserReservedFieldsSubfield(userContent, "schema_header"),
+            typeWords = loadUserReservedFieldsSubfield(userContent, "type"),
+            footerWords = loadUserReservedFieldsSubfield(userContent, "schema_footer"),
+        )
+    }
+
+    /**
+     * Gets the list of field names that the user would like to reserve for a particular Ion Schema structure.
+     */
+    private fun loadUserReservedFieldsSubfield(userContent: IonStruct, fieldName: String): Set<String> {
+        return userContent.getFields(fieldName)
+            .islRequireZeroOrOneElements { "'$fieldName' field may only appear 0 or 1 times in the 'user_reserved_fields' struct" }
+            ?.let { list ->
+                islRequireIonTypeNotNull<IonList>(list) { "'$fieldName' field in user_reserved_fields struct must be a non-null Ion list" }
+                islRequire(list.typeAnnotations.isEmpty()) { "'$fieldName' list in user_reserved_fields struct may not have any annotations" }
+                islRequireElementType<IonSymbol>(list) { "'$fieldName' list in user_reserved_fields struct must only contain non-null Ion symbols" }
+                    .onEach { islRequire(it.typeAnnotations.isEmpty()) { "symbols in the user_reserved_fields '$fieldName' list may not have any annotations" } }
+                    .map { it.stringValue() }
+                    .onEach { islRequire(it !in IonSchema_2_0.KEYWORDS) { "Ion Schema 2.0 keyword '$it' may not be declared as a user reserved field: $userContent" } }
+                    .toSet()
+            }
+            ?: emptySet()
+    }
+
+    private fun validateFieldNamesInHeader(header: IonStruct) {
+        val unexpectedFieldNames = header.map { it.fieldName }
+            .filterNot {
+                it in IonSchema_2_0.HEADER_KEYWORDS ||
+                    it in userReservedFields.headerWords ||
+                    !IonSchema_2_0.RESERVED_WORDS_REGEX.matches(it)
+            }
+        islRequire(unexpectedFieldNames.isEmpty()) { "Found unexpected field names $unexpectedFieldNames in schema header: $header" }
+    }
+
+    private fun validateFieldNamesInFooter(footer: IonStruct) {
+        val unexpectedFieldNames = footer.map { it.fieldName }
+            .filterNot { it in userReservedFields.footerWords || !IonSchema_2_0.RESERVED_WORDS_REGEX.matches(it) }
+        islRequire(unexpectedFieldNames.isEmpty()) { "Found unexpected field names $unexpectedFieldNames in schema footer: $footer" }
+    }
+
+    /**
+     * Validates the fields names in a type definition. This function is `internal` so that it can be called for every
+     * type definition that gets parsed.
+     */
+    internal fun validateFieldNamesInType(type: IonStruct) {
+        val unexpectedFieldNames = type.map { it.fieldName }
+            .filterNot { it in IonSchema_2_0.TYPE_KEYWORDS || it in userReservedFields.typeWords || !IonSchema_2_0.RESERVED_WORDS_REGEX.matches(it) }
+        islRequire(unexpectedFieldNames.isEmpty()) { "Found unexpected field names $unexpectedFieldNames in type definition: $type" }
     }
 
     private fun loadHeaderImports(
@@ -337,7 +419,7 @@ internal class SchemaImpl_2_0 private constructor(
         // clone the types map:
         val preLoadedTypes = types.toMutableMap()
         preLoadedTypes[type.name] = type
-        return SchemaImpl_2_0(schemaSystem, schemaCore, newIsl.iterator(), null, imports, preLoadedTypes)
+        return SchemaImpl_2_0(schemaSystem, schemaCore, newIsl.iterator(), null, imports, userReservedFields, preLoadedTypes)
     }
 
     override fun getSchemaSystem() = schemaSystem
