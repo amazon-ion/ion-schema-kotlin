@@ -57,7 +57,8 @@ internal class SchemaImpl_2_0 private constructor(
 ) : SchemaImpl {
 
     /**
-     * Represents reserved words that the user is reserving for their own open content.
+     * Represents the collection of symbols that are declared as user reserved fields for a schema.
+     * See https://amzn.github.io/ion-schema/docs/isl-2-0/spec#open-content
      */
     private data class UserReservedFields(val headerWords: Set<String>, val typeWords: Set<String>, val footerWords: Set<String>) {
         companion object {
