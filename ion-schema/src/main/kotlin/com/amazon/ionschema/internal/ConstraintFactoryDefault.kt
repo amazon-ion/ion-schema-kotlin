@@ -50,7 +50,7 @@ import com.amazon.ionschema.internal.constraint.ValidValues
 /**
  * Default [ConstraintFactory] implementation.
  */
-internal class ConstraintFactoryDefault : ConstraintFactory {
+internal object ConstraintFactoryDefault : ConstraintFactory {
 
     /**
      * Represents a mapping of (constraint name + supported ISL versions) to a constructor function
@@ -101,4 +101,11 @@ internal class ConstraintFactoryDefault : ConstraintFactory {
     override fun constraintFor(ion: IonValue, schema: Schema) = constraints
         .single { ion.fieldName == it.name && schema.ionSchemaLanguageVersion in it.versions }
         .newInstance(ion, schema)
+
+    /**
+     * Returns a list of constraint field names for the given [version].
+     */
+    fun getConstraintNamesForVersion(version: IonSchemaVersion): List<String> {
+        return constraints.filter { version in it.versions }.map { it.name }
+    }
 }

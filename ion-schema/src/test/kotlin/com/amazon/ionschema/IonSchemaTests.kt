@@ -27,6 +27,7 @@ object IonSchemaTests {
     val TEST_CASE_ANNOTATIONS = arrayOf("\$test")
     val VALUE_TEST_CASE_FIELDS = setOf("type", "should_accept_as_valid", "should_reject_as_invalid")
     val INVALID_SCHEMA_TEST_CASE_FIELDS = setOf("description", "invalid_schemas")
+    val VALID_SCHEMA_TEST_CASE_FIELDS = setOf("description", "valid_schemas")
     val INVALID_TYPES_TEST_CASE_FIELDS = setOf("description", "invalid_types")
 
     /**
@@ -62,6 +63,11 @@ object IonSchemaTests {
     fun isInvalidSchemasTestCase(ion: IonStruct): Boolean {
         return ion.typeAnnotations.contentEquals(TEST_CASE_ANNOTATIONS) &&
             ion.fieldNameSet.containsAll(INVALID_SCHEMA_TEST_CASE_FIELDS)
+    }
+
+    fun isValidSchemasTestCase(ion: IonStruct): Boolean {
+        return ion.typeAnnotations.contentEquals(TEST_CASE_ANNOTATIONS) &&
+            ion.fieldNameSet.containsAll(VALID_SCHEMA_TEST_CASE_FIELDS)
     }
 
     fun isInvalidTypesTestCase(ion: IonStruct): Boolean {

@@ -15,12 +15,13 @@
 
 package com.amazon.ionschema.internal.util
 
-import com.amazon.ion.IonDatagram
-import com.amazon.ion.IonSymbol
+import com.amazon.ion.IonStruct
 import com.amazon.ion.IonValue
 
 /**
- * IonValue extension functions
+ * Returns `this` value, without annotations.
+ * If this value has no annotations, returns `this`;
+ * otherwise, returns a clone of `this` with the annotations removed.
  */
 internal fun IonValue.withoutTypeAnnotations() =
     if (typeAnnotations.isNotEmpty()) {
@@ -29,17 +30,17 @@ internal fun IonValue.withoutTypeAnnotations() =
         this
     }
 
-internal fun IonValue.markReadOnly(): IonValue {
-    this.makeReadOnly()
-    return this
+/**
+ * Gets all fields from a struct that have the given field name.
+ */
+internal fun IonStruct.getFields(fieldName: String): List<IonValue> {
+    return this.filter { it.fieldName == fieldName }
 }
 
-internal fun IonDatagram.markReadOnly(): IonDatagram {
-    this.makeReadOnly()
-    return this
-}
-
-internal fun IonSymbol.markReadOnly(): IonSymbol {
+/**
+ * Makes an IonValue instance read-only.
+ */
+internal fun <T : IonValue> T.markReadOnly(): T {
     this.makeReadOnly()
     return this
 }

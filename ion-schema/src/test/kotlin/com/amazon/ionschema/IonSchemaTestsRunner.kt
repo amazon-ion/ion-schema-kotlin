@@ -21,6 +21,7 @@ import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaTests.isInvalidSchemasTestCase
 import com.amazon.ionschema.IonSchemaTests.isInvalidTypesTestCase
+import com.amazon.ionschema.IonSchemaTests.isValidSchemasTestCase
 import com.amazon.ionschema.IonSchemaTests.isValueTestCase
 import com.amazon.ionschema.IonSchemaVersion.v1_0
 import com.amazon.ionschema.IonSchemaVersion.v2_0
@@ -36,7 +37,8 @@ class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
     islVersion = v2_0,
     additionalFileFilter = {
         it.path.contains("ion_schema_2_0/schema/") ||
-            it.path.contains("ion_schema_2_0/constraints/")
+            it.path.contains("ion_schema_2_0/constraints/") ||
+            it.path.contains("ion_schema_2_0/open_content/")
     }
 )
 
@@ -75,10 +77,8 @@ class IonSchemaTestsRunner(islVersion: IonSchemaVersion, additionalFileFilter: (
         val schema: Schema = try {
             schemaSystem.loadSchema(schemaId)
         } catch (t: Throwable) {
-            return dynamicTest(schemaId) { throw t }
+            return dynamicTest("[$schemaId] test file should be recognized as a valid schema") { throw t }
         }
-
-        fun getRequiredType(name: String) = requireNotNull(schema.getType(name)) { "Unable to find type '$name' in $schemaId" }
 
         val testCasesIon = schema.isl.filter { it.hasTypeAnnotation("\$test") }
         val dynamicNodeTestCases: List<DynamicNode> = testCasesIon.mapNotNull { ion ->
@@ -96,7 +96,9 @@ class IonSchemaTestsRunner(islVersion: IonSchemaVersion, additionalFileFilter: (
                     dynamicContainer(schemaId, shouldMatch + shouldNotMatch)
                 }
 
-                isInvalidSchemasTestCase(ion) -> createInvalidSchemasTestCases(schemaId, ion)
+                isInvalidSchemasTestCase(ion) -> createSchemasTestCases(schemaId, ion, expectValid = false)
+
+                isValidSchemasTestCase(ion) -> createSchemasTestCases(schemaId, ion, expectValid = true)
 
                 isInvalidTypesTestCase(ion) -> {
                     val baseDescription = ion.getTextField("description")
@@ -114,11 +116,15 @@ class IonSchemaTestsRunner(islVersion: IonSchemaVersion, additionalFileFilter: (
         return dynamicContainer(schemaId, f.toURI(), dynamicNodeTestCases.stream())
     }
 
-    private fun createInvalidSchemasTestCases(schemaId: String, ion: IonStruct): DynamicNode {
+    private fun createSchemasTestCases(schemaId: String, ion: IonStruct, expectValid: Boolean): DynamicNode {
         val baseDescription = ion.getTextField("description")
-        val cases = (ion["invalid_schemas"] as IonList).mapIndexed { i, it ->
+        val schemasField = if (expectValid) "valid_schemas" else "invalid_schemas"
+        val cases = (ion[schemasField] as IonList).mapIndexed { i, it ->
             dynamicTest("[$schemaId] $baseDescription [$i]") {
-                assertThrows<InvalidSchemaException> { schemaSystem.newSchema(it.asDocument().iterator()) }
+                if (expectValid)
+                    schemaSystem.newSchema(it.asDocument().iterator()) // Asserts nothing is thrown
+                else
+                    assertThrows<InvalidSchemaException> { schemaSystem.newSchema(it.asDocument().iterator()) }
             }
         }
         return dynamicContainer("[$schemaId] $baseDescription", cases)

@@ -23,8 +23,6 @@ import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.constraint.ConstraintBase
-import com.amazon.ionschema.internal.util.ISL_2_0_RESERVED_WORDS_REGEX
-import com.amazon.ionschema.internal.util.islRequire
 import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
@@ -63,16 +61,7 @@ internal class TypeImpl(
             }
         }
 
-        if (schema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
-            val illegalOpenContent = ionStruct.asSequence()
-                .map { it.fieldName }
-                .filterNotNull()
-                .filter { !(schema.getSchemaSystem() as IonSchemaSystemImpl).isConstraint(it, schema) }
-                .filter { !(it matches ISL_2_0_RESERVED_WORDS_REGEX) }
-                .toList()
-
-            islRequire(illegalOpenContent.isEmpty()) { "Illegal use of reserved words in a type definition: $illegalOpenContent" }
-        }
+        if (schema is SchemaImpl_2_0) schema.validateFieldNamesInType(ionStruct)
     }
 
     override val name = (ionStruct.get("name") as? IonSymbol)?.stringValue() ?: ionStruct.toString()
