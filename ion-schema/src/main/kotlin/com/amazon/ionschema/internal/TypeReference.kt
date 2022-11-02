@@ -23,7 +23,11 @@ import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.util.IonSchema_2_0
+import com.amazon.ionschema.internal.util.getIslOptionalField
+import com.amazon.ionschema.internal.util.getIslRequiredField
 import com.amazon.ionschema.internal.util.islRequire
+import com.amazon.ionschema.internal.util.islRequireOnlyExpectedFieldNames
 import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
@@ -77,13 +81,19 @@ internal class TypeReference private constructor() {
         }
 
         private fun handleStruct(ion: IonStruct, schema: Schema, isField: Boolean): () -> TypeInternal {
-            val id = ion["id"] as? IonText
+            val id = ion.getIslOptionalField<IonText>("id")
             val type = when {
                 id != null -> {
                     // import
-                    val newSchema = schema.getSchemaSystem().loadSchema(id.stringValue())
-                    val typeName = ion.get("type") as IonSymbol
-                    newSchema.getType(typeName.stringValue()) as? TypeInternal
+                    if (schema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
+                        ion.islRequireOnlyExpectedFieldNames(IonSchema_2_0.INLINE_IMPORT_KEYWORDS)
+                        val thisSchemaId = (schema as? SchemaImpl)?.schemaId
+                        islRequire(id.stringValue() != thisSchemaId) { "A schema may not directly import itself: $ion" }
+                    }
+                    val typeName = ion.getIslRequiredField<IonSymbol>("type")
+                    val importedSchema = runCatching { schema.getSchemaSystem().loadSchema(id.stringValue()) }
+                        .getOrElse { e -> throw InvalidSchemaException("Unable to load schema '${id.stringValue()}'; ${e.message}") }
+                    importedSchema.getType(typeName.stringValue()) as? TypeInternal
                 }
                 isField -> TypeImpl(ion, schema)
                 ion.size() == 1 && ion["type"] != null -> {

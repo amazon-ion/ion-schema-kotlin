@@ -29,9 +29,12 @@ import com.amazon.ionschema.Type
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.util.IonSchema_2_0
 import com.amazon.ionschema.internal.util.getFields
+import com.amazon.ionschema.internal.util.getIslOptionalField
+import com.amazon.ionschema.internal.util.getIslRequiredField
 import com.amazon.ionschema.internal.util.islRequire
 import com.amazon.ionschema.internal.util.islRequireElementType
 import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
+import com.amazon.ionschema.internal.util.islRequireOnlyExpectedFieldNames
 import com.amazon.ionschema.internal.util.islRequireZeroOrOneElements
 import com.amazon.ionschema.internal.util.markReadOnly
 import kotlin.contracts.ExperimentalContracts
@@ -47,12 +50,12 @@ internal class SchemaImpl_2_0 private constructor(
     override val schemaId: String?,
     preloadedImports: Map<String, Import>,
     preloadedUserReservedFields: UserReservedFields,
-        /*
-         * [types] is declared as a MutableMap in order to be populated DURING
-         * INITIALIZATION ONLY.  This enables type B to find its already-loaded
-         * dependency type A.  After initialization, [types] is expected to
-         * be treated as immutable as required by the Schema interface.
-         */
+    /*
+     * [types] is declared as a MutableMap in order to be populated DURING
+     * INITIALIZATION ONLY.  This enables type B to find its already-loaded
+     * dependency type A.  After initialization, [types] is expected to
+     * be treated as immutable as required by the Schema interface.
+     */
     private val types: MutableMap<String, Type>,
 ) : SchemaImpl {
 
@@ -131,9 +134,7 @@ internal class SchemaImpl_2_0 private constructor(
                     }
                     isType(it) -> {
                         islRequire(!foundFooter) { "Types may not occur after the schema footer." }
-                        islRequire(it.count { it.fieldName == "name" } == 1) { "Top-level types must have exactly one name." }
-                        val name = islRequireIonTypeNotNull<IonSymbol>(it["name"]) { "Type names must be a non-null symbol." }
-                        islRequire(name.typeAnnotations.isEmpty()) { "Type names must not have annotations." }
+                        it.getIslRequiredField<IonSymbol>("name")
                         val newType = TypeImpl(it, this)
                         islRequire(newType.name !in types.keys) { "Invalid duplicate type name: '${newType.name}'" }
                         addType(types, newType)
@@ -242,17 +243,11 @@ internal class SchemaImpl_2_0 private constructor(
      * Gets the list of field names that the user would like to reserve for a particular Ion Schema structure.
      */
     private fun loadUserReservedFieldsSubfield(userContent: IonStruct, fieldName: String): Set<String> {
-        return userContent.getFields(fieldName)
-            .islRequireZeroOrOneElements { "'$fieldName' field may only appear 0 or 1 times in the 'user_reserved_fields' struct" }
-            ?.let { list ->
-                islRequireIonTypeNotNull<IonList>(list) { "'$fieldName' field in user_reserved_fields struct must be a non-null Ion list" }
-                islRequire(list.typeAnnotations.isEmpty()) { "'$fieldName' list in user_reserved_fields struct may not have any annotations" }
-                islRequireElementType<IonSymbol>(list) { "'$fieldName' list in user_reserved_fields struct must only contain non-null Ion symbols" }
-                    .onEach { islRequire(it.typeAnnotations.isEmpty()) { "symbols in the user_reserved_fields '$fieldName' list may not have any annotations" } }
-                    .map { it.stringValue() }
-                    .onEach { islRequire(it !in IonSchema_2_0.KEYWORDS) { "Ion Schema 2.0 keyword '$it' may not be declared as a user reserved field: $userContent" } }
-                    .toSet()
-            }
+        return userContent.getIslOptionalField<IonList>(fieldName)
+            ?.islRequireElementType<IonSymbol>("list of user reserved symbols for $fieldName")
+            ?.map { it.stringValue() }
+            ?.onEach { islRequire(it !in IonSchema_2_0.KEYWORDS) { "Ion Schema 2.0 keyword '$it' may not be declared as a user reserved field: $userContent" } }
+            ?.toSet()
             ?: emptySet()
     }
 
@@ -290,55 +285,62 @@ internal class SchemaImpl_2_0 private constructor(
         val importsMap = mutableMapOf<String, SchemaAndTypeImports>()
         val importSet: MutableSet<String> = schemaSystem.getSchemaImportSet()
 
-        (header.get("imports") as? IonList)
-            ?.filterIsInstance<IonStruct>()
-            ?.forEach {
-                val childImportId = it["id"] as IonText
-                val alias = it["as"] as? IonSymbol
-                // if importSet has an import with this id then do not load schema again to break the cycle.
-                if (!importSet.contains(childImportId.stringValue())) {
-                    var parentImportId = schemaId ?: ""
+        val imports = header.getIslOptionalField<IonList>("imports")
+            ?.islRequireElementType<IonStruct>(containerDescription = "imports list")
+            // If there's no imports field, then there's nothing to do
+            ?: return emptyMap()
 
-                    // if Schema is importing itself then throw error
-                    if (parentImportId.equals(childImportId.stringValue())) {
-                        throw InvalidSchemaException("Schema can not import itself.")
+        imports.forEach {
+            it.islRequireOnlyExpectedFieldNames(IonSchema_2_0.IMPORT_KEYWORDS)
+
+            val idField = it.getIslRequiredField<IonText>("id")
+            val typeField = it.getIslOptionalField<IonSymbol>("type")
+            val asField = it.getIslOptionalField<IonSymbol>("as")
+
+            typeField ?: islRequire(asField == null) { "'as' only allowed when 'type' is present: $it" }
+
+            val importedSchemaId = idField.stringValue()
+            // if Schema is importing itself then throw error
+            if (schemaId == importedSchemaId) {
+                throw InvalidSchemaException("Schema can not import itself: $it")
+            }
+            // if importSet has an import with this id then do not load schema again to break the cycle.
+            if (!importSet.contains(importedSchemaId)) {
+
+                // add current schema to importSet and continue loading current schema
+                importSet.add(importedSchemaId)
+                val importedSchema = runCatching { schemaSystem.loadSchema(importedSchemaId) }
+                    .getOrElse { e -> throw InvalidSchemaException("Unable to load schema '$importedSchemaId'; ${e.message}") }
+                importSet.remove(importedSchemaId)
+
+                val schemaAndTypes = importsMap.getOrPut(importedSchemaId) {
+                    SchemaAndTypeImports(importedSchemaId, importedSchema)
+                }
+
+                val typeName = typeField?.stringValue()
+                if (typeName != null) {
+                    var importedType = importedSchema.getDeclaredType(typeName)
+                        ?.toImportedType(importedSchemaId)
+
+                    importedType ?: throw InvalidSchemaException("Schema $importedSchemaId doesn't contain a type named '$typeName'")
+
+                    if (asField != null) {
+                        importedType = TypeAliased(asField, importedType)
                     }
+                    addType(typeMap, importedType)
+                    schemaAndTypes.addType(asField?.stringValue() ?: typeName, importedType)
+                } else {
+                    val typesToAdd = importedSchema.getDeclaredTypes()
 
-                    // add parent and current schema to importSet and continue loading current schema
-                    importSet.add(parentImportId)
-                    importSet.add(childImportId.stringValue())
-                    val importedSchema = schemaSystem.loadSchema(childImportId.stringValue())
-                    importSet.remove(childImportId.stringValue())
-                    importSet.remove(parentImportId)
-
-                    val schemaAndTypes = importsMap.getOrPut(childImportId.stringValue()) {
-                        SchemaAndTypeImports(childImportId.stringValue(), importedSchema)
-                    }
-
-                    val typeName = (it["type"] as? IonSymbol)?.stringValue()
-                    if (typeName != null) {
-                        var importedType = importedSchema.getDeclaredType(typeName)
-                            ?.toImportedType(childImportId.stringValue())
-
-                        importedType ?: throw InvalidSchemaException("Schema $childImportId doesn't contain a type named '$typeName'")
-
-                        if (alias != null) {
-                            importedType = TypeAliased(alias, importedType)
+                    typesToAdd.asSequence()
+                        .map { type -> type.toImportedType(importedSchemaId) }
+                        .forEach { type ->
+                            addType(typeMap, type)
+                            schemaAndTypes.addType(type.name, type)
                         }
-                        addType(typeMap, importedType)
-                        schemaAndTypes.addType(alias?.stringValue() ?: typeName, importedType)
-                    } else {
-                        val typesToAdd = importedSchema.getDeclaredTypes()
-
-                        typesToAdd.asSequence()
-                            .map { type -> type.toImportedType(childImportId.stringValue()) }
-                            .forEach { type ->
-                                addType(typeMap, type)
-                                schemaAndTypes.addType(type.name, type)
-                            }
-                    }
                 }
             }
+        }
         return importsMap.mapValues {
             ImportImpl(it.value.id, it.value.schema, it.value.types)
         }

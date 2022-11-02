@@ -36,9 +36,8 @@ class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(v1_0)
 class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
     islVersion = v2_0,
     additionalFileFilter = {
-        it.path.contains("ion_schema_2_0/schema/") ||
-            it.path.contains("ion_schema_2_0/constraints/") ||
-            it.path.contains("ion_schema_2_0/open_content/")
+        // Pending fix for https://github.com/amzn/ion-schema-kotlin/issues/209
+        !it.path.contains("cycles/")
     }
 )
 

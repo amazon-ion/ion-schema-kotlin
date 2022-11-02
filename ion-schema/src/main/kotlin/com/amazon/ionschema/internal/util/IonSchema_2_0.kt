@@ -25,6 +25,11 @@ internal object IonSchema_2_0 {
     val IMPORT_KEYWORDS = setOf("id", "type", "as")
 
     /**
+     * Keywords that are valid in an inline import.
+     */
+    val INLINE_IMPORT_KEYWORDS = setOf("id", "type")
+
+    /**
      * Keywords that are valid as annotations on top-level types.
      */
     val TOP_LEVEL_ANNOTATION_KEYWORDS = setOf("schema_header", "schema_footer", "type")
