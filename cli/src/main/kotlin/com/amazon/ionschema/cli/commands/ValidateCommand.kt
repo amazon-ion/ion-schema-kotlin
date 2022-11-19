@@ -1,124 +1,245 @@
 package com.amazon.ionschema.cli.commands
 
+import com.amazon.ion.IonList
 import com.amazon.ion.IonStruct
-import com.amazon.ion.IonText
+import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonType
+import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.AuthorityFilesystem
+import com.amazon.ionschema.IonSchemaSystem
 import com.amazon.ionschema.IonSchemaSystemBuilder
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.ResourceAuthority
 import com.amazon.ionschema.Schema
+import com.amazon.ionschema.Violations
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.convert
-import com.github.ajalt.clikt.parameters.groups.OptionGroup
-import com.github.ajalt.clikt.parameters.groups.defaultByName
-import com.github.ajalt.clikt.parameters.groups.groupChoice
+import com.github.ajalt.clikt.parameters.arguments.check
+import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.groups.default
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
-import com.github.ajalt.clikt.parameters.options.check
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
+import kotlin.system.exitProcess
 
 class ValidateCommand : CliktCommand(
-    help = "Validate Ion data against a schema.",
+    help = "Validate Ion data for a given Ion Schema type.",
     epilog = """
         ```
         Example usage:
-            Validate against a new type:
-                ion-schema-cli validate --type '{ codepoint_length: range::[min, 10] }' 'hello'
-            Validate against a type from a schema:
-                ion-schema-cli validate -a file-system --base-dir ~/my_schemas/ --schema 'Customers.isl' --type 'online_customer' '{ foo: bar }'    
+        
+            Validate values for a type:
+                ion-schema-cli validate '{ codepoint_length: 5, utf8_byte_length: range::[4,6] }' hello hello_world 1 '{:(:}'
+            Output:
+                valid::[]
+                invalid::[{constraint:codepoint_length,code:invalid_codepoint_length,message:"invalid codepoint length 11, expected range::[5,5]"},{constraint:utf8_byte_length,code:invalid_utf8_byte_length,message:"invalid utf8 byte length 11, expected range::[4,6]"}]
+                invalid::[{constraint:codepoint_length,code:invalid_type,message:"not applicable for type int"},{constraint:utf8_byte_length,code:invalid_type,message:"not applicable for type int"}]
+                error::{type:"IonReaderTextParsingException",message:"unable to parse Ion: Syntax error at line 1 offset 3: invalid syntax [state:STATE_BEFORE_FIELD_NAME on token:TOKEN_COLON]"}
+        
+            Validate data for an inline-defined type:
+                ion-schema-cli validate '{ codepoint_length: range::[min, 10] }' 'hello'
+                
+            Validate data for a type from a schema that is loaded from an authority:
+                ion-schema-cli validate --authority ~/my_schemas/ --id 'Customers.isl' --type 'online_customer' '{ foo: bar }'
+            
+            Read multiple lines and validate as a single document:
+                echo -e "hello \n world" | ./ion-schema-cli validate -ds  document
+            
+            Validate each line as a separate document:
+                echo -e "hello \n world" | ./ion-schema-cli validate -d  document
+                
+            Validate each line as a single value:
+                echo -e "hello \n world" | ./ion-schema-cli validate symbol
+
+            Validate an ion file as a document:
+                ion-schema-cli validate -ds -f ~/my_schemas/my_document_schema.isl my_specialized_document < my_data.ion
+            
+            Validate in REPL mode (use control-d to send EOF character and exit cleanly):
+                ion-schema-cli validate '{ codepoint_length: 5 }'
         ```
     """.trimIndent()
 ) {
 
     private val ion = IonSystemBuilder.standard().build()
 
-    sealed class AuthorityConfig : OptionGroup() {
-        class FileSystem : AuthorityConfig() {
-            val baseDir by option(help = "The root(s) of the file system authority(s)")
-                .file(canBeFile = false, mustExist = true, mustBeReadable = true)
-                .multiple()
-        }
-        class IonSchemaSchemas : AuthorityConfig()
-        object None : AuthorityConfig()
-    }
+    private val fileSystemAuthorities by option(
+        "-a", "--authority",
+        help = "The root(s) of the file system authority(s). " +
+            "Authorities are only required if you need to import a type from another " +
+            "schema file or if you are loading a schema using the --id option."
+    )
+        .file(canBeFile = false, mustExist = true, mustBeReadable = true)
+        .multiple()
 
-    val authorityConfig by option("-a", "--authority").groupChoice(
-        "file-system" to AuthorityConfig.FileSystem(),
-        "isl" to AuthorityConfig.IonSchemaSchemas(),
-        "none" to AuthorityConfig.None
-    ).defaultByName("none")
+    private val useIonSchemaSchemaAuthority by option(
+        "-I", "--isl-for-isl",
+        help = "Indicates that the Ion Schema Schemas authority should be included in the schema system configuration."
+    ).flag()
 
     val iss by lazy {
-        val authorities = when (authorityConfig) {
-            is AuthorityConfig.FileSystem -> (authorityConfig as AuthorityConfig.FileSystem).baseDir
-                .map { AuthorityFilesystem(it.absolutePath) }
-            is AuthorityConfig.IonSchemaSchemas -> listOf(ResourceAuthority.forIonSchemaSchemas())
-            is AuthorityConfig.None -> emptyList()
-        }
-
         IonSchemaSystemBuilder.standard()
-            .withIonSystem(ion)
-            .withAuthorities(authorities)
-            .allowTransitiveImports(false)
+            .apply {
+                withIonSystem(ion)
+                withAuthorities(fileSystemAuthorities.map { AuthorityFilesystem(it.path) })
+                if (useIonSchemaSchemaAuthority) addAuthority(ResourceAuthority.forIonSchemaSchemas())
+                allowTransitiveImports(false)
+            }
             .build()
     }
 
-    private val schema by mutuallyExclusiveOptions<() -> Schema>(
-        option("--id", help = "schema id to load")
-            .convert { { iss.loadSchema(it) } },
-        option("--schema-text", "-st", help = "schema text")
-            .convert { { iss.newSchema(it) } },
-        option("--schema-file", "-sf", help = "schema file")
-            .file(mustExist = true, mustBeReadable = true, canBeDir = false)
-            .convert { { iss.newSchema(it.readText()) } },
-        name = "Schema",
-        help = "Optional schema to load. If not specified, an empty ISL 1.0 schema is used."
-    )
+    private val schema by mutuallyExclusiveOptions<IonSchemaSystem.() -> Schema>(
 
-    private val type by option("-t", "--type", help = "An ISL type reference.").required()
+        option("--id", help = "The ID of a schema to load from one of the configured authorities.")
+            .convert { { loadSchema(it) } },
+
+        option("--schema-text", "-t", help = "The Ion text contents of a schema document.")
+            .convert { { newSchema(it) } },
+
+        option("--schema-file", "-f", help = "A schema file")
+            .file(mustExist = true, mustBeReadable = true, canBeDir = false)
+            .convert { { newSchema(it.readText()) } },
+
+        option(
+            "-v", "--version",
+            help = "An empty schema document for the specified Ion Schema version. " +
+                "The version must be specified as X.Y; e.g. 2.0"
+        )
+            .enum<IonSchemaVersion> { it.name.drop(1).replace("_", ".") }
+            .convert { { newSchema(it.symbolText) } },
+
+        name = "Schema",
+        help = "All Ion Schema types are defined in the context of a schema document, so it is necessary to always " +
+            "have a schema document, even if that schema document is an implicit, empty schema. If a schema is " +
+            "not specified, the default is an implicit, empty Ion Schema 2.0 document."
+    ).default { newSchema() }
+
+    private val type by argument(help = "An ISL type name or inline type definition.")
         .check(lazyMessage = { "Not a valid type reference: $it" }) {
             with(ion.singleValue(it)) {
-                !isNullValue && type in listOf(IonType.SYMBOL, IonType.STRUCT, IonType.STRING)
+                !isNullValue && type in listOf(IonType.SYMBOL, IonType.STRUCT)
             }
         }
 
-    private val isDocument by option("-d", "--document", help = "Indicates that ION_DATA should be read as an Ion document rather than as a single value.").flag()
+    private val isDocument by option(
+        "-d", "--document",
+        help = "Indicates that IONDATA should be interpreted as an Ion document rather than as individual value(s)."
+    ).flag(default = false)
 
-    private val ionData by argument("ION_DATA")
-        .convert {
-            val result = runCatching {
-                if (isDocument) {
-                    ion.loader.load(it)
-                } else {
-                    ion.singleValue(it)
-                }
-            }
-            require(result.isSuccess) { "Unable to parse ION_DATA: $it ; ${result.exceptionOrNull()}" }
-            result.getOrThrow()
-        }
+    private val slurpLines by option(
+        "-s", "--slurp",
+        help = "When reading from STDIN, indicates that lines should be slurped together before parsing the Ion."
+    ).flag(default = false)
+
+    private val isNonZeroExitCodeOnInvalidData by option(
+        "-F", "--fail-on-invalid",
+        help = "Sets the command to return a non-zero exit code when a value is invalid for the given type."
+    ).flag(default = false)
+
+    private val isQuiet by option(
+        "-q", "--quiet",
+        help = "Suppress the validation results messages"
+    ).flag(default = false)
+
+    private val ionData by argument(help = "Ion data to validate. If no value(s) are provided, this tool will attempt to read values from STDIN.")
+        .multiple()
 
     override fun run() {
-        val islSchema = schema?.invoke() ?: iss.newSchema()
+        val islSchema = iss.schema()
 
         val typeIon = iss.ionSystem.singleValue(type)
-        val islType = if (typeIon is IonText) {
-            islSchema.getType(typeIon.stringValue()) ?: throw IllegalArgumentException("No such type: $type -- ${islSchema.getTypes().asSequence().map { it.name }.toList()}")
+        val islType = if (typeIon is IonSymbol) {
+            islSchema.getType(typeIon.stringValue()) ?: throw IllegalArgumentException("Type not found: $type")
         } else {
             islSchema.newType(typeIon as IonStruct)
         }
 
-        val violations = islType.validate(ionData)
+        val data = if (ionData.isEmpty()) readFromStdIn() else ionData.asSequence()
 
-        if (violations.isValid()) {
-            echo("Valid")
-        } else {
-            echo(violations.toString().dropWhile { it != '\n' }.trim())
+        var numInvalid = 0
+        var numErr = 0
+
+        data.forEach {
+            val result = parseIon(it)
+                .map { value -> islType.validate(value).toIon() }
+                .getOrElse { convertErrorToIon(it) }
+
+            if (result.hasTypeAnnotation("error")) {
+                numErr++
+                echo(result, err = isQuiet)
+            } else {
+                if (result.hasTypeAnnotation("invalid")) numInvalid++
+                if (!isQuiet) echo(result)
+            }
         }
+
+        if (numErr > 0) exitProcess(2)
+        if (numInvalid > 0 && isNonZeroExitCodeOnInvalidData) exitProcess(1)
+    }
+
+    private fun readFromStdIn() = generateSequence { readlnOrNull() }
+        .let { lines ->
+            if (slurpLines) {
+                sequenceOf(lines.joinToString(" "))
+            } else {
+                lines
+            }
+        }
+
+    private fun parseIon(ionText: String): Result<IonValue> {
+        return if (isDocument) {
+            runCatching { ion.loader.load(ionText) }
+        } else {
+            runCatching { ion.singleValue(ionText) }
+        }
+    }
+
+    private fun convertErrorToIon(t: Throwable): IonValue {
+        return ion.newEmptyStruct().apply {
+            setTypeAnnotations("error")
+            add("type").newString(t.javaClass.simpleName)
+            add("message").newString("unable to parse Ion: ${t.message}")
+        }
+    }
+
+    private fun Violations.toIon(): IonValue {
+        val result = this.toIonCauseList() ?: ion.newEmptyList()
+        if (violations.size > 0 || children.size > 0) {
+            result.setTypeAnnotations("invalid")
+        } else {
+            result.setTypeAnnotations("valid")
+        }
+        return result.apply { makeReadOnly() }
+    }
+
+    private fun Violations.toIonCauseList(): IonList? {
+        if (violations.isEmpty() && children.isEmpty()) return null
+        val result = this
+        return ion.newEmptyList().apply {
+            result.violations.forEach { v ->
+                add().newEmptyStruct().apply {
+                    v.constraint?.fieldName?.let { add("constraint").newSymbol(it) }
+                    add("code").newSymbol(v.code)
+                    add("message").newString(v.message)
+                    v.toIonCauseList()?.let { add("caused_by", it) }
+                }
+            }
+            result.children.forEach { child ->
+                add().newEmptyStruct().apply {
+                    child.fieldName?.let { add("field_name").newSymbol(it) }
+                    child.index?.let { add("index").newInt(it) }
+                    child.value?.let { add("value_prefix").newString(it.toString().truncate(20)) }
+                    child.toIonCauseList()?.let { add("caused_by", it) }
+                }
+            }
+        }
+    }
+
+    private fun String.truncate(limit: Int, truncated: CharSequence = "..."): String {
+        return if (length < limit) this else substring(0, limit) + truncated
     }
 }
