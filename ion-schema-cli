@@ -1,2 +1,13 @@
-#!/usr/bin/env sh
-./gradlew cli:install --quiet && exec cli/build/install/ion-schema-cli/bin/ion-schema-cli "$@"
+#!/usr/bin/env bash
+# This script is a wrapper for running the ion-schema-cli that ensures that
+# the latest changes are built every time you run the cli using this script.
+
+# `[ -t 0]` tests whether STDIN is a tty
+if [ -t 0 ]; then
+  ./gradlew cli:install --quiet && exec cli/build/install/ion-schema-cli/bin/ion-schema-cli "$@"
+else
+  # If STDIN is not TTY, then capture the data to prevent it from going to ./gradlew,
+  # and then re-send it before running the ion-schema-cli launcher script
+  DATA=$(cat)
+  ./gradlew cli:install --quiet && (echo "${DATA[@]}" | exec cli/build/install/ion-schema-cli/bin/ion-schema-cli "$@")
+fi
