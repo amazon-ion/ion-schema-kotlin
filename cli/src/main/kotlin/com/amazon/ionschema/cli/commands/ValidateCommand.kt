@@ -116,7 +116,7 @@ class ValidateCommand : CliktCommand(
         help = "All Ion Schema types are defined in the context of a schema document, so it is necessary to always " +
             "have a schema document, even if that schema document is an implicit, empty schema. If a schema is " +
             "not specified, the default is an implicit, empty Ion Schema 2.0 document."
-    ).default { newSchema() }
+    ).default { newSchema(IonSchemaVersion.v2_0.symbolText) }
 
     private val type by argument(help = "An ISL type name or inline type definition.")
         .check(lazyMessage = { "Not a valid type reference: $it" }) {
