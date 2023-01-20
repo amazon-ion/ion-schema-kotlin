@@ -22,6 +22,7 @@ import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.internal.util.markReadOnly
+import com.amazon.ionschema.internal.util.schemaTypeName
 
 /**
  * Instantiated to represent individual Core Types as defined by the
@@ -36,9 +37,7 @@ internal class TypeCore(
         else -> IonType.valueOf(nameSymbol.stringValue().toUpperCase())
     }
 
-    private val ionTypeName = ionType.schemaTypeName()
-
-    override val name = ionTypeName
+    override val name = ionType.schemaTypeName()
 
     override val schemaId: String? = null
 
@@ -54,7 +53,7 @@ internal class TypeCore(
                 Violation(
                     ion, "type_mismatch",
                     "expected type %s, found %s".format(
-                        ionTypeName,
+                        name,
                         value.type.schemaTypeName()
                     )
                 )
@@ -63,9 +62,4 @@ internal class TypeCore(
             issues.add(CommonViolations.NULL_VALUE(ion))
         }
     }
-}
-
-internal fun IonType.schemaTypeName() = when (this) {
-    IonType.DATAGRAM -> "document"
-    else -> this.toString().toLowerCase()
 }

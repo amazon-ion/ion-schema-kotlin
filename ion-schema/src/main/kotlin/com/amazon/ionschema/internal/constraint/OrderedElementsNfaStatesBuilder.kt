@@ -16,6 +16,7 @@
 package com.amazon.ionschema.internal.constraint
 
 import com.amazon.ion.IonValue
+import com.amazon.ionschema.Violation
 
 /**
  * Builds states and edges for a [NFA] for the `ordered_elements` constraint.
@@ -90,24 +91,25 @@ import com.amazon.ion.IonValue
  */
 internal class OrderedElementsNfaStatesBuilder {
 
-    private val stateInputs = mutableListOf<NFA.State<IonValue>>(NFA.State.Initial)
+    private val stateInputs = mutableListOf<NFA.State<IonValue, Violation>>(NFA.State.initial())
 
-    fun addState(min: Comparable<Int>, max: Comparable<Int>, matches: (IonValue) -> Boolean): OrderedElementsNfaStatesBuilder {
+    fun addState(min: Comparable<Int>, max: Comparable<Int>, matches: (IonValue) -> NFA.State.Decision<Violation>, description: String): OrderedElementsNfaStatesBuilder {
         val nfaState = NFA.State.Intermediate(
             id = stateInputs.size,
             entryCondition = { event: IonValue -> matches(event) },
             reentryCondition = { visits -> max >= visits },
-            exitCondition = { visits -> min <= visits }
+            exitCondition = { visits -> min <= visits },
+            description = description,
         )
         stateInputs.add(nfaState)
         return this
     }
 
-    fun build(): Map<NFA.State<IonValue>, Set<NFA.State<IonValue>>> {
-        val states = stateInputs + NFA.State.Final
+    fun build(): Map<NFA.State<IonValue, Violation>, Set<NFA.State<IonValue, Violation>>> {
+        val states = stateInputs + NFA.State.final()
 
         val transitions = states.mapIndexed { i, stateI ->
-            val transitionsForStateI = mutableSetOf<NFA.State<IonValue>>()
+            val transitionsForStateI = mutableSetOf<NFA.State<IonValue, Violation>>()
 
             // Loop back to self, if max is >= 2
             if (stateI.canReenter(2)) transitionsForStateI += stateI

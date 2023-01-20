@@ -35,6 +35,19 @@ class OrderedElementsTest {
         assertEquals(expectValid, v.isValid())
     }
 
+    @ParameterizedTest(name = "violations message - {0}")
+    @MethodSource("messageTestCases")
+    fun test_messages(_name: String, constraintIon: String, value: String, message: String) {
+        val constraint = OrderedElements(ION.singleValue(constraintIon), ISS.newSchema())
+        val v = Violations()
+        constraint.validate(ION.singleValue(value), v, debug = true)
+        // Trim all whitespace to normalize before comparing
+        val actual = v.toString().trim()
+        val expected = message.trim()
+        // We add a newline to make the assertion message easier to read
+        assertEquals("\n$expected\n", "\n$actual\n")
+    }
+
     companion object {
         private val testCases = mapOf(
             "[{occurs:optional, type:int},{occurs:optional, type:number}]" to values(
@@ -60,5 +73,108 @@ class OrderedElementsTest {
             val invalid = values.second.map { Arguments { arrayOf(orderedElements, "reject", it, false) } }
             valid + invalid
         }
+
+        private fun messageTestCase(name: String, orderedElements: String, value: String, message: String) =
+            Arguments { arrayOf(name, orderedElements, value, message.trimIndent()) }
+
+        @JvmStatic
+        fun messageTestCases(): Iterable<Arguments> = listOf(
+            messageTestCase(
+                name = "Value does not match type",
+                orderedElements = "[int]",
+                value = "(foo)",
+                message = """
+                Validation failed:
+                - one or more ordered elements don't match specification
+                  - [0]: foo
+                    - does not match: <ELEMENT 0> int
+                """
+            ),
+            messageTestCase(
+                name = "End of sexp when another type is expected",
+                orderedElements = "[symbol, symbol]",
+                value = "(foo)",
+                message = """
+                Validation failed:
+                - one or more ordered elements don't match specification
+                  - <END OF SEXP>
+                    - does not match: <ELEMENT 1> symbol
+                """
+            ),
+            messageTestCase(
+                name = "End of list when another type is expected",
+                orderedElements = "[symbol, symbol]",
+                value = "[foo]",
+                message = """
+                Validation failed:
+                - one or more ordered elements don't match specification
+                  - <END OF LIST>
+                    - does not match: <ELEMENT 1> symbol
+                """
+            ),
+            messageTestCase(
+                name = "Value does not match end of sexp",
+                orderedElements = "[symbol]",
+                value = "(foo bar)",
+                message = """
+                Validation failed:
+                - one or more ordered elements don't match specification
+                  - [1]: bar
+                    - does not match: <END OF SEXP>
+                """
+            ),
+            messageTestCase(
+                name = "Value does not match end of list",
+                orderedElements = "[symbol]",
+                value = "[foo, bar]",
+                message = """
+                Validation failed:
+                - one or more ordered elements don't match specification
+                  - [1]: bar
+                    - does not match: <END OF LIST>
+                """
+            ),
+            messageTestCase(
+                name = "Value does not match any of multiple types",
+                orderedElements = "[symbol, {occurs:optional,type:int}, {occurs:optional,type:bool}, {occurs:optional,type:int}]",
+                value = "(foo bar)",
+                message = """
+                Validation failed:
+                - one or more ordered elements don't match specification
+                  - [1]: bar
+                    - does not match: <ELEMENT 1> {occurs:optional,type:int}
+                      - expected type int, found symbol
+                    - does not match: <ELEMENT 2> {occurs:optional,type:bool}
+                      - expected type bool, found symbol
+                    - does not match: <ELEMENT 3> {occurs:optional,type:int}
+                      - expected type int, found symbol
+                    - does not match: <END OF SEXP>
+                """
+            ),
+            messageTestCase(
+                name = "Min occurs not met",
+                orderedElements = "[{occurs:range::[2,3], type:symbol}]",
+                value = "(foo)",
+                message = """
+                Validation failed:
+                - one or more ordered elements don't match specification
+                  - <END OF SEXP>
+                    - does not match: <ELEMENT 0> {occurs:range::[2,3],type:symbol}
+                    - min occurs not reached: <ELEMENT 0> {occurs:range::[2,3],type:symbol}
+                """
+            ),
+            messageTestCase(
+                name = "Max occurs exceeded",
+                orderedElements = "[{occurs:2, type:symbol}]",
+                value = "(foo bar baz)",
+                message = """
+                Validation failed:
+                - one or more ordered elements don't match specification
+                  - [2]: baz
+                    - max occurs already reached: <ELEMENT 0> {occurs:2,type:symbol}
+                    - does not match: <END OF SEXP>
+                """
+            ),
+        )
     }
 }
