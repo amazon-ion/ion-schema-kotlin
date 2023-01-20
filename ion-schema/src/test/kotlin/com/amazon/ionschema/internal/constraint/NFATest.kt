@@ -1,8 +1,5 @@
 package com.amazon.ionschema.internal.constraint
 
-import com.amazon.ionschema.internal.constraint.NFA.State.Final
-import com.amazon.ionschema.internal.constraint.NFA.State.Initial
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -11,72 +8,72 @@ import java.util.Collections
 class NFATest {
 
     /** Helper function to construct a State */
-    private fun state(id: Int, min: Int = 1, max: Int = min) = NFA.State.Intermediate(id, id::equals, reentryCondition = { it <= max }, exitCondition = { it >= min })
+    private fun state(id: Int, min: Int = 1, max: Int = min): NFA.State<Int, String> = NFA.State.Intermediate(id, { NFA.State.Decision(it == id) }, reentryCondition = { it <= max }, exitCondition = { it >= min })
 
     @Test
     fun `trivial case should be handled correctly`() {
-        val nfa = NFA(mapOf(Initial to setOf(Final)))
+        val nfa = NFA(mapOf(NFA.State.initial<Int>() to setOf(NFA.State.final())))
 
-        assertTrue(nfa.matches(listOf()))
+        assertTrue(nfa.matches(listOf()) is NFA.Outcome.IsMatch)
 
-        assertFalse(nfa.matches(listOf(1)))
-        assertFalse(nfa.matches(listOf(1, 2)))
-        assertFalse(nfa.matches(listOf(1, 2, 3)))
+        assertTrue(nfa.matches(listOf(1)) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1, 2)) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1, 2, 3)) is NFA.Outcome.IsNotMatch)
     }
 
     @Test
     fun `simple cases should be handled correctly`() {
         val nfa = NFA(
             mapOf(
-                Initial to setOf(state(1)),
+                NFA.State.initial<Int>() to setOf(state(1)),
                 state(1) to setOf(state(2)),
                 state(2) to setOf(state(3)),
-                state(3) to setOf(Final),
+                state(3) to setOf(NFA.State.final()),
             )
         )
 
-        assertTrue(nfa.matches(listOf(1, 2, 3)))
+        assertTrue(nfa.matches(listOf(1, 2, 3)) is NFA.Outcome.IsMatch)
 
-        assertFalse(nfa.matches(listOf()))
-        assertFalse(nfa.matches(listOf(1)))
-        assertFalse(nfa.matches(listOf(1, 2)))
-        assertFalse(nfa.matches(listOf(1, 2, 3, 3)))
-        assertFalse(nfa.matches(listOf(1, 2, 3, 4)))
+        assertTrue(nfa.matches(listOf()) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1)) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1, 2)) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1, 2, 3, 3)) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1, 2, 3, 4)) is NFA.Outcome.IsNotMatch)
     }
 
     @Test
     fun `branching graph cases should be handled correctly`() {
         val nfa = NFA(
             mapOf(
-                Initial to setOf(state(1)),
+                NFA.State.initial<Int>() to setOf(state(1)),
                 state(1) to setOf(state(2), state(3)),
-                state(2) to setOf(Final),
-                state(3) to setOf(Final),
+                state(2) to setOf(NFA.State.final()),
+                state(3) to setOf(NFA.State.final()),
             )
         )
 
-        assertTrue(nfa.matches(listOf(1, 2)))
-        assertTrue(nfa.matches(listOf(1, 3)))
+        assertTrue(nfa.matches(listOf(1, 2)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(listOf(1, 3)) is NFA.Outcome.IsMatch)
 
-        assertFalse(nfa.matches(listOf()))
-        assertFalse(nfa.matches(listOf(1)))
-        assertFalse(nfa.matches(listOf(1, 2, 3)))
-        assertFalse(nfa.matches(listOf(1, 3, 2)))
+        assertTrue(nfa.matches(listOf()) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1)) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1, 2, 3)) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1, 3, 2)) is NFA.Outcome.IsNotMatch)
     }
 
     @Test
     fun `cycles should be handled correctly`() {
         val nfa = NFA(
             mapOf(
-                Initial to setOf(state(1)),
+                NFA.State.initial<Int>() to setOf(state(1)),
                 state(1) to setOf(state(2)),
                 state(2) to setOf(state(3)),
-                state(3) to setOf(state(1), Final),
+                state(3) to setOf(state(1), NFA.State.final()),
             )
         )
-        assertTrue(nfa.matches(listOf(1, 2, 3)))
-        assertTrue(nfa.matches(listOf(1, 2, 3, 1, 2, 3)))
-        assertTrue(nfa.matches(listOf(1, 2, 3, 1, 2, 3, 1, 2, 3)))
+        assertTrue(nfa.matches(listOf(1, 2, 3)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(listOf(1, 2, 3, 1, 2, 3)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(listOf(1, 2, 3, 1, 2, 3, 1, 2, 3)) is NFA.Outcome.IsMatch)
     }
 
     @Test
@@ -85,15 +82,15 @@ class NFATest {
 
         val nfa = NFA(
             mapOf(
-                Initial to setOf(s1),
-                s1 to setOf(s1, Final),
+                NFA.State.initial<Int>() to setOf(s1),
+                s1 to setOf(s1, NFA.State.final()),
             )
         )
 
-        assertTrue(nfa.matches(listOf(1)))
-        assertTrue(nfa.matches(listOf(1, 1)))
-        assertTrue(nfa.matches(listOf(1, 1, 1)))
-        assertTrue(nfa.matches(Collections.nCopies(12345, 1)))
+        assertTrue(nfa.matches(listOf(1)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(listOf(1, 1)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(listOf(1, 1, 1)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(Collections.nCopies(12345, 1)) is NFA.Outcome.IsMatch)
     }
 
     @Test
@@ -101,15 +98,15 @@ class NFATest {
         val s1 = state(1, max = 3)
         val nfa = NFA(
             mapOf(
-                Initial to setOf(s1),
-                s1 to setOf(s1, Final),
+                NFA.State.initial<Int>() to setOf(s1),
+                s1 to setOf(s1, NFA.State.final()),
             )
         )
 
-        assertTrue(nfa.matches(listOf(1)))
-        assertTrue(nfa.matches(listOf(1, 1)))
-        assertTrue(nfa.matches(listOf(1, 1, 1)))
-        assertFalse(nfa.matches(listOf(1, 1, 1, 1)))
+        assertTrue(nfa.matches(listOf(1)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(listOf(1, 1)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(listOf(1, 1, 1)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(listOf(1, 1, 1, 1)) is NFA.Outcome.IsNotMatch)
     }
 
     @Test
@@ -117,15 +114,15 @@ class NFATest {
         val s1 = state(1, min = 3, max = Int.MAX_VALUE)
         val nfa = NFA(
             mapOf(
-                Initial to setOf(s1),
-                s1 to setOf(s1, Final),
+                NFA.State.initial<Int>() to setOf(s1),
+                s1 to setOf(s1, NFA.State.final<Int>()),
             )
         )
 
-        assertFalse(nfa.matches(listOf(1)))
-        assertFalse(nfa.matches(listOf(1, 1)))
-        assertTrue(nfa.matches(listOf(1, 1, 1)))
-        assertTrue(nfa.matches(listOf(1, 1, 1, 1)))
+        assertTrue(nfa.matches(listOf(1)) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1, 1)) is NFA.Outcome.IsNotMatch)
+        assertTrue(nfa.matches(listOf(1, 1, 1)) is NFA.Outcome.IsMatch)
+        assertTrue(nfa.matches(listOf(1, 1, 1, 1)) is NFA.Outcome.IsMatch)
     }
 
     @Test
@@ -134,7 +131,7 @@ class NFATest {
             NFA(
                 mapOf(
                     state(1) to setOf(state(2)),
-                    state(2) to setOf(state(1), Final),
+                    state(2) to setOf(state(1), NFA.State.final()),
                 )
             )
         }
@@ -145,9 +142,9 @@ class NFATest {
         assertThrows<IllegalArgumentException> {
             NFA(
                 mapOf(
-                    Initial to emptySet<NFA.State<Int>>(),
+                    NFA.State.initial<Int>() to emptySet(),
                     state(1) to setOf(state(2)),
-                    state(2) to setOf(state(1), Final),
+                    state(2) to setOf(state(1), NFA.State.final()),
                 )
             )
         }
@@ -158,9 +155,9 @@ class NFATest {
         assertThrows<IllegalArgumentException> {
             NFA(
                 mapOf(
-                    Initial to setOf(state(1)),
+                    NFA.State.initial<Int>() to setOf(state(1)),
                     state(1) to setOf(state(2)),
-                    state(2) to setOf(state(3), Final),
+                    state(2) to setOf(state(3), NFA.State.final()),
                 )
             )
         }
@@ -171,7 +168,7 @@ class NFATest {
         assertThrows<IllegalArgumentException> {
             NFA(
                 mapOf(
-                    Initial to setOf(state(1)),
+                    NFA.State.initial<Int>() to setOf(state(1)),
                     state(1) to setOf(state(2)),
                     state(2) to setOf(state(1)),
                 )
@@ -184,9 +181,9 @@ class NFATest {
         assertThrows<IllegalArgumentException> {
             NFA(
                 mapOf(
-                    Initial to setOf(state(1)),
-                    state(1) to setOf(Final),
-                    Final to setOf(state(1))
+                    NFA.State.initial<Int>() to setOf(state(1)),
+                    state(1) to setOf(NFA.State.final()),
+                    NFA.State.final<Int>() to setOf(state(1))
                 )
             )
         }
