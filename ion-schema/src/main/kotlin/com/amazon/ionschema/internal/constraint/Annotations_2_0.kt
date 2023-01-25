@@ -32,7 +32,7 @@ import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
 /**
  * Implements the annotations constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#annotations
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#annotations
  */
 internal class Annotations_2_0 constructor(
     ion: IonValue,

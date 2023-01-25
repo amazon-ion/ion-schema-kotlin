@@ -32,8 +32,8 @@ import java.util.regex.Pattern
  * caller tries to use a feature of Pattern that is NOT defined
  * in the Ion Schema Specification.
  *
- * @see https://amzn.github.io/ion-schema/docs/isl-1-0/spec#regex
- * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#regex
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-1-0/spec#regex
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#regex
  * @see java.util.regex.Pattern
  */
 internal class Regex(

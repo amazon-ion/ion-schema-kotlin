@@ -31,7 +31,7 @@ import kotlin.math.pow
 /**
  * Implements the ieee754_float constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#ieee754_float
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#ieee754_float
  */
 internal class Ieee754Float(ion: IonValue) : ConstraintBase(ion) {
 
@@ -51,7 +51,7 @@ internal class Ieee754Float(ion: IonValue) : ConstraintBase(ion) {
          * it, this is the only floating point format for which it is needed, and it avoids the complexity of a
          * generalized solution.
          *
-         * See https://github.com/amzn/ion-schema-kotlin/issues/218.
+         * See https://github.com/amazon-ion/ion-schema-kotlin/issues/218.
          *
          * Technically, there is overlap between the ranges, but that's okay because the overlap is only the boundary
          * value, which will be valid regardless of which interval we test it against.

@@ -37,7 +37,7 @@ class ResourceAuthority(
     companion object {
         /**
          * Factory method for constructing a [ResourceAuthority] that can access the schemas provided by
-         * [`ion-schema-schemas`](https://github.com/amzn/ion-schema-schemas/).
+         * [`ion-schema-schemas`](https://github.com/amazon-ion/ion-schema-schemas/).
          */
         @JvmStatic
         fun forIonSchemaSchemas(): ResourceAuthority = ResourceAuthority("ion-schema-schemas", ResourceAuthority::class.java.classLoader)

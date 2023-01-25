@@ -21,7 +21,7 @@ import com.amazon.ion.IonValue
 /**
  * Implements the scale constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#scale
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#scale
  */
 internal class Scale(
     ion: IonValue

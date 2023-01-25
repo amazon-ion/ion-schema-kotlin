@@ -27,7 +27,7 @@ import com.amazon.ionschema.internal.TypeReference
 /**
  * Base class for logic constraint implementations.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#logic-constraints
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#logic-constraints
  */
 internal abstract class LogicConstraints(
     ion: IonValue,
@@ -56,7 +56,7 @@ internal abstract class LogicConstraints(
 /**
  * Implements the all_of constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#all_of
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#all_of
  */
 internal class AllOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
@@ -72,7 +72,7 @@ internal class AllOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
 /**
  * Implements the any_of constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#any_of
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#any_of
  */
 internal class AnyOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
@@ -90,7 +90,7 @@ internal class AnyOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
 /**
  * Implements the one_of constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#one_of
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#one_of
  */
 internal class OneOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
@@ -123,7 +123,7 @@ internal class OneOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
 /**
  * Implements the not constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#not
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#not
  */
 internal class Not(ion: IonValue, schema: Schema) : ConstraintBase(ion) {
     private val type = TypeReference.create(ion, schema)

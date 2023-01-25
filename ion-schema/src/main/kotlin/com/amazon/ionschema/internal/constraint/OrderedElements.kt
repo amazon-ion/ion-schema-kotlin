@@ -31,8 +31,8 @@ import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
 /**
  * Implements the ordered_element constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/isl-1-0/spec#ordered_elements
- * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#ordered_elements
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-1-0/spec#ordered_elements
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#ordered_elements
  */
 internal class OrderedElements(
     ion: IonValue,

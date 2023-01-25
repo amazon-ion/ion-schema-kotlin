@@ -41,7 +41,7 @@ internal object IonSchema_2_0 {
 
     /**
      * Regex to match symbols that are reserved in the Ion Schema specification.
-     * See https://amzn.github.io/ion-schema/docs/isl-2-0/spec#reserved-symbols
+     * See https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#reserved-symbols
      */
     val RESERVED_WORDS_REGEX = Regex("(\\\$ion_schema(_.*)?|[a-z][a-z\\d]*(_[a-z\\d]+)*)")
 }

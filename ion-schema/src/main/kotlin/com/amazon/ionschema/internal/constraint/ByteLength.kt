@@ -21,7 +21,7 @@ import com.amazon.ion.IonValue
 /**
  * Implements the byte_length constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#byte_length
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#byte_length
  */
 internal class ByteLength(
     ion: IonValue

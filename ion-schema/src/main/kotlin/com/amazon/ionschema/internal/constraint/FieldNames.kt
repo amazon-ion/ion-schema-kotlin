@@ -27,7 +27,7 @@ import com.amazon.ionschema.internal.TypeReference
  * Implements the field_names constraint.
  * This constraint compares the text of all the field names in a struct against an ISL type.
  *
- * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#field_names
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#field_names
  */
 internal class FieldNames(ion: IonValue, schema: Schema) : ConstraintBase(ion) {
 

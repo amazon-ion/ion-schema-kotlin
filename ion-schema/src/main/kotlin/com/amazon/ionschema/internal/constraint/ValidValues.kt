@@ -34,7 +34,7 @@ import com.amazon.ionschema.internal.util.withoutTypeAnnotations
 /**
  * Implements the valid_values constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#valid_values
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#valid_values
  */
 internal class ValidValues(
     ion: IonValue,

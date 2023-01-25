@@ -34,8 +34,8 @@ import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
  * [Content] and [Occurs] constraints in the context of a struct are also
  * handled by this class.
  *
- * @see https://amzn.github.io/ion-schema/docs/isl-1-0/spec#fields
- * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#fields
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-1-0/spec#fields
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#fields
  */
 internal class Fields(
     ionValue: IonValue,
@@ -59,7 +59,7 @@ internal class Fields(
         }
 
         // Forces the field definitions to be validated
-        // TODO: See if we can cache these values https://github.com/amzn/ion-schema-kotlin/issues/215
+        // TODO: See if we can cache these values https://github.com/amazon-ion/ion-schema-kotlin/issues/215
         ionStruct.associateBy(
             { it.fieldName },
             { Occurs(it, schema, OPTIONAL) }

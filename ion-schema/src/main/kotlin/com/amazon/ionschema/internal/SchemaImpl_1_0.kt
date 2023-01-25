@@ -274,7 +274,7 @@ internal class SchemaImpl_1_0 private constructor(
 
         // prepare ISL corresponding to the new Schema
         // (might be simpler if IonDatagram.set(int, IonValue) were implemented,
-        // see https://github.com/amzn/ion-java/issues/50)
+        // see https://github.com/amazon-ion/ion-java/issues/50)
         val newIsl = schemaSystem.ionSystem.newDatagram()
         var newTypeAdded = false
         isl.forEachIndexed { idx, value ->

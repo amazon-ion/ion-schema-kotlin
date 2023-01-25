@@ -27,7 +27,7 @@ import com.amazon.ionschema.Violations
  * definition is valid.  Validation logic for this constraint is
  * performed by the [Fields] constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#content
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#content
  */
 internal class Content(ion: IonValue) : ConstraintBase(ion) {
 

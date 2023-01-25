@@ -32,7 +32,7 @@ import com.amazon.ionschema.internal.util.withoutTypeAnnotations
  *
  * Invocations are delegated to either an Ordered or Unordered implementation.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#annotations
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#annotations
  */
 internal class Annotations_1_0 private constructor(
     ion: IonValue,

@@ -26,7 +26,7 @@ import com.amazon.ionschema.Violations
 /**
  * Implements the timestamp_offset constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#timestamp_offset
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#timestamp_offset
  */
 internal class TimestampOffset(
     ion: IonValue

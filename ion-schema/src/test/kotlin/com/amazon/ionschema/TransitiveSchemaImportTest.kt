@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 
 /**
  * This tests that the old, incorrect behavior mentioned in
- * [amzn/ion-schema-kotlin#178](https://github.com/amzn/ion-schema-kotlin/issues/178)
+ * [amazon-ion/ion-schema-kotlin#178](https://github.com/amazon-ion/ion-schema-kotlin/issues/178)
  * still works as before even after implementing the bugfix.
  */
 class TransitiveSchemaImportTest {
