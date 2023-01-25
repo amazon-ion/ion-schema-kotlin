@@ -55,7 +55,7 @@ dokkaJavadoc.configure {
       includes.from("src/main/kotlin/com/amazon/ionschema/module.md")
       sourceLink {
         // URL showing where the source code can be accessed through the web browser
-        remoteUrl.set(java.net.URL("https://github.com/amzn/ion-schema-kotlin/blob/master/ion-schema/src/main/kotlin"))
+        remoteUrl.set(java.net.URL("https://github.com/amazon-ion/ion-schema-kotlin/blob/master/ion-schema/src/main/kotlin"))
         // Suffix which is used to append the line number to the URL. Use #L for GitHub
         remoteLineSuffix.set("#L")
       }
@@ -85,12 +85,12 @@ publishing {
       pom {
         name = "Ion Schema Kotlin"
         packaging = "jar"
-        url = "https://github.com/amzn/ion-schema-kotlin"
+        url = "https://github.com/amazon-ion/ion-schema-kotlin"
         description = "Reference implementation of the Amazon Ion Schema Specification."
         scm {
-          connection = "scm:git@github.com:amzn/ion-schema-kotlin.git"
-          developerConnection = "scm:git@github.com:amzn/ion-schema-kotlin.git"
-          url = "git@github.com:amzn/ion-schema-kotlin.git"
+          connection = "scm:git@github.com:amazon-ion/ion-schema-kotlin.git"
+          developerConnection = "scm:git@github.com:amazon-ion/ion-schema-kotlin.git"
+          url = "git@github.com:amazon-ion/ion-schema-kotlin.git"
         }
         licenses {
           license {

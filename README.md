@@ -1,12 +1,12 @@
 ## Ion Schema Kotlin
 
-A reference implementation of the [Ion Schema Specification](https://amzn.github.io/ion-schema/docs/spec.html),
+A reference implementation of the [Ion Schema Specification](https://amazon-ion.github.io/ion-schema/docs/spec.html),
 written in Kotlin.
 
-[![Build Status](https://travis-ci.org/amzn/ion-schema-kotlin.svg)](https://travis-ci.org/amzn/ion-schema-kotlin)
+[![Build Status](https://travis-ci.org/amazon-ion/ion-schema-kotlin.svg)](https://travis-ci.org/amazon-ion/ion-schema-kotlin)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.amazon.ion/ion-schema-kotlin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.amazon.ion/ion-schema-kotlin)
 [![Javadoc](https://javadoc-badge.appspot.com/com.amazon.ion/ion-schema-kotlin.svg?label=javadoc)](http://www.javadoc.io/doc/com.amazon.ion/ion-schema-kotlin)
-[![codecov](https://codecov.io/gh/amzn/ion-schema-kotlin/branch/master/graph/badge.svg)](https://codecov.io/gh/amzn/ion-schema-kotlin)
+[![codecov](https://codecov.io/gh/amazon-ion/ion-schema-kotlin/branch/master/graph/badge.svg)](https://codecov.io/gh/amazon-ion/ion-schema-kotlin)
 
 ## Getting Started
 
@@ -121,15 +121,15 @@ Validation failed:
 
 ## Development
 This repository contains two [git submodules](https://git-scm.com/docs/git-submodule):
-[ion-schema-tests](https://github.com/amzn/ion-schema-tests)
-and [ion-schema-schemas](https://github.com/amzn/ion-schema-schemas).
+[ion-schema-tests](https://github.com/amazon-ion/ion-schema-tests)
+and [ion-schema-schemas](https://github.com/amazon-ion/ion-schema-schemas).
 Both are used by this library's unit tests.
 
 The easiest way to clone the `ion-schema-kotlin` repository and initialize its submodules
 is to run the following command:
 
 ```
-$ git clone --recursive https://github.com/amzn/ion-schema-kotlin.git ion-schema-kotlin
+$ git clone --recursive https://github.com/amazon-ion/ion-schema-kotlin.git ion-schema-kotlin
 ```
 
 Alternatively, the submodule may be initialized independently from the clone
@@ -163,7 +163,7 @@ For detailed walkthroughs of git submodule usage, see the
 
 ## Roadmap
 
-The roadmap is organized as a series of [milestones](https://github.com/amzn/ion-schema-kotlin/milestones?direction=asc&sort=due_date&state=open).
+The roadmap is organized as a series of [milestones](https://github.com/amazon-ion/ion-schema-kotlin/milestones?direction=asc&sort=due_date&state=open).
 
 ## License
 

@@ -25,7 +25,7 @@ import com.amazon.ionschema.internal.util.RangeType
 /**
  * Implements the exponent constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#exponent
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#exponent
  */
 internal class Exponent(
     ion: IonValue

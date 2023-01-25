@@ -23,7 +23,7 @@ import com.amazon.ionschema.internal.TypeReference
 /**
  * Implements the type constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#type
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#type
  */
 internal class Type(
     ion: IonValue,

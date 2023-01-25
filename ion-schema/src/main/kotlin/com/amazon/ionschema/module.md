@@ -1,5 +1,5 @@
 # Module ion-schema-kotlin
-Reference implementation of the [Ion Schema Specification](https://amzn.github.io/ion-schema/docs/spec.html).
+Reference implementation of the [Ion Schema Specification](https://amazon-ion.github.io/ion-schema/docs/spec.html).
 
 # Package com.amazon.ionschema
 API for loading schemas and types, validating Ion data against those types, and examining validation details.

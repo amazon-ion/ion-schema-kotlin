@@ -61,7 +61,7 @@ internal class SchemaImpl_2_0 private constructor(
 
     /**
      * Represents the collection of symbols that are declared as user reserved fields for a schema.
-     * See https://amzn.github.io/ion-schema/docs/isl-2-0/spec#open-content
+     * See https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#open-content
      */
     private data class UserReservedFields(val headerWords: Set<String>, val typeWords: Set<String>, val footerWords: Set<String>) {
         companion object {
@@ -185,7 +185,7 @@ internal class SchemaImpl_2_0 private constructor(
 
     /**
      * Checks whether a given value is allowed as top-level open content.
-     * See https://amzn.github.io/ion-schema/docs/isl-2-0/spec#open-content
+     * See https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#open-content
      */
     private fun isTopLevelOpenContent(value: IonValue): Boolean {
         if (value is IonSymbol && ISL_VERSION_MARKER.matches(value.stringValue())) {
@@ -396,7 +396,7 @@ internal class SchemaImpl_2_0 private constructor(
 
         // prepare ISL corresponding to the new Schema
         // (might be simpler if IonDatagram.set(int, IonValue) were implemented,
-        // see https://github.com/amzn/ion-java/issues/50)
+        // see https://github.com/amazon-ion/ion-java/issues/50)
         val newIsl = schemaSystem.ionSystem.newDatagram()
         var newTypeAdded = false
         isl.forEachIndexed { idx, value ->

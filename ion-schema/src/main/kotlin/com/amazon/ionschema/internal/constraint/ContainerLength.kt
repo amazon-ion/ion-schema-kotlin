@@ -21,7 +21,7 @@ import com.amazon.ion.IonValue
 /**
  * Implements the container_length constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#container_length
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#container_length
  */
 internal class ContainerLength(
     ion: IonValue

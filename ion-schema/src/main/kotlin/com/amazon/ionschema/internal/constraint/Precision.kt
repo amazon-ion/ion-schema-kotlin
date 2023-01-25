@@ -22,7 +22,7 @@ import com.amazon.ionschema.InvalidSchemaException
 /**
  * Implements the precision constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#precision
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#precision
  */
 internal class Precision(
     ion: IonValue

@@ -21,7 +21,7 @@ import com.amazon.ion.IonValue
 /**
  * Implements the codepoint_length constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#codepoint_length
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#codepoint_length
  */
 internal class CodepointLength(
     ion: IonValue

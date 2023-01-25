@@ -25,7 +25,7 @@ import com.amazon.ionschema.Violations
 /**
  * Implements the contains constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#contains
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#contains
  */
 internal class Contains(
     ion: IonValue

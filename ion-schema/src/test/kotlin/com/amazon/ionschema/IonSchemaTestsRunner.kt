@@ -36,7 +36,7 @@ class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(v1_0)
 class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
     islVersion = v2_0,
     additionalFileFilter = {
-        // Pending fix for https://github.com/amzn/ion-schema-kotlin/issues/209
+        // Pending fix for https://github.com/amazon-ion/ion-schema-kotlin/issues/209
         !it.path.contains("cycles/")
     }
 )

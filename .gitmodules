@@ -1,6 +1,6 @@
 [submodule "ion-schema-tests"]
 	path = ion-schema-tests
-	url = https://github.com/amzn/ion-schema-tests.git
+	url = https://github.com/amazon-ion/ion-schema-tests.git
 [submodule "ion-schema-schemas"]
 	path = ion-schema-schemas
-	url = https://github.com/amzn/ion-schema-schemas.git
+	url = https://github.com/amazon-ion/ion-schema-schemas.git

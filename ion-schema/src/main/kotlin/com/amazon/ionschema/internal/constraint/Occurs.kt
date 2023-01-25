@@ -35,7 +35,7 @@ import com.amazon.ionschema.internal.util.RangeType
 /**
  * Implements the occurs constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#occurs
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#occurs
  */
 internal open class Occurs(
     ion: IonValue,

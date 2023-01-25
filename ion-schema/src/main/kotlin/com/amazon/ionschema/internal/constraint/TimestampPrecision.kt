@@ -26,7 +26,7 @@ import com.amazon.ionschema.internal.util.RangeType
 /**
  * Implements the timestamp_precision constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/spec.html#timestamp_precision
+ * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#timestamp_precision
  */
 internal class TimestampPrecision(
     ion: IonValue

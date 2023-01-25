@@ -29,8 +29,8 @@ import com.amazon.ionschema.internal.util.islRequire
 /**
  * Implements the element constraint.
  *
- * @see https://amzn.github.io/ion-schema/docs/isl-1-0/spec#element
- * @see https://amzn.github.io/ion-schema/docs/isl-2-0/spec#element
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-1-0/spec#element
+ * @see https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#element
  */
 internal class Element(
     ion: IonValue,
