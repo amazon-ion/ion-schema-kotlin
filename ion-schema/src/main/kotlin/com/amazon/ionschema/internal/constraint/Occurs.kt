@@ -23,26 +23,32 @@ import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.Constraint
 import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeInternal
 import com.amazon.ionschema.internal.TypeReference
 import com.amazon.ionschema.internal.constraint.Occurs.Companion.toRange
 import com.amazon.ionschema.internal.util.Range
 import com.amazon.ionschema.internal.util.RangeFactory
-import com.amazon.ionschema.internal.util.RangeIntNonNegative
 import com.amazon.ionschema.internal.util.RangeType
 
 /**
- * Implements the occurs constraint.
+ * Implements a constraint to model the `occurs` field in variably occurring type references.
  *
- * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#occurs
+ * This class is only used by [Fields], and no new uses should be introduced because `occurs` is not a constraint, and
+ * modelling it as such only leads to confusion.
+ *
+ * Since the occurs (pseudo-)constraint has to track the number of occurrences across multiple calls to
+ * [Constraint.validate], it needs to be stateful, unlike the other constraints. Therefore, [Occurs] does not directly
+ * implement [Constraint]. Instead, you must call [validator] to get an [OccursValidator] instance each time you want to
+ * use an [Occurs] for performing validation.
  */
-internal open class Occurs(
+internal class Occurs(
     ion: IonValue,
     schema: SchemaInternal,
     defaultRange: Range<Int>,
     isField: Boolean = false
-) : ConstraintBase(ion) {
+) {
 
     companion object {
         private val ION = IonSystemBuilder.standard().build()
@@ -79,11 +85,9 @@ internal open class Occurs(
         }
     }
 
-    internal val range: Range<Int>
-    internal val occursIon: IonValue
+    private val range: Range<Int>
+    private val occursIon: IonValue
     private val typeReference: () -> TypeInternal
-    private var attempts = 0
-    internal var validCount = 0
 
     init {
         var occurs: IonValue? = null
@@ -118,40 +122,43 @@ internal open class Occurs(
             }
     }
 
-    override fun validate(value: IonValue, issues: Violations) {
-        attempts++
+    /**
+     * Returns stateful copy of occurs that actually implements [Constraint].
+     * @see Occurs
+     */
+    fun validator() = OccursValidator(typeReference, occursIon, range)
 
-        typeReference().validate(value, issues)
-        validCount = attempts - issues.violations.size
-        (issues as ViolationChild).addValue(value)
-    }
+    /**
+     * Stateful version of [Occurs] used for validation.
+     * @see Occurs
+     */
+    class OccursValidator(
+        private val typeReference: () -> TypeInternal,
+        private val occursIon: IonValue,
+        private val range: Range<Int>
+    ) : ConstraintBase(occursIon) {
+        private var attempts = 0
+        private var validCount = 0
 
-    fun validateAttempts(issues: Violations) {
-        if (!range.contains(attempts)) {
-            issues.add(
-                Violation(
-                    occursIon, "occurs_mismatch",
-                    "expected %s occurrences, found %s".format(range, attempts)
+        override fun validate(value: IonValue, issues: Violations) {
+            attempts++
+
+            typeReference().validate(value, issues)
+            validCount = attempts - issues.violations.size
+            (issues as ViolationChild).addValue(value)
+        }
+
+        fun validateAttempts(issues: Violations) {
+            if (!range.contains(attempts)) {
+                issues.add(
+                    Violation(
+                        occursIon, "occurs_mismatch",
+                        "expected %s occurrences, found %s".format(range, attempts)
+                    )
                 )
-            )
+            }
         }
     }
-
-    fun validateValidCount(issues: Violations) {
-        if (!isValidCountWithinRange()) {
-            issues.add(
-                Violation(
-                    occursIon, "occurs_mismatch",
-                    "expected %s occurrences, found %s".format(range, validCount)
-                )
-            )
-        }
-    }
-
-    internal fun isValidCountWithinRange() = range.contains(validCount)
-
-    internal fun attemptsSatisfyOccurrences() = range.contains(attempts)
-    internal fun canConsumeMore() = !(range as RangeIntNonNegative).isAtMax(attempts)
 }
 
 /**
