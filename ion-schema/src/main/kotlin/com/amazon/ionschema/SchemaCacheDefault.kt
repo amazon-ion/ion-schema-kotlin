@@ -10,6 +10,10 @@ class SchemaCacheDefault : SchemaCache {
 
     override fun getOrPut(key: String, resolver: () -> Schema): Schema = cache.getOrPut(key, resolver)
 
+    override fun getOrNull(key: String): Schema? {
+        return cache.get(key)
+    }
+
     override fun invalidate(key: String) {
         cache.remove(key)
     }
