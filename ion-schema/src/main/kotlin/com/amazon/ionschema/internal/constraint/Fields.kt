@@ -19,11 +19,11 @@ import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaVersion
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.Constraint
+import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.constraint.Occurs.Companion.OPTIONAL
 import com.amazon.ionschema.internal.util.islRequire
 import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
@@ -39,7 +39,7 @@ import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
  */
 internal class Fields(
     ionValue: IonValue,
-    private val schema: Schema
+    private val schema: SchemaInternal,
 ) : ConstraintBase(ionValue), Constraint {
 
     private val ionStruct: IonStruct

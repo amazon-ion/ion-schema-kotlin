@@ -15,13 +15,14 @@
 
 package com.amazon.ionschema.internal
 
+import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonSystem
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Authority
+import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaException
 import com.amazon.ionschema.IonSchemaSystem
 import com.amazon.ionschema.IonSchemaVersion
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.SchemaCache
 
 /**
@@ -44,7 +45,7 @@ internal class IonSchemaSystemImpl(
     // Set to be used to detect cycle in import dependencies
     private val schemaImportSet: MutableSet<String> = mutableSetOf()
 
-    override fun loadSchema(id: String): Schema {
+    override fun loadSchema(id: String): SchemaInternal {
         val exceptions = mutableListOf<Exception>()
         val schemaIterator = authorities.asSequence().mapNotNull { authority ->
             try {
@@ -69,18 +70,47 @@ internal class IonSchemaSystemImpl(
             throw IonSchemaException(message.toString())
         }
 
-        return schemaIterator.use { schemaCache.getOrPut(id) { SchemaImpl(this, schemaCores, it, id) } }
+        var version = IonSchemaVersion.v1_0
+        val isl = schemaIterator.use {
+            it.asSequence()
+                .onEach {
+                    if (it is IonSymbol && IonSchemaVersion.VERSION_MARKER_REGEX.matches(it.stringValue())) {
+                        version = IonSchemaVersion.fromIonSymbolOrNull(it)
+                            ?: throw InvalidSchemaException("Unsupported Ion Schema version: $it")
+                    }
+                }
+                .toList()
+        }
+
+        return schemaCache.getOrPut(id) { createSchema(version, id, isl) } as SchemaInternal
     }
 
-    override fun newSchema() = newSchema("")
+    private fun createSchema(version: IonSchemaVersion, schemaId: String?, isl: List<IonValue>): SchemaInternal {
+        return when (version) {
+            IonSchemaVersion.v1_0 -> SchemaImpl_1_0(this, schemaCores[version]!!, isl.iterator(), schemaId)
+            IonSchemaVersion.v2_0 -> SchemaImpl_2_0(this, schemaCores[version]!!, isl.iterator(), schemaId)
+        }
+    }
 
-    override fun newSchema(isl: String) = newSchema(ionSystem.iterate(isl))
+    override fun newSchema(): SchemaInternal = newSchema("")
 
-    override fun newSchema(isl: Iterator<IonValue>) = SchemaImpl(this, schemaCores, isl, null)
+    override fun newSchema(isl: String): SchemaInternal = newSchema(ionSystem.iterate(isl))
 
-    internal fun isConstraint(name: String, schema: Schema) = constraintFactory.isConstraint(name, schema.ionSchemaLanguageVersion)
+    override fun newSchema(isl: Iterator<IonValue>): SchemaInternal {
+        var version = IonSchemaVersion.v1_0
+        val islList = isl.asSequence()
+            .onEach {
+                if (it is IonSymbol && IonSchemaVersion.VERSION_MARKER_REGEX.matches(it.stringValue())) {
+                    version = IonSchemaVersion.fromIonSymbolOrNull(it) ?: throw InvalidSchemaException("Unsupported Ion Schema version: $it")
+                }
+            }
+            .toList()
+        return createSchema(version, null, islList)
+    }
 
-    internal fun constraintFor(ion: IonValue, schema: Schema) = constraintFactory.constraintFor(ion, schema)
+    internal fun isConstraint(name: String, schema: SchemaInternal) = constraintFactory.isConstraint(name, schema.ionSchemaLanguageVersion)
+
+    internal fun constraintFor(ion: IonValue, schema: SchemaInternal) = constraintFactory.constraintFor(ion, schema)
 
     internal fun getSchemaImportSet() = schemaImportSet
 

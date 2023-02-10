@@ -17,7 +17,6 @@ package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.constraint.ConstraintBase
@@ -32,10 +31,10 @@ internal class TypeBuiltinImpl private constructor(
     private val delegate: TypeInternal
 ) : TypeInternal by delegate, ConstraintBase(ion), TypeBuiltin {
 
-    constructor (ionStruct: IonStruct, schema: Schema) :
+    constructor (ionStruct: IonStruct, schema: SchemaInternal) :
         this(ionStruct, TypeImpl(ionStruct, schema, addDefaultTypeConstraint = false))
 
-    override val name = ion.fieldName
+    override val name: String = ion.fieldName
 
     override fun validate(value: IonValue, issues: Violations) {
         val struct = ion.system.newEmptyStruct()

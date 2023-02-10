@@ -19,9 +19,7 @@ import com.amazon.ion.IonDatagram
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ionschema.Import
-import com.amazon.ionschema.IonSchemaSystem
 import com.amazon.ionschema.IonSchemaVersion
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
 import com.amazon.ionschema.internal.util.markReadOnly
 
@@ -30,13 +28,12 @@ import com.amazon.ionschema.internal.util.markReadOnly
  * defined by the Ion Schema Specification.
  */
 internal class SchemaCore(
-    private val schemaSystem: IonSchemaSystem,
+    private val schemaSystem: IonSchemaSystemImpl,
     override val ionSchemaLanguageVersion: IonSchemaVersion
-) : Schema {
-
-    private val typeMap: Map<String, Type>
-
+) : SchemaInternal {
+    override val schemaId: String? = null
     override val isl: IonDatagram
+    private val typeMap: Map<String, TypeInternal>
 
     init {
         val ION = schemaSystem.ionSystem
@@ -56,7 +53,7 @@ internal class SchemaCore(
         isl = ION.newDatagram().markReadOnly()
     }
 
-    private fun newType(name: IonSymbol): Type =
+    private fun newType(name: IonSymbol): TypeInternal =
         if (name.stringValue().startsWith("\$")) {
             TypeIon(name)
         } else {
@@ -67,19 +64,22 @@ internal class SchemaCore(
 
     override fun getImports() = emptyList<Import>().iterator()
 
-    override fun getType(name: String): Type? = typeMap[name]
+    override fun getInScopeType(name: String): TypeInternal? = getDeclaredType(name)
 
-    override fun getTypes() = typeMap.values.iterator()
+    override fun getType(name: String): TypeInternal? = typeMap[name]
 
-    override fun getDeclaredType(name: String): Type? = getType(name)
+    override fun getTypes(): Iterator<TypeInternal> = typeMap.values.iterator()
 
-    override fun getDeclaredTypes(): Iterator<Type> = getTypes()
+    override fun getDeclaredType(name: String): TypeInternal? = getType(name)
+
+    override fun getDeclaredTypes(): Iterator<TypeInternal> = getTypes()
 
     override fun getSchemaSystem() = schemaSystem
 
     override fun newType(isl: String) = throw UnsupportedOperationException()
     override fun newType(isl: IonStruct) = throw UnsupportedOperationException()
     override fun plusType(type: Type) = throw UnsupportedOperationException()
+    override fun addDeferredType(typeRef: TypeReferenceDeferred) = throw UnsupportedOperationException()
 }
 
 private const val CORE_TYPES =

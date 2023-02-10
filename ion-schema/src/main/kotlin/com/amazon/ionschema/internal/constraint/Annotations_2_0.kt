@@ -19,10 +19,10 @@ import com.amazon.ion.IonDatagram
 import com.amazon.ion.IonList
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.CommonViolations
+import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeInternal
 import com.amazon.ionschema.internal.TypeReference
 import com.amazon.ionschema.internal.util.islRequire
@@ -36,7 +36,7 @@ import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
  */
 internal class Annotations_2_0 constructor(
     ion: IonValue,
-    schema: Schema,
+    schema: SchemaInternal,
 ) : ConstraintBase(ion) {
 
     private val type: () -> TypeInternal

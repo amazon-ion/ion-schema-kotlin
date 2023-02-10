@@ -44,8 +44,8 @@ internal class SchemaImpl_1_0 private constructor(
          * dependency type A.  After initialization, [types] is expected to
          * be treated as immutable as required by the Schema interface.
          */
-    private val types: MutableMap<String, Type>
-) : SchemaImpl {
+    private val types: MutableMap<String, TypeInternal>
+) : SchemaInternal {
 
     internal constructor(
         schemaSystem: IonSchemaSystemImpl,
@@ -121,9 +121,9 @@ internal class SchemaImpl_1_0 private constructor(
     }
 
     private class SchemaAndTypeImports(val id: String, val schema: Schema) {
-        var types: MutableMap<String, Type> = mutableMapOf()
+        var types: MutableMap<String, TypeInternal> = mutableMapOf()
 
-        fun addType(name: String, type: Type) {
+        fun addType(name: String, type: TypeInternal) {
             types[name]?.let {
                 if (it.schemaId != type.schemaId || it.isl != type.isl) {
                     throw InvalidSchemaException("Duplicate imported type name/alias encountered: '$name'")
@@ -136,7 +136,7 @@ internal class SchemaImpl_1_0 private constructor(
     }
 
     private fun loadHeader(
-        typeMap: MutableMap<String, Type>,
+        typeMap: MutableMap<String, TypeInternal>,
         header: IonStruct
     ): Map<String, Import> {
 
@@ -227,7 +227,7 @@ internal class SchemaImpl_1_0 private constructor(
         }
     }
 
-    private fun addType(typeMap: MutableMap<String, Type>, type: Type) {
+    private fun addType(typeMap: MutableMap<String, TypeInternal>, type: TypeInternal) {
         validateType(type)
         getType(type.name)?.let {
             if (it.schemaId != type.schemaId || it.isl != type.isl) {
@@ -246,11 +246,13 @@ internal class SchemaImpl_1_0 private constructor(
 
     override fun getType(name: String) = schemaCore.getType(name) ?: types[name]
 
+    override fun getInScopeType(name: String) = (schemaCore.getType(name) ?: types[name])
+
     override fun getDeclaredType(name: String) = declaredTypes[name]
 
-    override fun getDeclaredTypes(): Iterator<Type> = declaredTypes.values.iterator()
+    override fun getDeclaredTypes(): Iterator<TypeInternal> = declaredTypes.values.iterator()
 
-    override fun getTypes(): Iterator<Type> =
+    override fun getTypes(): Iterator<TypeInternal> =
         (schemaCore.getTypes().asSequence() + types.values.asSequence())
             .filter { it is ImportedType || it is TypeImpl }
             .iterator()
@@ -292,11 +294,9 @@ internal class SchemaImpl_1_0 private constructor(
             }
             newIsl.add(value.clone())
         }
+        if (!newTypeAdded) newIsl.add(type.isl.clone())
 
-        // clone the types map:
-        val preLoadedTypes = types.toMutableMap()
-        preLoadedTypes[type.name] = type
-        return SchemaImpl_1_0(schemaSystem, schemaCore, newIsl.iterator(), null, imports, preLoadedTypes)
+        return schemaSystem.newSchema(newIsl.iterator())
     }
 
     override fun getSchemaSystem() = schemaSystem
@@ -321,8 +321,7 @@ internal class SchemaImpl_1_0 private constructor(
      * Returns a new [ImportedType] instance that decorates [Type] so that it will
      * log a transitive import warning every time it is used for validation.
      */
-    private fun Type.toImportedType(importedFromSchemaId: String): ImportedType {
-        this@toImportedType as TypeInternal
+    private fun TypeInternal.toImportedType(importedFromSchemaId: String): ImportedType {
         return object : ImportedType, TypeInternal by this {
             override fun validate(value: IonValue, issues: Violations) {
                 if (importedFromSchemaId != schemaId) {

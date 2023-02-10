@@ -18,10 +18,10 @@ package com.amazon.ionschema.internal.constraint
 import com.amazon.ion.IonList
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeReference
 
 /**
@@ -31,7 +31,7 @@ import com.amazon.ionschema.internal.TypeReference
  */
 internal abstract class LogicConstraints(
     ion: IonValue,
-    schema: Schema
+    schema: SchemaInternal,
 ) : ConstraintBase(ion) {
 
     internal val types = if (ion is IonList && !ion.isNullValue) {
@@ -58,7 +58,7 @@ internal abstract class LogicConstraints(
  *
  * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#all_of
  */
-internal class AllOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
+internal class AllOf(ion: IonValue, schema: SchemaInternal) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
         val allOfViolation = Violation(ion, "all_types_not_matched")
         val count = validateTypes(value, allOfViolation).size
@@ -74,7 +74,7 @@ internal class AllOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
  *
  * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#any_of
  */
-internal class AnyOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
+internal class AnyOf(ion: IonValue, schema: SchemaInternal) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
         val anyOfViolation = Violation(ion, "no_types_matched", "value matches none of the types")
         types.forEach {
@@ -92,7 +92,7 @@ internal class AnyOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
  *
  * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#one_of
  */
-internal class OneOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, schema) {
+internal class OneOf(ion: IonValue, schema: SchemaInternal) : LogicConstraints(ion, schema) {
     override fun validate(value: IonValue, issues: Violations) {
         val oneOfViolation = Violation(ion)
         val validTypes = validateTypes(value, oneOfViolation)
@@ -125,7 +125,7 @@ internal class OneOf(ion: IonValue, schema: Schema) : LogicConstraints(ion, sche
  *
  * @see https://amazon-ion.github.io/ion-schema/docs/spec.html#not
  */
-internal class Not(ion: IonValue, schema: Schema) : ConstraintBase(ion) {
+internal class Not(ion: IonValue, schema: SchemaInternal) : ConstraintBase(ion) {
     private val type = TypeReference.create(ion, schema)
 
     override fun validate(value: IonValue, issues: Violations) {

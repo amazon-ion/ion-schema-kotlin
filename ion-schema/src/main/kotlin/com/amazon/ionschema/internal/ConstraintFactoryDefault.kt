@@ -19,7 +19,6 @@ import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.IonSchemaVersion.v1_0
 import com.amazon.ionschema.IonSchemaVersion.v2_0
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.internal.constraint.AllOf
 import com.amazon.ionschema.internal.constraint.Annotations_1_0
 import com.amazon.ionschema.internal.constraint.Annotations_2_0
@@ -58,11 +57,11 @@ internal object ConstraintFactoryDefault : ConstraintFactory {
     private data class ConstraintConstructor(
         val name: String,
         val versions: ClosedRange<IonSchemaVersion>,
-        val newInstance: (ion: IonValue, schema: Schema) -> Constraint,
+        val newInstance: (ion: IonValue, schema: SchemaInternal) -> Constraint,
     ) {
         constructor(name: String, versions: ClosedRange<IonSchemaVersion>, newInstance: (IonValue) -> Constraint) : this(name, versions, { ion, _ -> newInstance(ion) })
         constructor(name: String, version: IonSchemaVersion, newInstance: (IonValue) -> Constraint) : this(name, version..version, { ion, _ -> newInstance(ion) })
-        constructor(name: String, version: IonSchemaVersion, newInstance: (IonValue, schema: Schema) -> Constraint) : this(name, version..version, newInstance)
+        constructor(name: String, version: IonSchemaVersion, newInstance: (IonValue, schema: SchemaInternal) -> Constraint) : this(name, version..version, newInstance)
     }
 
     private val constraints = listOf(
@@ -98,7 +97,7 @@ internal object ConstraintFactoryDefault : ConstraintFactory {
         return constraints.any { name == it.name && version in it.versions }
     }
 
-    override fun constraintFor(ion: IonValue, schema: Schema) = constraints
+    override fun constraintFor(ion: IonValue, schema: SchemaInternal) = constraints
         .single { ion.fieldName == it.name && schema.ionSchemaLanguageVersion in it.versions }
         .newInstance(ion, schema)
 

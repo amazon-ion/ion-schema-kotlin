@@ -20,10 +20,10 @@ import com.amazon.ion.IonSequence
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaVersion.v2_0
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeReference
 import com.amazon.ionschema.internal.util.IntRange
 import com.amazon.ionschema.internal.util.islRequire
@@ -38,7 +38,7 @@ import com.amazon.ionschema.internal.util.schemaTypeName
  */
 internal class OrderedElements(
     ion: IonValue,
-    private val schema: Schema
+    private val schema: SchemaInternal,
 ) : ConstraintBase(ion) {
 
     private val nfa: NFA<IonValue, Violation> = run {

@@ -18,6 +18,7 @@ package com.amazon.ionschema
 import com.amazon.ion.IonStruct
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.IonSchemaVersion.v1_0
+import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import com.amazon.ionschema.internal.SchemaCore
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -186,9 +187,11 @@ class SchemaTest {
         assertEquals(2, schema.getImports().asSequence().count())
         val newType = schema.newType("type::{name: three, value_values: [3], open_content: 3}")
         val newSchema = schema.plusType(newType)
+        // Unfortunately, [ImportImpl] doesn't have a proper definition of equality, so we're converting to a
+        // Map<String, List<String>>> which is like a multimap of schemaId to type names imported from that schema.
         assertEquals(
-            schema.getImports().asSequence().toList(),
-            newSchema.getImports().asSequence().toList()
+            schema.getImports().asSequence().associate { it.id to it.getTypes().asSequence().map { it.name }.toSet() },
+            newSchema.getImports().asSequence().associate { it.id to it.getTypes().asSequence().map { it.name }.toSet() }
         )
     }
 
@@ -237,7 +240,8 @@ class SchemaTest {
         assertNotEquals(isl, newIsl)
         assertEquals(ION.newLoader().load(newIsl), newSchema.isl)
         assertTrue(newSchema.isl.isReadOnly)
-        assertNull(newSchema.getType("three")!!.isl.container)
+        assertNull(schema.getType("three"), "plusType should not modify the original schema")
+        assertNotNull(newSchema.getType("three"), "plusType should add the new type to the new copy of the schema")
     }
 
     @Test
@@ -257,7 +261,7 @@ class SchemaTest {
 
     @Test
     fun isl_SchemaCore() {
-        val schemaCore = SchemaCore(iss, v1_0)
+        val schemaCore = SchemaCore(iss as IonSchemaSystemImpl, v1_0)
         assertEquals(ION.newDatagram(), schemaCore.isl)
         assertTrue(schemaCore.isl.isReadOnly)
         assertNull(schemaCore.isl.container)
