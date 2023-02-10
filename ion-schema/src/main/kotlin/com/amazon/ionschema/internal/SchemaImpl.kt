@@ -28,13 +28,11 @@ internal interface SchemaImpl : Schema {
     }
 }
 
-private val ISL_VERSION_MARKER = Regex("^\\\$ion_schema_\\d.*")
-
 private fun findIslVersion(schemaContent: Iterable<IonValue>): IonSchemaVersion {
     for (value in schemaContent) {
         // could be a version, header, type, or open content
         when (value) {
-            is IonSymbol -> if (ISL_VERSION_MARKER.matches(value.stringValue())) {
+            is IonSymbol -> if (IonSchemaVersion.VERSION_MARKER_REGEX.matches(value.stringValue())) {
                 return when (value.stringValue()) {
                     "\$ion_schema_1_0" -> IonSchemaVersion.v1_0
                     "\$ion_schema_2_0" -> IonSchemaVersion.v2_0
