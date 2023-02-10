@@ -3,8 +3,10 @@ package com.amazon.ionschema
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.util.CloseableIterator
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 private val isl = "type::{name: a, type: symbol, codepoint_length: 3}"
 private val schemaId = "test_schema"
@@ -43,6 +45,27 @@ class SchemaCacheTest {
         val schemaAfterInvalidation = iss.loadSchema(schemaId)
         assertTrue(schema != schemaAfterInvalidation)
         checkSchema(schemaAfterInvalidation)
+    }
+
+    @Test
+    fun `getOrNull should return a schema that is cached`() {
+        val schemaCache = SchemaCacheDefault()
+
+        val iss = IonSchemaSystemBuilder.standard()
+            .addAuthority(authority)
+            .withSchemaCache(schemaCache)
+            .build()
+
+        val schema = iss.loadSchema(schemaId)
+
+        assertEquals(schema, schemaCache.getOrNull(schemaId))
+    }
+
+    @Test
+    fun `getOrNull should return null if no schema is cached for an id`() {
+        val schemaCache = SchemaCacheDefault()
+
+        assertNull(schemaCache.getOrNull("blah blah"))
     }
 
     @Test
