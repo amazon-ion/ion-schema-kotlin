@@ -20,10 +20,10 @@ import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.InvalidSchemaException
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeInternal
 import com.amazon.ionschema.internal.TypeReference
 import com.amazon.ionschema.internal.constraint.Occurs.Companion.toRange
@@ -39,7 +39,7 @@ import com.amazon.ionschema.internal.util.RangeType
  */
 internal open class Occurs(
     ion: IonValue,
-    schema: Schema,
+    schema: SchemaInternal,
     defaultRange: Range<Int>,
     isField: Boolean = false
 ) : ConstraintBase(ion) {

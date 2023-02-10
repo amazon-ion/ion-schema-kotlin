@@ -17,13 +17,14 @@ package com.amazon.ionschema.internal.constraint
 
 import com.amazon.ionschema.IonSchemaSystemBuilder
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 class OrderedElementsTest {
-    val ISS = IonSchemaSystemBuilder.standard().build()
+    private val ISS = IonSchemaSystemBuilder.standard().build() as IonSchemaSystemImpl
     val ION = ISS.ionSystem
 
     @ParameterizedTest(name = "ordered_elements:{0} should {1} {2}")

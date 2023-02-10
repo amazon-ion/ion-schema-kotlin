@@ -21,7 +21,6 @@ import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaVersion
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.util.IonSchema_2_0
 import com.amazon.ionschema.internal.util.getIslOptionalField
@@ -44,7 +43,7 @@ internal class TypeReference private constructor() {
 
         fun create(
             ion: IonValue,
-            schema: Schema,
+            schema: SchemaInternal,
             isField: Boolean = false,
             variablyOccurring: Boolean = false,
             isNamePermitted: Boolean = false,
@@ -80,20 +79,19 @@ internal class TypeReference private constructor() {
             }
         }
 
-        private fun handleStruct(ion: IonStruct, schema: Schema, isField: Boolean): () -> TypeInternal {
+        private fun handleStruct(ion: IonStruct, schema: SchemaInternal, isField: Boolean): () -> TypeInternal {
             val id = ion.getIslOptionalField<IonText>("id")
             val type = when {
                 id != null -> {
                     // import
                     if (schema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
                         ion.islRequireOnlyExpectedFieldNames(IonSchema_2_0.INLINE_IMPORT_KEYWORDS)
-                        val thisSchemaId = (schema as? SchemaImpl)?.schemaId
-                        islRequire(id.stringValue() != thisSchemaId) { "A schema may not directly import itself: $ion" }
+                        islRequire(id.stringValue() != schema.schemaId) { "A schema may not directly import itself: $ion" }
                     }
                     val typeName = ion.getIslRequiredField<IonSymbol>("type")
                     val importedSchema = runCatching { schema.getSchemaSystem().loadSchema(id.stringValue()) }
                         .getOrElse { e -> throw InvalidSchemaException("Unable to load schema '${id.stringValue()}'; ${e.message}") }
-                    importedSchema.getType(typeName.stringValue()) as? TypeInternal
+                    importedSchema.getType(typeName.stringValue())
                 }
                 isField -> TypeImpl(ion, schema)
                 ion.size() == 1 && ion["type"] != null -> {
@@ -110,21 +108,21 @@ internal class TypeReference private constructor() {
             return { theType }
         }
 
-        private fun handleSymbol(ion: IonSymbol, schema: Schema): () -> TypeInternal {
+        private fun handleSymbol(ion: IonSymbol, schema: SchemaInternal): () -> TypeInternal {
             val t = schema.getType(ion.stringValue())
             return if (t != null) {
-                val type = t as? TypeBuiltin ?: TypeNamed(ion, t as TypeInternal)
+                val type = t as? TypeBuiltin ?: TypeNamed(ion, t)
                 val theType = handleNullable(ion, schema, type);
                 { theType }
             } else {
                 // type can't be resolved yet;  ask the schema to try again later
                 val deferredType = TypeReferenceDeferred(ion, schema)
-                (schema as SchemaImpl).addDeferredType(deferredType);
+                schema.addDeferredType(deferredType);
                 { deferredType.resolve() }
             }
         }
 
-        private fun handleNullable(ion: IonValue, schema: Schema, type: TypeInternal): TypeInternal {
+        private fun handleNullable(ion: IonValue, schema: SchemaInternal, type: TypeInternal): TypeInternal {
             return when {
                 ion.hasTypeAnnotation("nullable") -> TypeNullable(ion, type, schema)
                 ion.hasTypeAnnotation("\$null_or") -> TypeOrNullDecorator(ion, type, schema)
@@ -139,16 +137,16 @@ internal class TypeReference private constructor() {
  */
 internal class TypeReferenceDeferred(
     nameSymbol: IonSymbol,
-    private val schema: Schema
+    private val schema: SchemaInternal
 ) : TypeInternal {
 
     private var type: TypeInternal? = null
     override val name: String = nameSymbol.stringValue()
-    override val schemaId: String? = (schema as? SchemaImpl)?.schemaId
+    override val schemaId: String? = schema.schemaId
     override val isl = nameSymbol.markReadOnly()
 
     fun attemptToResolve(): Boolean {
-        type = schema.getType(name) as? TypeInternal
+        type = schema.getType(name)
         return type != null
     }
 

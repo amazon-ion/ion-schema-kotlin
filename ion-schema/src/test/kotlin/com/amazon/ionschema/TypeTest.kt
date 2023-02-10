@@ -89,9 +89,10 @@ class TypeTest {
     fun isl_plusType() {
         val schema = IonSchemaSystemBuilder.standard().build().newSchema()
         val isl = "type::{name: b, type: struct, open_content: hi}"
-        val newSchema = schema.plusType(schema.newType(isl))
+        val newType = schema.newType(isl)
+        val newSchema = schema.plusType(newType)
         assertEquals(ION.singleValue(isl), newSchema.getType("b")!!.isl)
         assertTrue(newSchema.getType("b")!!.isl.isReadOnly)
-        assertNull(newSchema.getType("b")!!.isl.container)
+        assertNull(newType.isl.container, "newType's isl container should not be set")
     }
 }

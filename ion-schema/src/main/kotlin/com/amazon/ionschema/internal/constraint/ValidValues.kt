@@ -20,9 +20,9 @@ import com.amazon.ion.IonTimestamp
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaVersion
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.util.Range
 import com.amazon.ionschema.internal.util.RangeFactory
 import com.amazon.ionschema.internal.util.RangeIonNumber
@@ -38,7 +38,7 @@ import com.amazon.ionschema.internal.util.withoutTypeAnnotations
  */
 internal class ValidValues(
     ion: IonValue,
-    schema: Schema
+    schema: SchemaInternal,
 ) : ConstraintBase(ion) {
 
     private val ionSchemaVersion = schema.ionSchemaLanguageVersion

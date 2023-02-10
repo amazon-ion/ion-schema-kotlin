@@ -17,7 +17,6 @@ package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaVersion
-import com.amazon.ionschema.Schema
 
 /**
  * Factory for [Constraint] objects.
@@ -33,5 +32,5 @@ internal interface ConstraintFactory {
      * @param[ion] IonValue identifying the constraint to construct as well as its configuration
      * @param[schema] passed to constraints that require a schema object
      */
-    fun constraintFor(ion: IonValue, schema: Schema): Constraint
+    fun constraintFor(ion: IonValue, schema: SchemaInternal): Constraint
 }

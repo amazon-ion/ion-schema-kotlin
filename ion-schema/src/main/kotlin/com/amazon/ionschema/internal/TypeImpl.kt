@@ -20,20 +20,19 @@ import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.IonSchemaVersion
-import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
- * Implementation of [Type] backed by a collection of zero or more [Constraint]s.
+ * Implementation of [TypeInternal] backed by a collection of zero or more [Constraint]s.
  *
  * If no "type" constraint is found, the default "type: any" is inserted by this class
  * (unless addDefaultTypeConstraint is `false`).
  */
 internal class TypeImpl(
     private val ionStruct: IonStruct,
-    private val schema: Schema,
+    private val schema: SchemaInternal,
     addDefaultTypeConstraint: Boolean = true
 ) : TypeInternal, ConstraintBase(ionStruct) {
 
@@ -49,9 +48,9 @@ internal class TypeImpl(
     init {
         var foundTypeConstraint = false
         constraints = ionStruct.asSequence()
-            .filter { it.fieldName == null || (schema.getSchemaSystem() as IonSchemaSystemImpl).isConstraint(it.fieldName, schema) }
+            .filter { it.fieldName == null || schema.getSchemaSystem().isConstraint(it.fieldName, schema) }
             .onEach { if (it.fieldName == "type") { foundTypeConstraint = true } }
-            .map { (schema.getSchemaSystem() as IonSchemaSystemImpl).constraintFor(it, schema) }
+            .map { (schema.getSchemaSystem()).constraintFor(it, schema) }
             .toMutableList()
 
         if (schema.ionSchemaLanguageVersion == IonSchemaVersion.v1_0) {
@@ -66,7 +65,7 @@ internal class TypeImpl(
 
     override val name = (ionStruct.get("name") as? IonSymbol)?.stringValue() ?: ionStruct.toString()
 
-    override val schemaId: String? = (schema as? SchemaImpl)?.schemaId
+    override val schemaId: String? = schema.schemaId
 
     @Deprecated("Only used for Ion Schema 1.0 code paths. No new usages should be introduced.")
     override fun getBaseType(): TypeBuiltin {
@@ -74,7 +73,7 @@ internal class TypeImpl(
         if (type != null && type is IonSymbol) {
             val parentType = schema.getType(type.stringValue())
             if (parentType != null) {
-                return (parentType as TypeInternal).getBaseType()
+                return parentType.getBaseType()
             }
         }
         return schema.getType("any")!! as TypeBuiltin
