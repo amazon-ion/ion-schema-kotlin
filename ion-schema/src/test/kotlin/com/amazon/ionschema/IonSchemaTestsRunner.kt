@@ -33,6 +33,14 @@ import org.junit.jupiter.api.assertThrows
 import java.io.File
 
 class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(v1_0)
+
+class IonSchemaTests_1_0_transitive : TestFactory by IonSchemaTestsRunner(
+    islVersion = v1_0,
+    systemBuilder = IonSchemaSystemBuilder.standard().allowTransitiveImports(true),
+    // Skip the tests for transitive imports since we're explicitly enabling the buggy behavior.
+    additionalFileFilter = { !it.path.contains("invalid_transitive_import") }
+)
+
 class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
     islVersion = v2_0,
     additionalFileFilter = {
@@ -46,18 +54,17 @@ class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
  * Use this to create a different class for each Ion Schema version since the IntelliJ and Html
  * reports lose all structure from the [DynamicNode] hierarchy.
  */
-class IonSchemaTestsRunner(islVersion: IonSchemaVersion, additionalFileFilter: (File) -> Boolean) : TestFactory {
-
-    companion object {
-        operator fun invoke(islVersion: IonSchemaVersion) = IonSchemaTestsRunner(islVersion) { true }
-    }
+class IonSchemaTestsRunner(
+    islVersion: IonSchemaVersion,
+    systemBuilder: IonSchemaSystemBuilder = IonSchemaSystemBuilder.standard().allowTransitiveImports(false),
+    additionalFileFilter: (File) -> Boolean = { true },
+) : TestFactory {
 
     private val baseDir = IonSchemaTests.testDirectoryFor(islVersion)
     private val fileFilter: (File) -> Boolean = { it.path.endsWith(".isl") && additionalFileFilter(it) }
 
-    private val schemaSystem = IonSchemaSystemBuilder.standard()
+    private val schemaSystem = systemBuilder
         .withAuthority(IonSchemaTests.authorityFor(islVersion))
-        .allowTransitiveImports(false)
         .build() as IonSchemaSystemImpl
 
     override fun generateTests(): Iterable<DynamicNode> {
