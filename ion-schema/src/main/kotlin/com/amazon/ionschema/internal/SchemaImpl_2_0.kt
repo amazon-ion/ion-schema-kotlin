@@ -90,10 +90,6 @@ internal class SchemaImpl_2_0 private constructor(
     override val ionSchemaLanguageVersion: IonSchemaVersion
         get() = IonSchemaVersion.v2_0
 
-    companion object {
-        private val ISL_VERSION_MARKER = Regex("^\\\$ion_schema_\\d.*")
-    }
-
     init {
         val dgIsl = schemaSystem.ionSystem.newDatagram()
 
@@ -188,7 +184,7 @@ internal class SchemaImpl_2_0 private constructor(
      * See https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#open-content
      */
     private fun isTopLevelOpenContent(value: IonValue): Boolean {
-        if (value is IonSymbol && ISL_VERSION_MARKER.matches(value.stringValue())) {
+        if (value is IonSymbol && IonSchemaVersion.VERSION_MARKER_REGEX.matches(value.stringValue())) {
             return false
         }
         if (value.typeAnnotations.any { IonSchema_2_0.RESERVED_WORDS_REGEX.matches(it) }) {
@@ -212,7 +208,7 @@ internal class SchemaImpl_2_0 private constructor(
     @OptIn(ExperimentalContracts::class)
     private fun isVersionMarker(value: IonValue): Boolean {
         contract { returns(true) implies (value is IonSymbol) }
-        return value is IonSymbol && !value.isNullValue && ISL_VERSION_MARKER.matches(value.stringValue())
+        return value is IonSymbol && !value.isNullValue && IonSchemaVersion.VERSION_MARKER_REGEX.matches(value.stringValue())
     }
 
     @OptIn(ExperimentalContracts::class)

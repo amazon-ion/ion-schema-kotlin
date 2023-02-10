@@ -27,6 +27,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 
 internal val ION = IonSystemBuilder.standard().build()
 
+/**
+ * Returns the test directory name for an IonSchemaVersion.
+ */
+internal val IonSchemaVersion.testSuiteDirectoryName: String
+    get() = symbolText.drop(1)
+
 internal fun prepareValue(ion: IonValue) =
     if (ion.hasTypeAnnotation("document") && ion is IonString) {
         ION.loader.load(ion.stringValue())

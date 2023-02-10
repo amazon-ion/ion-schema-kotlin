@@ -65,10 +65,6 @@ internal class SchemaImpl_1_0 private constructor(
     override val ionSchemaLanguageVersion: IonSchemaVersion
         get() = IonSchemaVersion.v1_0
 
-    companion object {
-        private val ISL_VERSION_MARKER = Regex("^\\\$ion_schema_\\d+_\\d+")
-    }
-
     init {
         val dgIsl = schemaSystem.ionSystem.newDatagram()
 
@@ -82,7 +78,7 @@ internal class SchemaImpl_1_0 private constructor(
 
                 dgIsl.add(it.clone())
 
-                if (it is IonSymbol && ISL_VERSION_MARKER.matches(it.stringValue())) {
+                if (it is IonSymbol && IonSchemaVersion.VERSION_MARKER_REGEX.matches(it.stringValue())) {
                     // This implementation only supports Ion Schema 1.0
                     if (it.stringValue() != "\$ion_schema_1_0") {
                         throw InvalidSchemaException("Unsupported Ion Schema version: ${it.stringValue()}")

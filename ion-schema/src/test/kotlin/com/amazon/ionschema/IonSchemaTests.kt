@@ -48,7 +48,7 @@ object IonSchemaTests {
     /**
      * Returns the directory (as a [File]) that is the root for a particular Ion Schema version's tests.
      */
-    fun testDirectoryFor(version: IonSchemaVersion) = File("$ION_SCHEMA_TESTS_DIR/${version.directoryName}")
+    fun testDirectoryFor(version: IonSchemaVersion) = File("$ION_SCHEMA_TESTS_DIR/${version.testSuiteDirectoryName}")
 
     /**
      * Checks if an [IonStruct] is a valid/invalid value test case
