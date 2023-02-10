@@ -46,6 +46,8 @@ internal class Fields(
     private val contentConstraintIon: IonValue?
     private val contentClosed: Boolean
 
+    private val fieldConstraints: Map<String, Occurs>
+
     init {
         ionStruct = islRequireIonTypeNotNull(ionValue) { "fields must be a struct that defines at least one field: $ionValue" }
         islRequire(ionStruct.size() != 0) { "fields struct must define at least one field: $ionStruct" }
@@ -59,10 +61,9 @@ internal class Fields(
         }
 
         // Forces the field definitions to be validated
-        // TODO: See if we can cache these values https://github.com/amazon-ion/ion-schema-kotlin/issues/215
-        ionStruct.associateBy(
+        fieldConstraints = ionStruct.associateBy(
             { it.fieldName },
-            { Occurs(it, schema, OPTIONAL) }
+            { Occurs(it, schema, OPTIONAL, isField = true) }
         )
 
         if (schema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
@@ -77,15 +78,12 @@ internal class Fields(
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonStruct>(value, issues) { v ->
             val fieldIssues = Violation(ion, "fields_mismatch", "one or more fields don't match expectations")
-            val fieldConstraints = ionStruct.associateBy(
-                { it.fieldName },
-                {
-                    Pair(
-                        Occurs(it, schema, OPTIONAL, isField = true),
-                        ViolationChild(fieldName = it.fieldName)
-                    )
-                }
-            )
+            val fieldConstraints = this.fieldConstraints.mapValues { (fieldName, occurs) ->
+                Pair(
+                    occurs.validator(),
+                    ViolationChild(fieldName = fieldName)
+                )
+            }
             var closedContentIssues: Violation? = null
 
             v.iterator().forEach {
