@@ -78,7 +78,7 @@ internal class SchemaImpl_1_0 private constructor(
 
                 dgIsl.add(it.clone())
 
-                if (it is IonSymbol && IonSchemaVersion.VERSION_MARKER_REGEX.matches(it.stringValue())) {
+                if (IonSchemaVersion.isVersionMarker(it)) {
                     // This implementation only supports Ion Schema 1.0
                     if (it.stringValue() != "\$ion_schema_1_0") {
                         throw InvalidSchemaException("Unsupported Ion Schema version: ${it.stringValue()}")
