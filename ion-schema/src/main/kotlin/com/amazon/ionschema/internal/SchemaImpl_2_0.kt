@@ -107,7 +107,7 @@ internal class SchemaImpl_2_0 private constructor(
                 dgIsl.add(it.clone())
 
                 when {
-                    isVersionMarker(it) -> {
+                    IonSchemaVersion.isVersionMarker(it) -> {
                         islRequire(it.stringValue() == IonSchemaVersion.v2_0.symbolText) { "Unsupported Ion Schema version: $it" }
                         islRequire(!foundVersionMarker) { "Only one Ion Schema version marker is allowed in a schema document." }
                         islRequire(!foundHeader && !foundAnyType && !foundFooter) { "Ion Schema version marker must come before any header, types, and footer." }
@@ -184,7 +184,7 @@ internal class SchemaImpl_2_0 private constructor(
      * See https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#open-content
      */
     private fun isTopLevelOpenContent(value: IonValue): Boolean {
-        if (value is IonSymbol && IonSchemaVersion.VERSION_MARKER_REGEX.matches(value.stringValue())) {
+        if (IonSchemaVersion.isVersionMarker(value)) {
             return false
         }
         if (value.typeAnnotations.any { IonSchema_2_0.RESERVED_WORDS_REGEX.matches(it) }) {
@@ -203,12 +203,6 @@ internal class SchemaImpl_2_0 private constructor(
     private fun isFooter(value: IonValue): Boolean {
         contract { returns(true) implies (value is IonStruct) }
         return value is IonStruct && !value.isNullValue && arrayOf("schema_footer").contentDeepEquals(value.typeAnnotations)
-    }
-
-    @OptIn(ExperimentalContracts::class)
-    private fun isVersionMarker(value: IonValue): Boolean {
-        contract { returns(true) implies (value is IonSymbol) }
-        return value is IonSymbol && !value.isNullValue && IonSchemaVersion.VERSION_MARKER_REGEX.matches(value.stringValue())
     }
 
     @OptIn(ExperimentalContracts::class)

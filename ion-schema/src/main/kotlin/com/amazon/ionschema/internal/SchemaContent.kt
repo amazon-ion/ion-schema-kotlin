@@ -40,7 +40,7 @@ internal class SchemaContent(val isl: List<IonValue>) {
         var version: IonSchemaVersion = IonSchemaVersion.v1_0
         declaredTypes = isl
             .onEach {
-                if (it is IonSymbol && IonSchemaVersion.VERSION_MARKER_REGEX.matches(it.stringValue())) {
+                if (IonSchemaVersion.isVersionMarker(it)) {
                     version = IonSchemaVersion.fromIonSymbolOrNull(it)
                         ?: throw InvalidSchemaException("Unsupported Ion Schema version: $it")
                 }

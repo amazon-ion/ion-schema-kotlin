@@ -16,6 +16,9 @@
 package com.amazon.ionschema
 
 import com.amazon.ion.IonSymbol
+import com.amazon.ion.IonValue
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 enum class IonSchemaVersion(val symbolText: String) {
     v1_0("\$ion_schema_1_0"),
@@ -24,7 +27,17 @@ enum class IonSchemaVersion(val symbolText: String) {
     companion object {
         internal fun fromIonSymbolOrNull(symbol: IonSymbol): IonSchemaVersion? = values().singleOrNull { it.symbolText == symbol.stringValue() }
 
+        /**
+         * Tests if the IonValue is a value that is reserved for version markers, as per
+         * [ISL Versioning](https://amazon-ion.github.io/ion-schema/docs/isl-versioning#ion-schema-version-markers).
+         */
+        @OptIn(ExperimentalContracts::class)
+        internal fun isVersionMarker(value: IonValue): Boolean {
+            contract { returns(true) implies (value is IonSymbol) }
+            return value is IonSymbol && !value.isNullValue && IonSchemaVersion.VERSION_MARKER_REGEX.matches(value.stringValue())
+        }
+
         @JvmStatic
-        internal val VERSION_MARKER_REGEX = Regex("^\\\$ion_schema_\\d.*")
+        private val VERSION_MARKER_REGEX = Regex("^\\\$ion_schema_\\d.*")
     }
 }
