@@ -15,7 +15,6 @@
 
 package com.amazon.ionschema.internal
 
-import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonSystem
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Authority
@@ -74,7 +73,7 @@ internal class IonSchemaSystemImpl(
         val isl = schemaIterator.use {
             it.asSequence()
                 .onEach {
-                    if (it is IonSymbol && IonSchemaVersion.VERSION_MARKER_REGEX.matches(it.stringValue())) {
+                    if (IonSchemaVersion.isVersionMarker(it)) {
                         version = IonSchemaVersion.fromIonSymbolOrNull(it)
                             ?: throw InvalidSchemaException("Unsupported Ion Schema version: $it")
                     }
@@ -100,7 +99,7 @@ internal class IonSchemaSystemImpl(
         var version = IonSchemaVersion.v1_0
         val islList = isl.asSequence()
             .onEach {
-                if (it is IonSymbol && IonSchemaVersion.VERSION_MARKER_REGEX.matches(it.stringValue())) {
+                if (IonSchemaVersion.isVersionMarker(it)) {
                     version = IonSchemaVersion.fromIonSymbolOrNull(it) ?: throw InvalidSchemaException("Unsupported Ion Schema version: $it")
                 }
             }
