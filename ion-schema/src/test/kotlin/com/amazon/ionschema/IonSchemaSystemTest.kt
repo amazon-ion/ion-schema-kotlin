@@ -43,9 +43,19 @@ class IonSchemaSystemTest {
     private val iss = IonSchemaSystemBuilder.standard().build()
 
     @Test
-    fun unresolvableSchema() {
+    fun `loadSchema(id) should throw an exception when no schema is found for that id`() {
         assertThrows<IonSchemaException> {
             iss.loadSchema("")
+        }
+    }
+
+    @Test
+    fun `loadSchema(id) should wrap exception when authorities throw exception and no schema is found`() {
+        assertThrows<IonSchemaException> {
+            IonSchemaSystemBuilder.standard()
+                .addAuthority(exceptionalAuthority) // always throws BadAuthorityException
+                .build()
+                .loadSchema("no such schema id")
         }
     }
 

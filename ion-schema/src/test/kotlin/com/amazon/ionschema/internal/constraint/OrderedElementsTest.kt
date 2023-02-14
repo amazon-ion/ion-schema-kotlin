@@ -30,7 +30,7 @@ class OrderedElementsTest {
     @ParameterizedTest(name = "ordered_elements:{0} should {1} {2}")
     @MethodSource("testCases")
     fun test(ionText: String, ignored: String, value: String, expectValid: Boolean) {
-        val constraint = OrderedElements(ION.singleValue(ionText), ISS.newSchema())
+        val constraint = ISS.usingReferenceManager { OrderedElements(ION.singleValue(ionText), ISS.newSchema(), it) }
         val v = Violations()
         constraint.validate(ION.singleValue(value), v, debug = true)
         assertEquals(expectValid, v.isValid())
@@ -39,7 +39,7 @@ class OrderedElementsTest {
     @ParameterizedTest(name = "violations message - {0}")
     @MethodSource("messageTestCases")
     fun test_messages(_name: String, constraintIon: String, value: String, message: String) {
-        val constraint = OrderedElements(ION.singleValue(constraintIon), ISS.newSchema())
+        val constraint = ISS.usingReferenceManager { OrderedElements(ION.singleValue(constraintIon), ISS.newSchema(), it) }
         val v = Violations()
         constraint.validate(ION.singleValue(value), v, debug = true)
         // Trim all whitespace to normalize before comparing

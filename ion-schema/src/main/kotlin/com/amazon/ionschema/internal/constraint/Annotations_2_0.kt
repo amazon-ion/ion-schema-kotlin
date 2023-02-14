@@ -22,6 +22,7 @@ import com.amazon.ion.IonValue
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.CommonViolations
+import com.amazon.ionschema.internal.DeferredReferenceManager
 import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeInternal
 import com.amazon.ionschema.internal.TypeReference
@@ -37,6 +38,7 @@ import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
 internal class Annotations_2_0 constructor(
     ion: IonValue,
     schema: SchemaInternal,
+    referenceManager: DeferredReferenceManager,
 ) : ConstraintBase(ion) {
 
     private val type: () -> TypeInternal
@@ -76,9 +78,9 @@ internal class Annotations_2_0 constructor(
                 }
             }
 
-            TypeReference.create(annotationListTypeIon, schema)
+            TypeReference.create(annotationListTypeIon, schema, referenceManager)
         } else {
-            TypeReference.create(ion, schema, isField = true)
+            TypeReference.create(ion, schema, referenceManager, isField = true)
         }
     }
 

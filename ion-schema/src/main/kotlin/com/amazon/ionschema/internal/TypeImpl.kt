@@ -33,6 +33,7 @@ import com.amazon.ionschema.internal.util.markReadOnly
 internal class TypeImpl(
     private val ionStruct: IonStruct,
     private val schema: SchemaInternal,
+    referenceManager: DeferredReferenceManager,
     addDefaultTypeConstraint: Boolean = true
 ) : TypeInternal, ConstraintBase(ionStruct) {
 
@@ -50,13 +51,13 @@ internal class TypeImpl(
         constraints = ionStruct.asSequence()
             .filter { it.fieldName == null || schema.getSchemaSystem().isConstraint(it.fieldName, schema) }
             .onEach { if (it.fieldName == "type") { foundTypeConstraint = true } }
-            .map { (schema.getSchemaSystem()).constraintFor(it, schema) }
+            .map { schema.getSchemaSystem().constraintFor(it, schema, referenceManager) }
             .toMutableList()
 
         if (schema.ionSchemaLanguageVersion == IonSchemaVersion.v1_0) {
             if (!foundTypeConstraint && addDefaultTypeConstraint) {
                 // default type for ISL 1.0 is 'any':
-                constraints.add(TypeReference.create(ANY, schema)())
+                constraints.add(TypeReference.create(ANY, schema, referenceManager)())
             }
         }
 

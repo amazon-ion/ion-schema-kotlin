@@ -33,6 +33,7 @@ import com.amazon.ionschema.internal.util.markReadOnly
  * Implementation of [Schema] for all user-provided ISL.
  */
 internal class SchemaImpl_1_0 private constructor(
+    referenceManager: DeferredReferenceManager,
     private val schemaSystem: IonSchemaSystemImpl,
     private val schemaCore: SchemaCore,
     schemaContent: Iterator<IonValue>,
@@ -48,13 +49,12 @@ internal class SchemaImpl_1_0 private constructor(
 ) : SchemaInternal {
 
     internal constructor(
+        referenceManager: DeferredReferenceManager,
         schemaSystem: IonSchemaSystemImpl,
         schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>,
         schemaId: String?
-    ) : this(schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), mutableMapOf())
-
-    private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
+    ) : this(referenceManager, schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), mutableMapOf())
 
     override val isl: IonDatagram
 
@@ -87,7 +87,7 @@ internal class SchemaImpl_1_0 private constructor(
                     importsMap = loadHeader(types, it as IonStruct)
                     foundHeader = true
                 } else if (!foundFooter && it.hasTypeAnnotation("type") && it is IonStruct) {
-                    val newType = TypeImpl(it, this)
+                    val newType = TypeImpl(it, this, referenceManager)
                     addType(types, newType)
                 } else if (it.hasTypeAnnotation("schema_footer")) {
                     foundFooter = true
@@ -101,7 +101,6 @@ internal class SchemaImpl_1_0 private constructor(
                 throw InvalidSchemaException("Found a schema_footer, but not a schema_header")
             }
 
-            resolveDeferredTypeReferences()
             imports = importsMap
         } else {
             // in this case the new Schema is based on an existing Schema and the 'types'
@@ -208,7 +207,7 @@ internal class SchemaImpl_1_0 private constructor(
                 }
             }
         return importsMap.mapValues {
-            ImportImpl(it.value.id, it.value.schema, it.value.types)
+            ImportImpl(it.value.id, { it.value.schema }, it.value.types)
         }
     }
 
@@ -262,9 +261,7 @@ internal class SchemaImpl_1_0 private constructor(
     )
 
     override fun newType(isl: IonStruct): Type {
-        val type = TypeImpl(isl, this)
-        resolveDeferredTypeReferences()
-        return type
+        return schemaSystem.usingReferenceManager { TypeImpl(isl, this, it) }
     }
 
     override fun plusType(type: Type): Schema {
@@ -300,22 +297,6 @@ internal class SchemaImpl_1_0 private constructor(
     }
 
     override fun getSchemaSystem() = schemaSystem
-
-    override fun addDeferredType(typeRef: TypeReferenceDeferred) {
-        deferredTypeReferences.add(typeRef)
-    }
-
-    private fun resolveDeferredTypeReferences() {
-        val unresolvedDeferredTypeReferences = deferredTypeReferences
-            .filterNot { it.attemptToResolve() }
-            .map { it.name }.toSet()
-
-        if (unresolvedDeferredTypeReferences.isNotEmpty()) {
-            throw InvalidSchemaException(
-                "Unable to resolve type reference(s): $unresolvedDeferredTypeReferences"
-            )
-        }
-    }
 
     /**
      * Returns a new [ImportedType] instance that decorates [Type] so that it will

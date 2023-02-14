@@ -23,6 +23,7 @@ import com.amazon.ionschema.IonSchemaVersion.v2_0
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.DeferredReferenceManager
 import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeReference
 import com.amazon.ionschema.internal.util.IntRange
@@ -39,6 +40,7 @@ import com.amazon.ionschema.internal.util.schemaTypeName
 internal class OrderedElements(
     ion: IonValue,
     private val schema: SchemaInternal,
+    referenceManager: DeferredReferenceManager,
 ) : ConstraintBase(ion) {
 
     private val nfa: NFA<IonValue, Violation> = run {
@@ -50,7 +52,7 @@ internal class OrderedElements(
         val stateBuilder = OrderedElementsNfaStatesBuilder()
         ion.forEachIndexed { idx, it ->
             val occursRange = IntRange.toIntRange((it as? IonStruct)?.get("occurs")) ?: IntRange.REQUIRED
-            val typeRef = TypeReference.create(it, schema, variablyOccurring = true)
+            val typeRef = TypeReference.create(it, schema, referenceManager, variablyOccurring = true)
             stateBuilder.addState(
                 min = occursRange.lower,
                 max = occursRange.upper,

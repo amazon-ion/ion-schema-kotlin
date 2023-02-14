@@ -26,7 +26,6 @@ import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.util.IonSchema_2_0
 import com.amazon.ionschema.internal.util.getFields
 import com.amazon.ionschema.internal.util.getIslOptionalField
@@ -43,21 +42,27 @@ import kotlin.contracts.contract
 /**
  * Implementation of [Schema] for Ion Schema 2.0.
  */
-internal class SchemaImpl_2_0 private constructor(
+internal class SchemaImpl_2_0 internal constructor(
+    referenceManager: DeferredReferenceManager,
     private val schemaSystem: IonSchemaSystemImpl,
-    private val schemaCore: SchemaCore,
-    schemaContent: Iterator<IonValue>,
+    schemaContent: Iterable<IonValue>,
     override val schemaId: String?,
-    preloadedImports: Map<String, Import>,
-    preloadedUserReservedFields: UserReservedFields,
-    /*
-     * [types] is declared as a MutableMap in order to be populated DURING
+
+) : SchemaInternal {
+
+    override val isl: IonDatagram
+    override val ionSchemaLanguageVersion = IonSchemaVersion.v2_0
+
+    /**
+     * [importedTypes] is declared as a MutableMap in order to be populated DURING
      * INITIALIZATION ONLY.  This enables type B to find its already-loaded
-     * dependency type A.  After initialization, [types] is expected to
+     * dependency type A.  After initialization, [importedTypes] is expected to
      * be treated as immutable as required by the Schema interface.
      */
-    private val types: MutableMap<String, TypeInternal>,
-) : SchemaInternal {
+    private val importedTypes: MutableMap<String, TypeInternal> = mutableMapOf()
+    private val declaredTypes: MutableMap<String, TypeImpl> = mutableMapOf()
+    private var userReservedFields: UserReservedFields = UserReservedFields.NONE
+    private var imports: Map<String, Import> = emptyMap()
 
     /**
      * Represents the collection of symbols that are declared as user reserved fields for a schema.
@@ -70,41 +75,23 @@ internal class SchemaImpl_2_0 private constructor(
         }
     }
 
-    internal constructor(
-        schemaSystem: IonSchemaSystemImpl,
-        schemaCore: SchemaCore,
-        schemaContent: Iterator<IonValue>,
-        schemaId: String?
-    ) : this(schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), UserReservedFields.NONE, mutableMapOf())
-
-    private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
-
-    override val isl: IonDatagram
-
-    private val imports: Map<String, Import>
-
-    private var userReservedFields: UserReservedFields = UserReservedFields.NONE
-
-    private val declaredTypes: Map<String, TypeImpl>
-
-    override val ionSchemaLanguageVersion: IonSchemaVersion
-        get() = IonSchemaVersion.v2_0
-
     init {
-        val dgIsl = schemaSystem.ionSystem.newDatagram()
+        if (schemaId != null) referenceManager.registerDependentSchema(schemaId)
+        isl = schemaSystem.ionSystem.newDatagram()
 
-        if (types.isEmpty()) {
+        var foundVersionMarker = false
+        var foundHeader = false
+        var foundFooter = false
+        var foundAnyType = false
 
-            var foundVersionMarker = false
-            var foundHeader = false
-            var foundFooter = false
-            var foundAnyType = false
-            var importsMap = emptyMap<String, Import>()
+        importedTypes += schemaSystem.loadBuiltInTypesSchema(this.ionSchemaLanguageVersion)
+            .getDeclaredTypes()
+            .asSequence()
+            .associateBy { it.name }
 
-            while (schemaContent.hasNext()) {
-                val it = schemaContent.next()
-
-                dgIsl.add(it.clone())
+        schemaContent.mapTo(isl) { it.clone() }
+            .markReadOnly()
+            .forEach {
 
                 when {
                     IonSchemaVersion.isVersionMarker(it) -> {
@@ -117,7 +104,7 @@ internal class SchemaImpl_2_0 private constructor(
                         if (!foundVersionMarker) throw IllegalStateException("SchemaImpl_2_0 should only be instantiated for an ISL 2.0 schema.")
                         islRequire(!foundAnyType) { "Schema header must appear before any types." }
                         islRequire(!foundHeader) { "Only one schema header is allowed in a schema document." }
-                        importsMap = loadHeaderImports(types, it)
+                        imports = loadHeaderImports(it, referenceManager)
                         userReservedFields = loadUserReservedFieldNames(it)
                         validateFieldNamesInHeader(it)
                         foundHeader = true
@@ -131,9 +118,7 @@ internal class SchemaImpl_2_0 private constructor(
                     isType(it) -> {
                         islRequire(!foundFooter) { "Types may not occur after the schema footer." }
                         it.getIslRequiredField<IonSymbol>("name")
-                        val newType = TypeImpl(it, this)
-                        islRequire(newType.name !in types.keys) { "Invalid duplicate type name: '${newType.name}'" }
-                        addType(types, newType)
+                        addType(declaredTypes, TypeImpl(it, this, referenceManager))
                         foundAnyType = true
                     }
                     isTopLevelOpenContent(it) -> {} // Fine; do nothing.
@@ -142,41 +127,8 @@ internal class SchemaImpl_2_0 private constructor(
                     }
                 }
             }
-            islRequire(foundFooter || !foundHeader) { "Found a schema_header, but not a schema_footer" }
 
-            resolveDeferredTypeReferences()
-            imports = importsMap
-        } else {
-            // in this case the new Schema is based on an existing Schema and the 'types'
-            // map was populated by the caller
-            schemaContent.forEach {
-                dgIsl.add(it.clone())
-            }
-            imports = preloadedImports
-            userReservedFields = preloadedUserReservedFields
-        }
-
-        isl = dgIsl.markReadOnly()
-        declaredTypes = types.values.filterIsInstance<TypeImpl>().associateBy { it.name }
-
-        if (declaredTypes.isEmpty()) {
-            schemaSystem.emitWarning { "${WarningType.SCHEMA_HAS_NO_TYPES} -- '$schemaId'" }
-        }
-    }
-
-    private class SchemaAndTypeImports(val id: String, val schema: Schema) {
-        var types: MutableMap<String, TypeInternal> = mutableMapOf()
-
-        fun addType(name: String, type: TypeInternal) {
-            types[name]?.let {
-                if (it.schemaId != type.schemaId || it.isl != type.isl) {
-                    throw InvalidSchemaException("Duplicate imported type name/alias encountered: '$name'")
-                } else if (it is ImportedType && it.schemaId == it.importedFromSchemaId) {
-                    return@addType
-                }
-            }
-            types[name] = type
-        }
+        islRequire(foundFooter || !foundHeader) { "Found a schema_header, but not a schema_footer" }
     }
 
     /**
@@ -268,12 +220,11 @@ internal class SchemaImpl_2_0 private constructor(
     }
 
     private fun loadHeaderImports(
-        typeMap: MutableMap<String, TypeInternal>,
-        header: IonStruct
+        header: IonStruct,
+        referenceManager: DeferredReferenceManager,
     ): Map<String, Import> {
 
-        val importsMap = mutableMapOf<String, SchemaAndTypeImports>()
-        val importSet: MutableSet<String> = schemaSystem.getSchemaImportSet()
+        val importsMap = mutableMapOf<String, MutableMap<String, ImportedType>>()
 
         val imports = header.getIslOptionalField<IonList>("imports")
             ?.islRequireElementType<IonStruct>(containerDescription = "imports list")
@@ -294,46 +245,42 @@ internal class SchemaImpl_2_0 private constructor(
             if (schemaId == importedSchemaId) {
                 throw InvalidSchemaException("Schema can not import itself: $it")
             }
-            // if importSet has an import with this id then do not load schema again to break the cycle.
-            if (!importSet.contains(importedSchemaId)) {
+            if (!schemaSystem.doesSchemaDocumentExist(importedSchemaId)) {
+                throw InvalidSchemaException("No such schema: $importedSchemaId")
+            }
 
-                // add current schema to importSet and continue loading current schema
-                importSet.add(importedSchemaId)
-                val importedSchema = runCatching { schemaSystem.loadSchema(importedSchemaId) }
-                    .getOrElse { e -> throw InvalidSchemaException("Unable to load schema '$importedSchemaId'; ${e.message}") }
-                importSet.remove(importedSchemaId)
-
-                val schemaAndTypes = importsMap.getOrPut(importedSchemaId) {
-                    SchemaAndTypeImports(importedSchemaId, importedSchema)
-                }
-
-                val typeName = typeField?.stringValue()
-                if (typeName != null) {
-                    var importedType = importedSchema.getDeclaredType(typeName)
-                        ?.toImportedType(importedSchemaId)
-
-                    importedType ?: throw InvalidSchemaException("Schema $importedSchemaId doesn't contain a type named '$typeName'")
-
-                    if (asField != null) {
-                        importedType = TypeAliased(asField, importedType)
+            when {
+                asField != null -> {
+                    if (schemaSystem.doesSchemaDeclareType(importedSchemaId, typeField!!)) {
+                        val deferred = referenceManager.createDeferredImportReference(importedSchemaId, typeField)
+                        val type = TypeAliased(asField, deferred)
+                        addType(importedTypes, type)
+                    } else {
+                        throw InvalidSchemaException("No such type $typeField in schema $importedSchemaId")
                     }
-                    addType(typeMap, importedType)
-                    schemaAndTypes.addType(asField?.stringValue() ?: typeName, importedType)
-                } else {
-                    val typesToAdd = importedSchema.getDeclaredTypes()
-
-                    typesToAdd.asSequence()
-                        .map { type -> type.toImportedType(importedSchemaId) }
-                        .forEach { type ->
-                            addType(typeMap, type)
-                            schemaAndTypes.addType(type.name, type)
-                        }
+                }
+                typeField != null -> {
+                    if (schemaSystem.doesSchemaDeclareType(importedSchemaId, typeField)) {
+                        val deferred = referenceManager.createDeferredImportReference(importedSchemaId, typeField)
+                        addType(importedTypes, deferred)
+                    } else {
+                        throw InvalidSchemaException("No such type $typeField in schema $importedSchemaId")
+                    }
+                }
+                else -> {
+                    schemaSystem.listDeclaredTypes(importedSchemaId).forEach { importedTypeName ->
+                        val deferred = referenceManager.createDeferredImportReference(importedSchemaId, importedTypeName)
+                        addType(importedTypes, deferred)
+                    }
                 }
             }
         }
-        return importsMap.mapValues {
-            ImportImpl(it.value.id, it.value.schema, it.value.types)
-        }
+        return importedTypes.values
+            .filterIsInstance<ImportedType>()
+            .groupBy { it.schemaId }
+            .mapValues { (id, importedTypes) ->
+                ImportImpl(id, { schemaSystem.loadSchema(id) }, importedTypes.associateBy { it.name })
+            }
     }
 
     override fun getImport(id: String) = imports[id]
@@ -350,113 +297,65 @@ internal class SchemaImpl_2_0 private constructor(
         }
     }
 
-    private fun addType(typeMap: MutableMap<String, TypeInternal>, type: TypeInternal) {
-        validateType(type)
-        getType(type.name)?.let {
+    private fun <T : Type> addType(types: MutableMap<String, T>, type: T) {
+        // If it's not a struct, then it's an imported type, and we only have a name symbol
+        if (type.isl is IonStruct) validateType(type)
+
+        getInScopeType(type.name)?.let {
+            if (type !is ImportedType || it !is ImportedType) {
+                throw InvalidSchemaException("Duplicate type name/alias encountered: '${it.name}'")
+            }
+
             if (it.schemaId != type.schemaId || it.isl != type.isl) {
+                throw InvalidSchemaException("Duplicate type name/alias encountered: '${it.name}'")
+            } else if (it.importedFromSchemaId != type.importedFromSchemaId) {
                 throw InvalidSchemaException("Duplicate type name/alias encountered: '${it.name}'")
             }
         }
-        typeMap[type.name] = type
+        types[type.name] = type
     }
 
-    override fun getInScopeType(name: String) = getType(name)
+    override fun getInScopeType(name: String) = importedTypes[name] ?: declaredTypes[name]
 
-    override fun getType(name: String) = schemaCore.getType(name) ?: types[name]
+    override fun getType(name: String) = importedTypes[name] as? TypeBuiltin ?: declaredTypes[name]
 
     override fun getDeclaredType(name: String) = declaredTypes[name]
 
     override fun getDeclaredTypes(): Iterator<TypeInternal> = declaredTypes.values.iterator()
 
-    override fun getTypes(): Iterator<TypeInternal> =
-        (schemaCore.getTypes().asSequence() + types.values.asSequence())
-            .filter { it is ImportedType || it is TypeImpl }
-            .iterator()
+    override fun getTypes(): Iterator<TypeInternal> = (declaredTypes.values + importedTypes.values.filterIsInstance<TypeBuiltin>()).iterator()
 
     override fun newType(isl: String) = newType(
         schemaSystem.ionSystem.singleValue(isl) as IonStruct
     )
 
     override fun newType(isl: IonStruct): Type {
-        val type = TypeImpl(isl, this)
-        resolveDeferredTypeReferences()
-        return type
+        return schemaSystem.usingReferenceManager { refMan -> TypeImpl(isl, this, refMan) }
     }
 
     override fun plusType(type: Type): Schema {
-        type as TypeInternal
         validateType(type)
 
-        // prepare ISL corresponding to the new Schema
-        // (might be simpler if IonDatagram.set(int, IonValue) were implemented,
-        // see https://github.com/amazon-ion/ion-java/issues/50)
-        val newIsl = schemaSystem.ionSystem.newDatagram()
+        val newIsl = mutableListOf<IonValue>()
         var newTypeAdded = false
         isl.forEachIndexed { idx, value ->
             if (!newTypeAdded) {
-                when {
-                    value is IonStruct
-                        && (value["name"] as? IonSymbol)?.stringValue().equals(type.name) -> {
-                        // new type replaces existing type of the same name
-                        newIsl.add(type.isl.clone())
-                        newTypeAdded = true
-                        return@forEachIndexed
-                    }
-                    (value is IonStruct && value.hasTypeAnnotation("schema_footer"))
-                        || idx == isl.lastIndex -> {
-                        newIsl.add(type.isl.clone())
-                        newTypeAdded = true
-                    }
+                if (isType(value) && (value["name"] as? IonSymbol)?.stringValue() == type.name) {
+                    // new type replaces existing type of the same name
+                    newIsl.add(type.isl.clone())
+                    newTypeAdded = true
+                    return@forEachIndexed
+                } else if (value.hasTypeAnnotation("schema_footer") || idx == isl.lastIndex) {
+                    newIsl.add(type.isl.clone())
+                    newTypeAdded = true
                 }
             }
             newIsl.add(value.clone())
         }
         if (!newTypeAdded) newIsl.add(type.isl.clone())
 
-        // clone the types map:
-        val preLoadedTypes = types.toMutableMap()
-        preLoadedTypes[type.name] = type
-        return SchemaImpl_2_0(schemaSystem, schemaCore, newIsl.iterator(), null, imports, userReservedFields, preLoadedTypes)
+        return schemaSystem.newSchema(newIsl.iterator())
     }
 
     override fun getSchemaSystem() = schemaSystem
-
-    override fun addDeferredType(typeRef: TypeReferenceDeferred) {
-        deferredTypeReferences.add(typeRef)
-    }
-
-    private fun resolveDeferredTypeReferences() {
-        val unresolvedDeferredTypeReferences = deferredTypeReferences
-            .filterNot { it.attemptToResolve() }
-            .map { it.name }.toSet()
-
-        if (unresolvedDeferredTypeReferences.isNotEmpty()) {
-            throw InvalidSchemaException(
-                "Unable to resolve type reference(s): $unresolvedDeferredTypeReferences"
-            )
-        }
-    }
-
-    /**
-     * Returns a new [ImportedType] instance that decorates [Type] so that it will
-     * log a transitive import warning every time it is used for validation.
-     */
-    private fun Type.toImportedType(importedFromSchemaId: String): ImportedType {
-        this@toImportedType as TypeInternal
-        return object : ImportedType, TypeInternal by this {
-            override fun validate(value: IonValue, issues: Violations) {
-                if (importedFromSchemaId != schemaId) {
-                    schemaSystem.emitWarning {
-                        warnInvalidTransitiveImport(this, this@SchemaImpl_2_0.schemaId)
-                    }
-                }
-                this@toImportedType.validate(value, issues)
-            }
-
-            override val schemaId: String
-                get() = this@toImportedType.schemaId!!
-            override val importedFromSchemaId: String
-                get() = importedFromSchemaId
-        }
-    }
 }

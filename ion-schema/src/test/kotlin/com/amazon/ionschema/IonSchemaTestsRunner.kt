@@ -41,13 +41,7 @@ class IonSchemaTests_1_0_transitive : TestFactory by IonSchemaTestsRunner(
     additionalFileFilter = { !it.path.contains("invalid_transitive_import") }
 )
 
-class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
-    islVersion = v2_0,
-    additionalFileFilter = {
-        // Pending fix for https://github.com/amazon-ion/ion-schema-kotlin/issues/209
-        !it.path.contains("cycles/")
-    }
-)
+class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(v2_0)
 
 /**
  * Primary test runner for the file-based test suite.

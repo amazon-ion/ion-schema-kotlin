@@ -15,6 +15,7 @@
 
 package com.amazon.ionschema.internal
 
+import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonSystem
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Authority
@@ -36,15 +37,20 @@ internal class IonSchemaSystemImpl(
     private val warnCallback: (() -> String) -> Unit
 ) : IonSchemaSystem {
 
-    private val schemaCores = mapOf(
-        IonSchemaVersion.v1_0 to SchemaCore(this, IonSchemaVersion.v1_0),
-        IonSchemaVersion.v2_0 to SchemaCore(this, IonSchemaVersion.v2_0)
+    private val schemaCoresCache = mutableMapOf<IonSchemaVersion, SchemaCore>()
+
+    private val schemaContentCache = SchemaContentCache(
+        getPreloadedSchemaIsl = { schemaCache.getOrNull(it)?.isl },
+        loadSchemaIslForId = this::loadSchemaIslForId
     )
 
     // Set to be used to detect cycle in import dependencies
     private val schemaImportSet: MutableSet<String> = mutableSetOf()
 
-    override fun loadSchema(id: String): SchemaInternal {
+    /**
+     * Loads the Ion content for a given schema ID.
+     */
+    private fun loadSchemaIslForId(id: String): List<IonValue> {
         val exceptions = mutableListOf<Exception>()
         val schemaIterator = authorities.asSequence().mapNotNull { authority ->
             try {
@@ -68,27 +74,84 @@ internal class IonSchemaSystemImpl(
             }
             throw IonSchemaException(message.toString())
         }
-
-        var version = IonSchemaVersion.v1_0
-        val isl = schemaIterator.use {
-            it.asSequence()
-                .onEach {
-                    if (IonSchemaVersion.isVersionMarker(it)) {
-                        version = IonSchemaVersion.fromIonSymbolOrNull(it)
-                            ?: throw InvalidSchemaException("Unsupported Ion Schema version: $it")
-                    }
-                }
-                .toList()
-        }
-
-        return schemaCache.getOrPut(id) { createSchema(version, id, isl) } as SchemaInternal
+        return schemaIterator.use { it.asSequence().toList() }
     }
 
-    private fun createSchema(version: IonSchemaVersion, schemaId: String?, isl: List<IonValue>): SchemaInternal {
+    override fun loadSchema(id: String): SchemaInternal {
+        return usingReferenceManager { loadSchema(it, id) }
+    }
+
+    private fun createSchema(version: IonSchemaVersion, schemaId: String?, isl: List<IonValue>, referenceManager: DeferredReferenceManager): SchemaInternal {
         return when (version) {
-            IonSchemaVersion.v1_0 -> SchemaImpl_1_0(this, schemaCores[version]!!, isl.iterator(), schemaId)
-            IonSchemaVersion.v2_0 -> SchemaImpl_2_0(this, schemaCores[version]!!, isl.iterator(), schemaId)
+            IonSchemaVersion.v1_0 -> SchemaImpl_1_0(referenceManager, this, loadBuiltInTypesSchema(version), isl.iterator(), schemaId)
+            IonSchemaVersion.v2_0 -> SchemaImpl_2_0(referenceManager, this, isl, schemaId)
         }
+    }
+
+    /**
+     * Load a schema using the given [DeferredReferenceManager].
+     */
+    private fun loadSchema(referenceManager: DeferredReferenceManager, id: String): SchemaInternal {
+        val schemaContent = schemaContentCache.getSchemaContent(id)
+        return schemaCache.getOrPut(id) { createSchema(schemaContent.version, id, schemaContent.isl, referenceManager) } as SchemaInternal
+    }
+
+    /**
+     * Invalidates a schema in all caches. Any existing references to the schema instance will still be valid.
+     */
+    private fun unloadSchema(id: String) {
+        schemaCache.invalidate(id)
+        schemaContentCache.invalidate(id)
+    }
+
+    /**
+     * Constructs a new [DeferredReferenceManager] for this schema system, uses it to run the provided [block], and
+     * automatically resolves the reference manager before finally returning the output of [block].
+     */
+    fun <T> usingReferenceManager(block: (DeferredReferenceManager) -> T): T {
+        val referenceManager = DeferredReferenceManager(
+            loadSchemaFn = this::loadSchema,
+            unloadSchema = this::unloadSchema,
+            isSchemaAlreadyLoaded = { schemaCache.getOrNull(it) != null }
+        )
+        val t = block(referenceManager)
+        referenceManager.resolve()
+        return t
+    }
+
+    /**
+     * Loads the SchemaCore (the built-in types) for the given IonSchemaVersion.
+     */
+    fun loadBuiltInTypesSchema(version: IonSchemaVersion): SchemaCore = schemaCoresCache.getOrPut(version) { SchemaCore(this, version) }
+
+    /**
+     * Checks if an Ion document exists for the given schema ID. Does not guarantee that the schema is valid ISL—just
+     * that there is some Ion that can be found using this schema ID.
+     */
+    internal fun doesSchemaDocumentExist(schemaId: String): Boolean {
+        return schemaContentCache.doesSchemaExist(schemaId)
+    }
+
+    /**
+     * Checks if the schema document for the given [schemaId] has a named type definition with the name [typeId]. This
+     * does not guarantee that the type definition or the schema document are valid—only that a `type::{ name: ... }`
+     * exists in the schema document for the given [typeId].
+     *
+     * Beware—the type might still be in scope in the schema if transitive imports are enabled.
+     */
+    internal fun doesSchemaDeclareType(schemaId: String, typeId: IonSymbol): Boolean {
+        return schemaContentCache.doesSchemaDeclareType(schemaId, typeId)
+    }
+
+    /**
+     * Returns a list of the names of the types declared in the schema for [schemaId]. If no schema exists for the
+     * [schemaId], throws an InvalidSchemaException.
+     *
+     * This does not guarantee that the type definitions or the schema document are valid—only that a
+     * `type::{ name: ... }` exists in the schema document for each [IonSymbol] in the returned list.
+     */
+    internal fun listDeclaredTypes(schemaId: String): List<IonSymbol> {
+        return schemaContentCache.getSchemaContent(schemaId).declaredTypes
     }
 
     override fun newSchema(): SchemaInternal = newSchema("")
@@ -104,12 +167,12 @@ internal class IonSchemaSystemImpl(
                 }
             }
             .toList()
-        return createSchema(version, null, islList)
+        return usingReferenceManager { createSchema(version, null, islList, it) }
     }
 
     internal fun isConstraint(name: String, schema: SchemaInternal) = constraintFactory.isConstraint(name, schema.ionSchemaLanguageVersion)
 
-    internal fun constraintFor(ion: IonValue, schema: SchemaInternal) = constraintFactory.constraintFor(ion, schema)
+    internal fun constraintFor(ion: IonValue, schema: SchemaInternal, referenceManager: DeferredReferenceManager) = constraintFactory.constraintFor(ion, schema, referenceManager)
 
     internal fun getSchemaImportSet() = schemaImportSet
 

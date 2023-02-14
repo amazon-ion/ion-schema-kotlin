@@ -43,12 +43,14 @@ internal class SchemaCore(
             .associateBy({ it.stringValue() }, { newType(it) })
             .toMutableMap()
 
-        ION.iterate(ADDITIONAL_TYPE_DEFS)
-            .asSequence()
-            .map { (it as IonStruct).first() }
-            .forEach {
-                typeMap.put(it.fieldName, TypeBuiltinImpl(it as IonStruct, this))
-            }
+        schemaSystem.usingReferenceManager { referenceManager ->
+            ION.iterate(ADDITIONAL_TYPE_DEFS)
+                .asSequence()
+                .map { (it as IonStruct).first() }
+                .forEach {
+                    typeMap.put(it.fieldName, TypeBuiltinImpl(it as IonStruct, this, referenceManager))
+                }
+        }
 
         isl = ION.newDatagram().markReadOnly()
     }
@@ -79,7 +81,6 @@ internal class SchemaCore(
     override fun newType(isl: String) = throw UnsupportedOperationException()
     override fun newType(isl: IonStruct) = throw UnsupportedOperationException()
     override fun plusType(type: Type) = throw UnsupportedOperationException()
-    override fun addDeferredType(typeRef: TypeReferenceDeferred) = throw UnsupportedOperationException()
 }
 
 private const val CORE_TYPES =
