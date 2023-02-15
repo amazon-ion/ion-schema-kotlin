@@ -44,9 +44,6 @@ internal class IonSchemaSystemImpl(
         loadSchemaIslForId = this::loadSchemaIslForId
     )
 
-    // Set to be used to detect cycle in import dependencies
-    private val schemaImportSet: MutableSet<String> = mutableSetOf()
-
     /**
      * Loads the Ion content for a given schema ID.
      */
@@ -173,8 +170,6 @@ internal class IonSchemaSystemImpl(
     internal fun isConstraint(name: String, schema: SchemaInternal) = constraintFactory.isConstraint(name, schema.ionSchemaLanguageVersion)
 
     internal fun constraintFor(ion: IonValue, schema: SchemaInternal, referenceManager: DeferredReferenceManager) = constraintFactory.constraintFor(ion, schema, referenceManager)
-
-    internal fun getSchemaImportSet() = schemaImportSet
 
     internal fun emitWarning(lazyWarning: () -> String) {
         warnCallback.invoke(lazyWarning)

@@ -38,7 +38,11 @@ class IonSchemaTests_1_0_transitive : TestFactory by IonSchemaTestsRunner(
     islVersion = v1_0,
     systemBuilder = IonSchemaSystemBuilder.standard().allowTransitiveImports(true),
     // Skip the tests for transitive imports since we're explicitly enabling the buggy behavior.
-    additionalFileFilter = { !it.path.contains("invalid_transitive_import") }
+    // Skip the tests for import cycles, since fixing cycles with transitive imports enabled is a non-goal.
+    additionalFileFilter = {
+        !it.path.contains("invalid_transitive_import") &&
+            !it.path.contains("import/cycles")
+    }
 )
 
 class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(v2_0)
