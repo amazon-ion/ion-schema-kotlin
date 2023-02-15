@@ -23,6 +23,7 @@ import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Import
 import com.amazon.ionschema.InvalidSchemaException
+import com.amazon.ionschema.IonSchemaException
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Schema
 import com.amazon.ionschema.Type
@@ -69,6 +70,7 @@ internal class SchemaImpl_1_0 private constructor(
 
     init {
         val dgIsl = schemaSystem.ionSystem.newDatagram()
+        this.schemaId?.let { referenceManager.registerDependentSchema(it) }
 
         if (types.isEmpty()) {
             var foundHeader = false
@@ -86,7 +88,7 @@ internal class SchemaImpl_1_0 private constructor(
                         throw InvalidSchemaException("Unsupported Ion Schema version: ${it.stringValue()}")
                     }
                 } else if (it.hasTypeAnnotation("schema_header")) {
-                    importsMap = loadHeader(types, it as IonStruct)
+                    importsMap = loadHeader(types, it as IonStruct, referenceManager)
                     foundHeader = true
                 } else if (!foundFooter && it.hasTypeAnnotation("type") && it is IonStruct) {
                     val newType = TypeImpl(it, this, referenceManager)
@@ -122,7 +124,7 @@ internal class SchemaImpl_1_0 private constructor(
         }
     }
 
-    private class SchemaAndTypeImports(val id: String, val schema: Schema) {
+    private class SchemaAndTypeImports(val id: String, val schema: () -> Schema) {
         var types: MutableMap<String, TypeInternal> = mutableMapOf()
 
         fun addType(name: String, type: TypeInternal) {
@@ -139,78 +141,87 @@ internal class SchemaImpl_1_0 private constructor(
 
     private fun loadHeader(
         typeMap: MutableMap<String, TypeInternal>,
-        header: IonStruct
+        header: IonStruct,
+        referenceManager: DeferredReferenceManager
     ): Map<String, Import> {
 
         val importsMap = mutableMapOf<String, SchemaAndTypeImports>()
-        val importSet: MutableSet<String> = schemaSystem.getSchemaImportSet()
         val allowTransitiveImports = schemaSystem.getParam(IonSchemaSystemImpl.Param.ALLOW_TRANSITIVE_IMPORTS)
 
         (header.get("imports") as? IonList)
             ?.filterIsInstance<IonStruct>()
             ?.forEach {
-                val childImportId = it["id"] as IonText
+                val childImportId = (it["id"] as IonText).stringValue()
                 val alias = it["as"] as? IonSymbol
-                // if importSet has an import with this id then do not load schema again to break the cycle.
-                if (!importSet.contains(childImportId.stringValue())) {
-                    var parentImportId = schemaId ?: ""
 
-                    // if Schema is importing itself then throw error
-                    if (parentImportId.equals(childImportId.stringValue())) {
-                        throw InvalidSchemaException("Schema can not import itself.")
-                    }
+                // if Schema is importing itself then throw error
+                if (schemaId == childImportId) {
+                    throw InvalidSchemaException("Schema can not import itself.")
+                }
 
-                    // add parent and current schema to importSet and continue loading current schema
-                    importSet.add(parentImportId)
-                    importSet.add(childImportId.stringValue())
-                    val importedSchema = schemaSystem.loadSchema(childImportId.stringValue())
-                    importSet.remove(childImportId.stringValue())
-                    importSet.remove(parentImportId)
-
-                    val schemaAndTypes = importsMap.getOrPut(childImportId.stringValue()) {
-                        SchemaAndTypeImports(childImportId.stringValue(), importedSchema)
-                    }
-
-                    val typeName = (it["type"] as? IonSymbol)?.stringValue()
-                    if (typeName != null) {
-                        var importedType = importedSchema.getDeclaredType(typeName)
-                            ?.toImportedType(childImportId.stringValue())
-
-                        if (importedType == null && allowTransitiveImports) {
-                            importedType = importedSchema.getType(typeName)
-                                ?.toImportedType(childImportId.stringValue())
-                                ?.also { type ->
-                                    schemaSystem.emitWarning {
-                                        warnInvalidTransitiveImport(type, this.schemaId)
-                                    }
-                                }
-                        }
-
-                        importedType ?: throw InvalidSchemaException("Schema $childImportId doesn't contain a type named '$typeName'")
-
-                        if (alias != null) {
-                            importedType = TypeAliased(alias, importedType)
-                        }
-                        addType(typeMap, importedType)
-                        schemaAndTypes.addType(alias?.stringValue() ?: typeName, importedType)
-                    } else {
-                        val typesToAdd =
-                            if (allowTransitiveImports)
-                                importedSchema.getTypes()
-                            else
-                                importedSchema.getDeclaredTypes()
-
-                        typesToAdd.asSequence()
-                            .map { type -> type.toImportedType(childImportId.stringValue()) }
-                            .forEach { type ->
-                                addType(typeMap, type)
-                                schemaAndTypes.addType(type.name, type)
-                            }
+                val importedSchemaFn = {
+                    try {
+                        schemaSystem.loadSchema(childImportId)
+                    } catch (e: StackOverflowError) {
+                        throw IonSchemaException(
+                            """
+                            IonSchemaSystem encountered a circular import graph that cannot be resolved because transitive imports are enabled.
+                            You can resolve this in one of the following ways (listed in order of preference):
+                              1) Upgrade your schemas to use Ion Schema 2.0.
+                              2) Disable transitive imports using IonSchemaSystemBuilder.allowTransitiveImports(false)
+                              3) Update your schemas to import individual types rather than importing whole schemas (e.g. `{ id: "my_schema.isl", type: my_type }` instead of `{ id: "my_schema.isl" }`). 
+                            """.trimIndent()
+                        )
                     }
                 }
+
+                val schemaAndTypes = importsMap.getOrPut(childImportId) {
+                    SchemaAndTypeImports(childImportId, importedSchemaFn)
+                }
+
+                val typeField = it["type"] as? IonSymbol
+                val typeName = typeField?.stringValue()
+                if (typeName != null) {
+                    var importedType: ImportedType? = if (schemaSystem.doesSchemaDeclareType(childImportId, typeField)) {
+                        referenceManager.createDeferredImportReference(childImportId, typeField)
+                    } else {
+                        null
+                    }
+
+                    if (importedType == null && allowTransitiveImports) {
+                        importedType = importedSchemaFn().getType(typeName)
+                            ?.toImportedType(childImportId)
+                            ?.also { type ->
+                                schemaSystem.emitWarning {
+                                    warnInvalidTransitiveImport(type, this.schemaId)
+                                }
+                            }
+                    }
+
+                    importedType ?: throw InvalidSchemaException("Schema $childImportId doesn't contain a type named '$typeName'")
+
+                    if (alias != null) {
+                        importedType = TypeAliased(alias, importedType)
+                    }
+                    addType(typeMap, importedType)
+                    schemaAndTypes.addType(alias?.stringValue() ?: typeName, importedType)
+                } else {
+                    val typesToAdd =
+                        if (allowTransitiveImports)
+                            importedSchemaFn().getTypes().asSequence().toList()
+                        else
+                            schemaSystem.listDeclaredTypes(childImportId).map { referenceManager.createDeferredImportReference(childImportId, it) }
+
+                    typesToAdd.map { type -> type.toImportedType(childImportId) }
+                        .forEach { type ->
+                            addType(typeMap, type)
+                            schemaAndTypes.addType(type.name, type)
+                        }
+                }
             }
+
         return importsMap.mapValues {
-            ImportImpl(it.value.id, { it.value.schema }, it.value.types)
+            ImportImpl(it.value.id, it.value.schema, it.value.types)
         }
     }
 
@@ -230,7 +241,8 @@ internal class SchemaImpl_1_0 private constructor(
     }
 
     private fun addType(typeMap: MutableMap<String, TypeInternal>, type: TypeInternal) {
-        validateType(type)
+        if (type !is ImportedType) validateType(type)
+
         getType(type.name)?.let {
             if (it.schemaId != type.schemaId || it.isl != type.isl) {
                 throw InvalidSchemaException("Duplicate type name/alias encountered: '${it.name}'")
@@ -323,6 +335,8 @@ internal class SchemaImpl_1_0 private constructor(
      * log a transitive import warning every time it is used for validation.
      */
     private fun TypeInternal.toImportedType(importedFromSchemaId: String): ImportedType {
+        if (this is ImportedType && !schemaSystem.getParam(IonSchemaSystemImpl.Param.ALLOW_TRANSITIVE_IMPORTS)) return this
+
         return object : ImportedType, TypeInternal by this {
             override fun validate(value: IonValue, issues: Violations) {
                 if (importedFromSchemaId != schemaId) {
