@@ -17,6 +17,7 @@ package com.amazon.ionschema.internal.constraint
 
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.DeferredReferenceManager
 import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeReference
 
@@ -28,9 +29,10 @@ import com.amazon.ionschema.internal.TypeReference
 internal class Type(
     ion: IonValue,
     schema: SchemaInternal,
+    referenceManager: DeferredReferenceManager,
 ) : ConstraintBase(ion) {
 
-    private val typeReference = TypeReference.create(ion, schema)
+    private val typeReference = TypeReference.create(ion, schema, referenceManager)
 
     override fun validate(value: IonValue, issues: Violations) = typeReference().validate(value, issues)
 }

@@ -24,6 +24,7 @@ import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.Constraint
+import com.amazon.ionschema.internal.DeferredReferenceManager
 import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeInternal
 import com.amazon.ionschema.internal.TypeReference
@@ -46,6 +47,7 @@ import com.amazon.ionschema.internal.util.RangeType
 internal class Occurs(
     ion: IonValue,
     schema: SchemaInternal,
+    referenceManager: DeferredReferenceManager,
     defaultRange: Range<Int>,
     isField: Boolean = false
 ) {
@@ -108,7 +110,7 @@ internal class Occurs(
         } else {
             ion
         }
-        typeReference = TypeReference.create(tmpIon, schema, isField, variablyOccurring = true)
+        typeReference = TypeReference.create(tmpIon, schema, referenceManager, isField, variablyOccurring = true)
 
         occursIon =
             if (occurs != null) {

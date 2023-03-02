@@ -18,7 +18,10 @@ package com.amazon.ionschema
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.IonSchemaVersion.v1_0
+import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import com.amazon.ionschema.util.CloseableIterator
+import io.mockk.confirmVerified
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -43,9 +46,19 @@ class IonSchemaSystemTest {
     private val iss = IonSchemaSystemBuilder.standard().build()
 
     @Test
-    fun unresolvableSchema() {
+    fun `loadSchema(id) should throw an exception when no schema is found for that id`() {
         assertThrows<IonSchemaException> {
             iss.loadSchema("")
+        }
+    }
+
+    @Test
+    fun `loadSchema(id) should wrap exception when authorities throw exception and no schema is found`() {
+        assertThrows<IonSchemaException> {
+            IonSchemaSystemBuilder.standard()
+                .addAuthority(exceptionalAuthority) // always throws BadAuthorityException
+                .build()
+                .loadSchema("no such schema id")
         }
     }
 
@@ -93,6 +106,56 @@ class IonSchemaSystemTest {
         val schema = iss.loadSchema("schema/Customer.isl")
         val schemaFromCache = iss.loadSchema("schema/Customer.isl")
         assertTrue(schema == schemaFromCache)
+    }
+
+    @Test
+    fun `doesSchemaDeclareType() returns a response without caching a Schema instance`() {
+        val schemaCacheMock = mockk<SchemaCache>()
+        val iss = IonSchemaSystemBuilder.standard()
+            .withSchemaCache(schemaCacheMock)
+            .addAuthority(IonSchemaTests.authorityFor(v1_0))
+            .build()
+        iss as IonSchemaSystemImpl
+
+        assertTrue(iss.doesSchemaDeclareType("schema/Customer.isl", ION.newSymbol("Customer")))
+        assertFalse(iss.doesSchemaDeclareType("schema/Customer.isl", ION.newSymbol("Hippopotamus")))
+
+        // There should be no interaction with schemaCacheMock
+        confirmVerified(schemaCacheMock)
+    }
+
+    @Test
+    fun `listDeclaredTypes() returns a response without caching a Schema instance`() {
+        val schemaCacheMock = mockk<SchemaCache>()
+        val iss = IonSchemaSystemBuilder.standard()
+            .withSchemaCache(schemaCacheMock)
+            .addAuthority(IonSchemaTests.authorityFor(v1_0))
+            .build()
+        iss as IonSchemaSystemImpl
+
+        assertEquals(
+            listOf(ION.newSymbol("Customer")),
+            iss.listDeclaredTypes("schema/Customer.isl")
+        )
+
+        // There should be no interaction with schemaCacheMock
+        confirmVerified(schemaCacheMock)
+    }
+
+    @Test
+    fun `doesSchemaDocumentExist() returns a response without caching a Schema instance`() {
+        val schemaCacheMock = mockk<SchemaCache>()
+        val iss = IonSchemaSystemBuilder.standard()
+            .withSchemaCache(schemaCacheMock)
+            .addAuthority(IonSchemaTests.authorityFor(v1_0))
+            .build()
+        iss as IonSchemaSystemImpl
+
+        assertTrue(iss.doesSchemaDocumentExist("schema/Customer.isl"))
+        assertFalse(iss.doesSchemaDocumentExist("schema/Hippopotamus.isl"))
+
+        // There should be no interaction with schemaCacheMock
+        confirmVerified(schemaCacheMock)
     }
 
     @Test
