@@ -31,8 +31,8 @@ internal class TypeBuiltinImpl private constructor(
     private val delegate: TypeInternal
 ) : TypeInternal by delegate, ConstraintBase(ion), TypeBuiltin {
 
-    constructor (ionStruct: IonStruct, schema: SchemaInternal) :
-        this(ionStruct, TypeImpl(ionStruct, schema, addDefaultTypeConstraint = false))
+    constructor (ionStruct: IonStruct, schema: SchemaInternal, referenceManager: DeferredReferenceManager) :
+        this(ionStruct, TypeImpl(ionStruct, schema, referenceManager, addDefaultTypeConstraint = false))
 
     override val name: String = ion.fieldName
 

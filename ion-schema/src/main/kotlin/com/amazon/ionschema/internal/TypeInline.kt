@@ -29,8 +29,8 @@ internal class TypeInline private constructor (
     private val type: TypeInternal
 ) : ConstraintBase(ion), TypeInternal by type {
 
-    constructor(ionStruct: IonStruct, schema: SchemaInternal) :
-        this(ionStruct, TypeImpl(ionStruct, schema))
+    constructor(ionStruct: IonStruct, schema: SchemaInternal, referenceManager: DeferredReferenceManager) :
+        this(ionStruct, TypeImpl(ionStruct, schema, referenceManager))
 
     override val name = type.name
 

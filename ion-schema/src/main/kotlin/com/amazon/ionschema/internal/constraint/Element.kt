@@ -21,6 +21,7 @@ import com.amazon.ionschema.IonSchemaVersion.v2_0
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.DeferredReferenceManager
 import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeReference
 import com.amazon.ionschema.internal.TypeReference.Companion.DEFAULT_ALLOWED_ANNOTATIONS
@@ -35,9 +36,10 @@ import com.amazon.ionschema.internal.util.islRequire
 internal class Element(
     ion: IonValue,
     schema: SchemaInternal,
+    referenceManager: DeferredReferenceManager,
 ) : ConstraintBase(ion) {
 
-    private val typeReference = TypeReference.create(ion, schema, isField = true, allowedAnnotations = DEFAULT_ALLOWED_ANNOTATIONS + "distinct")
+    private val typeReference = TypeReference.create(ion, schema, referenceManager, isField = true, allowedAnnotations = DEFAULT_ALLOWED_ANNOTATIONS + "distinct")
     private val requireDistinctValues: Boolean
 
     init {

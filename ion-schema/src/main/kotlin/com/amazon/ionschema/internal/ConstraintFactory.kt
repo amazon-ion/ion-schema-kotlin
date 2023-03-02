@@ -32,5 +32,5 @@ internal interface ConstraintFactory {
      * @param[ion] IonValue identifying the constraint to construct as well as its configuration
      * @param[schema] passed to constraints that require a schema object
      */
-    fun constraintFor(ion: IonValue, schema: SchemaInternal): Constraint
+    fun constraintFor(ion: IonValue, schema: SchemaInternal, referenceManager: DeferredReferenceManager): Constraint
 }

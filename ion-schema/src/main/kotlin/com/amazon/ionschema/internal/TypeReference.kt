@@ -44,6 +44,7 @@ internal class TypeReference private constructor() {
         fun create(
             ion: IonValue,
             schema: SchemaInternal,
+            referenceManager: DeferredReferenceManager,
             isField: Boolean = false,
             variablyOccurring: Boolean = false,
             isNamePermitted: Boolean = false,
@@ -72,14 +73,14 @@ internal class TypeReference private constructor() {
                             "Illegal 'name' field in type reference: $ion"
                         }
                     }
-                    handleStruct(ion, schema, isField)
+                    handleStruct(ion, schema, isField, referenceManager)
                 }
                 is IonSymbol -> handleSymbol(ion, schema)
                 else -> throw InvalidSchemaException("Unable to resolve type reference '$ion'")
             }
         }
 
-        private fun handleStruct(ion: IonStruct, schema: SchemaInternal, isField: Boolean): () -> TypeInternal {
+        private fun handleStruct(ion: IonStruct, schema: SchemaInternal, isField: Boolean, referenceManager: DeferredReferenceManager): () -> TypeInternal {
             val id = ion.getIslOptionalField<IonText>("id")
             val type = when {
                 id != null -> {
@@ -93,13 +94,13 @@ internal class TypeReference private constructor() {
                         .getOrElse { e -> throw InvalidSchemaException("Unable to load schema '${id.stringValue()}'; ${e.message}") }
                     importedSchema.getType(typeName.stringValue())
                 }
-                isField -> TypeImpl(ion, schema)
+                isField -> TypeImpl(ion, schema, referenceManager)
                 ion.size() == 1 && ion["type"] != null -> {
                     // elide inline types defined as "{ type: X }" to TypeImpl;
                     // this avoids creating a nested, redundant validation structure
-                    TypeImpl(ion, schema)
+                    TypeImpl(ion, schema, referenceManager)
                 }
-                else -> TypeInline(ion, schema)
+                else -> TypeInline(ion, schema, referenceManager)
             }
 
             type ?: throw InvalidSchemaException("Unable to resolve type reference '$ion'")

@@ -33,6 +33,7 @@ import com.amazon.ionschema.internal.util.markReadOnly
  * Implementation of [Schema] for all user-provided ISL.
  */
 internal class SchemaImpl_1_0 private constructor(
+    referenceManager: DeferredReferenceManager,
     private val schemaSystem: IonSchemaSystemImpl,
     private val schemaCore: SchemaCore,
     schemaContent: Iterator<IonValue>,
@@ -48,11 +49,12 @@ internal class SchemaImpl_1_0 private constructor(
 ) : SchemaInternal {
 
     internal constructor(
+        referenceManager: DeferredReferenceManager,
         schemaSystem: IonSchemaSystemImpl,
         schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>,
         schemaId: String?
-    ) : this(schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), mutableMapOf())
+    ) : this(referenceManager, schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), mutableMapOf())
 
     private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
 
@@ -87,7 +89,7 @@ internal class SchemaImpl_1_0 private constructor(
                     importsMap = loadHeader(types, it as IonStruct)
                     foundHeader = true
                 } else if (!foundFooter && it.hasTypeAnnotation("type") && it is IonStruct) {
-                    val newType = TypeImpl(it, this)
+                    val newType = TypeImpl(it, this, referenceManager)
                     addType(types, newType)
                 } else if (it.hasTypeAnnotation("schema_footer")) {
                     foundFooter = true
@@ -262,9 +264,8 @@ internal class SchemaImpl_1_0 private constructor(
     )
 
     override fun newType(isl: IonStruct): Type {
-        val type = TypeImpl(isl, this)
-        resolveDeferredTypeReferences()
-        return type
+        return schemaSystem.usingReferenceManager { TypeImpl(isl, this, it) }
+            .also { resolveDeferredTypeReferences() }
     }
 
     override fun plusType(type: Type): Schema {

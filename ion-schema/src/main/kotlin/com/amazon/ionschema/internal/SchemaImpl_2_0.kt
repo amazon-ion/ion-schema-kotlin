@@ -44,6 +44,7 @@ import kotlin.contracts.contract
  * Implementation of [Schema] for Ion Schema 2.0.
  */
 internal class SchemaImpl_2_0 private constructor(
+    referenceManager: DeferredReferenceManager,
     private val schemaSystem: IonSchemaSystemImpl,
     private val schemaCore: SchemaCore,
     schemaContent: Iterator<IonValue>,
@@ -71,11 +72,12 @@ internal class SchemaImpl_2_0 private constructor(
     }
 
     internal constructor(
+        referenceManager: DeferredReferenceManager,
         schemaSystem: IonSchemaSystemImpl,
         schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>,
         schemaId: String?
-    ) : this(schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), UserReservedFields.NONE, mutableMapOf())
+    ) : this(referenceManager, schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), UserReservedFields.NONE, mutableMapOf())
 
     private val deferredTypeReferences = mutableListOf<TypeReferenceDeferred>()
 
@@ -131,7 +133,7 @@ internal class SchemaImpl_2_0 private constructor(
                     isType(it) -> {
                         islRequire(!foundFooter) { "Types may not occur after the schema footer." }
                         it.getIslRequiredField<IonSymbol>("name")
-                        val newType = TypeImpl(it, this)
+                        val newType = TypeImpl(it, this, referenceManager)
                         islRequire(newType.name !in types.keys) { "Invalid duplicate type name: '${newType.name}'" }
                         addType(types, newType)
                         foundAnyType = true
@@ -378,9 +380,8 @@ internal class SchemaImpl_2_0 private constructor(
     )
 
     override fun newType(isl: IonStruct): Type {
-        val type = TypeImpl(isl, this)
-        resolveDeferredTypeReferences()
-        return type
+        return schemaSystem.usingReferenceManager { TypeImpl(isl, this, it) }
+            .also { resolveDeferredTypeReferences() }
     }
 
     override fun plusType(type: Type): Schema {
@@ -416,7 +417,9 @@ internal class SchemaImpl_2_0 private constructor(
         // clone the types map:
         val preLoadedTypes = types.toMutableMap()
         preLoadedTypes[type.name] = type
-        return SchemaImpl_2_0(schemaSystem, schemaCore, newIsl.iterator(), null, imports, userReservedFields, preLoadedTypes)
+        return schemaSystem.usingReferenceManager { referenceManager ->
+            SchemaImpl_2_0(referenceManager, schemaSystem, schemaCore, newIsl.iterator(), null, imports, userReservedFields, preLoadedTypes)
+        }
     }
 
     override fun getSchemaSystem() = schemaSystem

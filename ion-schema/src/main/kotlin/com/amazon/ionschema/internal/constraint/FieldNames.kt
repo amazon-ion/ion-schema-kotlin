@@ -20,6 +20,7 @@ import com.amazon.ion.IonValue
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.DeferredReferenceManager
 import com.amazon.ionschema.internal.SchemaInternal
 import com.amazon.ionschema.internal.TypeReference
 
@@ -29,9 +30,9 @@ import com.amazon.ionschema.internal.TypeReference
  *
  * @see https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#field_names
  */
-internal class FieldNames(ion: IonValue, schema: SchemaInternal) : ConstraintBase(ion) {
+internal class FieldNames(ion: IonValue, schema: SchemaInternal, referenceManager: DeferredReferenceManager) : ConstraintBase(ion) {
 
-    private val fieldNameType = TypeReference.create(ion.clone(), schema, isField = true, allowedAnnotations = setOf("distinct"))
+    private val fieldNameType = TypeReference.create(ion.clone(), schema, referenceManager, isField = true, allowedAnnotations = setOf("distinct"))
     private val requireDistinctValues: Boolean = ion.hasTypeAnnotation("distinct")
 
     override fun validate(value: IonValue, issues: Violations) {

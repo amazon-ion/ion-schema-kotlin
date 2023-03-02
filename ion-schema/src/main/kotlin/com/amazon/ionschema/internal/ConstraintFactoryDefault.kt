@@ -57,11 +57,13 @@ internal object ConstraintFactoryDefault : ConstraintFactory {
     private data class ConstraintConstructor(
         val name: String,
         val versions: ClosedRange<IonSchemaVersion>,
-        val newInstance: (ion: IonValue, schema: SchemaInternal) -> Constraint,
+        val newInstance: (ion: IonValue, schema: SchemaInternal, referenceManager: DeferredReferenceManager) -> Constraint,
     ) {
-        constructor(name: String, versions: ClosedRange<IonSchemaVersion>, newInstance: (IonValue) -> Constraint) : this(name, versions, { ion, _ -> newInstance(ion) })
+        constructor(name: String, versions: ClosedRange<IonSchemaVersion>, newInstance: (IonValue) -> Constraint) : this(name, versions, { ion, _, _ -> newInstance(ion) })
+        constructor(name: String, versions: ClosedRange<IonSchemaVersion>, newInstance: (IonValue, SchemaInternal) -> Constraint) : this(name, versions, { ion, schema, _ -> newInstance(ion, schema) })
+
         constructor(name: String, version: IonSchemaVersion, newInstance: (IonValue) -> Constraint) : this(name, version..version, { ion, _ -> newInstance(ion) })
-        constructor(name: String, version: IonSchemaVersion, newInstance: (IonValue, schema: SchemaInternal) -> Constraint) : this(name, version..version, newInstance)
+        constructor(name: String, version: IonSchemaVersion, newInstance: (IonValue, schema: SchemaInternal, DeferredReferenceManager) -> Constraint) : this(name, version..version, newInstance)
     }
 
     private val constraints = listOf(
@@ -97,9 +99,9 @@ internal object ConstraintFactoryDefault : ConstraintFactory {
         return constraints.any { name == it.name && version in it.versions }
     }
 
-    override fun constraintFor(ion: IonValue, schema: SchemaInternal) = constraints
+    override fun constraintFor(ion: IonValue, schema: SchemaInternal, referenceManager: DeferredReferenceManager) = constraints
         .single { ion.fieldName == it.name && schema.ionSchemaLanguageVersion in it.versions }
-        .newInstance(ion, schema)
+        .newInstance(ion, schema, referenceManager)
 
     /**
      * Returns a list of constraint field names for the given [version].
