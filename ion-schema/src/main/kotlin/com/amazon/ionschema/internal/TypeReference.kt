@@ -21,13 +21,11 @@ import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaVersion
-import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.util.IonSchema_2_0
-import com.amazon.ionschema.internal.util.getIslOptionalField
 import com.amazon.ionschema.internal.util.getIslRequiredField
 import com.amazon.ionschema.internal.util.islRequire
+import com.amazon.ionschema.internal.util.islRequireNotNull
 import com.amazon.ionschema.internal.util.islRequireOnlyExpectedFieldNames
-import com.amazon.ionschema.internal.util.markReadOnly
 
 /**
  * Provides a factory method that translates an ISL type reference into a function
@@ -73,53 +71,68 @@ internal class TypeReference private constructor() {
                             "Illegal 'name' field in type reference: $ion"
                         }
                     }
-                    handleStruct(ion, schema, isField, referenceManager)
+                    if (ion.containsKey("id")) {
+                        handleInlineImport(ion, schema, referenceManager)
+                    } else {
+                        handleInlineTypeDefinition(ion, schema, referenceManager, isField)
+                    }
                 }
-                is IonSymbol -> handleSymbol(ion, schema)
+                is IonSymbol -> handleSymbol(ion, schema, referenceManager)
                 else -> throw InvalidSchemaException("Unable to resolve type reference '$ion'")
             }
         }
 
-        private fun handleStruct(ion: IonStruct, schema: SchemaInternal, isField: Boolean, referenceManager: DeferredReferenceManager): () -> TypeInternal {
-            val id = ion.getIslOptionalField<IonText>("id")
+        private fun handleInlineTypeDefinition(ion: IonStruct, schema: SchemaInternal, referenceManager: DeferredReferenceManager, isField: Boolean): () -> TypeInternal {
             val type = when {
-                id != null -> {
-                    // import
-                    if (schema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
-                        ion.islRequireOnlyExpectedFieldNames(IonSchema_2_0.INLINE_IMPORT_KEYWORDS)
-                        islRequire(id.stringValue() != schema.schemaId) { "A schema may not directly import itself: $ion" }
-                    }
-                    val typeName = ion.getIslRequiredField<IonSymbol>("type")
-                    val importedSchema = runCatching { schema.getSchemaSystem().loadSchema(id.stringValue()) }
-                        .getOrElse { e -> throw InvalidSchemaException("Unable to load schema '${id.stringValue()}'; ${e.message}") }
-                    importedSchema.getType(typeName.stringValue())
-                }
                 isField -> TypeImpl(ion, schema, referenceManager)
-                ion.size() == 1 && ion["type"] != null -> {
-                    // elide inline types defined as "{ type: X }" to TypeImpl;
-                    // this avoids creating a nested, redundant validation structure
-                    TypeImpl(ion, schema, referenceManager)
-                }
+                // elide inline types defined as "{ type: X }" to TypeImpl;
+                // this avoids creating a nested, redundant validation structure
+                ion.size() == 1 && ion["type"] != null -> TypeImpl(ion, schema, referenceManager)
                 else -> TypeInline(ion, schema, referenceManager)
             }
-
-            type ?: throw InvalidSchemaException("Unable to resolve type reference '$ion'")
 
             val theType = handleNullable(ion, schema, type)
             return { theType }
         }
 
-        private fun handleSymbol(ion: IonSymbol, schema: SchemaInternal): () -> TypeInternal {
-            val t = schema.getType(ion.stringValue())
+        private fun handleInlineImport(ion: IonStruct, thisSchema: SchemaInternal, referenceManager: DeferredReferenceManager): () -> TypeInternal {
+            val schemaSystem = thisSchema.getSchemaSystem()
+            val schemaId: String = ion.getIslRequiredField<IonText>("id").stringValue()
+            val typeId: IonSymbol = ion.getIslRequiredField("type")
+
+            if (thisSchema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
+                ion.islRequireOnlyExpectedFieldNames(IonSchema_2_0.INLINE_IMPORT_KEYWORDS)
+                val thisSchemaId = thisSchema.schemaId
+                islRequire(schemaId != thisSchemaId) { "A schema may not directly import itself: $ion" }
+            }
+
+            return if (schemaSystem.doesSchemaDeclareType(schemaId, typeId)) {
+                val deferredType = referenceManager.createDeferredImportReference(schemaId, typeId);
+                { handleNullable(ion, thisSchema, deferredType) }
+            } else if (schemaSystem.getParam(IonSchemaSystemImpl.Param.ALLOW_TRANSITIVE_IMPORTS)) {
+                // Even though the type is not declared in the given schema, it could still be a transitive import if
+                // those are enabled. There is no support for circular dependency chains that include transitive imports,
+                // so we'll try to load the actual type without concern for whether it is properly deferred.
+                val importedSchema = runCatching { schemaSystem.loadSchema(schemaId) }
+                    .getOrElse { e -> throw InvalidSchemaException("Unable to load schema '$schemaId'; ${e.message}") }
+                val type = islRequireNotNull(importedSchema.getType(typeId.stringValue())) { "No such type $typeId in schema $schemaId" };
+                { type }
+            } else {
+                throw InvalidSchemaException("No type named '$typeId' found in $schemaId")
+            }
+        }
+
+        private fun handleSymbol(ion: IonSymbol, schema: SchemaInternal, referenceManager: DeferredReferenceManager): () -> TypeInternal {
+            val t = schema.getInScopeType(ion.stringValue())
+
             return if (t != null) {
                 val type = t as? TypeBuiltin ?: TypeNamed(ion, t)
                 val theType = handleNullable(ion, schema, type);
                 { theType }
             } else {
                 // type can't be resolved yet;  ask the schema to try again later
-                val deferredType = TypeReferenceDeferred(ion, schema)
-                schema.addDeferredType(deferredType);
-                { deferredType.resolve() }
+                val deferredType = referenceManager.createDeferredLocalReference(schema, ion);
+                { deferredType }
             }
         }
 
@@ -131,31 +144,4 @@ internal class TypeReference private constructor() {
             }
         }
     }
-}
-
-/**
- * Represents a type reference that can't be resolved yet.
- */
-internal class TypeReferenceDeferred(
-    nameSymbol: IonSymbol,
-    private val schema: SchemaInternal
-) : TypeInternal {
-
-    private var type: TypeInternal? = null
-    override val name: String = nameSymbol.stringValue()
-    override val schemaId: String? = schema.schemaId
-    override val isl = nameSymbol.markReadOnly()
-
-    fun attemptToResolve(): Boolean {
-        type = schema.getType(name)
-        return type != null
-    }
-
-    fun resolve(): TypeInternal = type!!
-
-    override fun getBaseType(): TypeBuiltin = throw UnsupportedOperationException()
-
-    override fun isValidForBaseType(value: IonValue): Boolean = throw UnsupportedOperationException()
-
-    override fun validate(value: IonValue, issues: Violations) = throw UnsupportedOperationException()
 }
