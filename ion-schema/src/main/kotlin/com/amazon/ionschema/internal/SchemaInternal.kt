@@ -26,8 +26,6 @@ import com.amazon.ionschema.Schema
 internal interface SchemaInternal : Schema {
     val schemaId: String?
 
-    fun addDeferredType(typeRef: TypeReferenceDeferred)
-
     /**
      * The in-scope types for a schema consist of the ISL core types, any types declared in that schema, and any types
      * that are imported to the schema. This function is intended for internal use only in order to detect naming

@@ -32,13 +32,7 @@ import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.assertThrows
 import java.io.File
 
-class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(
-    islVersion = v1_0,
-    additionalFileFilter = {
-        // Pending fix for https://github.com/amazon-ion/ion-schema-kotlin/issues/209
-        !it.path.contains("cycles/inline_import")
-    }
-)
+class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(v1_0)
 
 class IonSchemaTests_1_0_transitive : TestFactory by IonSchemaTestsRunner(
     islVersion = v1_0,
@@ -47,16 +41,12 @@ class IonSchemaTests_1_0_transitive : TestFactory by IonSchemaTestsRunner(
     // Skip the tests for import cycles, since fixing cycles with transitive imports enabled is a non-goal.
     additionalFileFilter = {
         !it.path.contains("invalid_transitive_import") &&
-            !it.path.contains("import/cycles")
+            !it.path.contains("import/cycles/header_import")
     }
 )
 
 class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
     islVersion = v2_0,
-    additionalFileFilter = {
-        // Pending fix for https://github.com/amazon-ion/ion-schema-kotlin/issues/209
-        !it.path.contains("cycles/inline_import")
-    },
     testNameFilter = {
         // Pending fix for https://github.com/amazon-ion/ion-schema-kotlin/issues/237
         !it.contains("user_reserved_fields declaration may not have unexpected fields")
