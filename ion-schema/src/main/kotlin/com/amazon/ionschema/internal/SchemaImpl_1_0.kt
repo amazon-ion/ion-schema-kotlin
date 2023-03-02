@@ -210,7 +210,7 @@ internal class SchemaImpl_1_0 private constructor(
                 }
             }
         return importsMap.mapValues {
-            ImportImpl(it.value.id, it.value.schema, it.value.types)
+            ImportImpl(it.value.id, { it.value.schema }, it.value.types)
         }
     }
 
