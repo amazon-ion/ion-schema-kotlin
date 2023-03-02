@@ -42,6 +42,8 @@ internal class IonSchemaSystemImpl(
         IonSchemaVersion.v2_0 to SchemaCore(this, IonSchemaVersion.v2_0)
     )
 
+    internal fun getBuiltInTypesSchema(version: IonSchemaVersion) = schemaCores[version]!!
+
     private val schemaContentCache = SchemaContentCache(this::loadSchemaContent)
 
     // Set to be used to detect cycle in import dependencies
@@ -100,7 +102,7 @@ internal class IonSchemaSystemImpl(
     private fun createSchema(referenceManager: DeferredReferenceManager, version: IonSchemaVersion, schemaId: String?, isl: List<IonValue>): SchemaInternal {
         return when (version) {
             IonSchemaVersion.v1_0 -> SchemaImpl_1_0(referenceManager, this, schemaCores[version]!!, isl.iterator(), schemaId)
-            IonSchemaVersion.v2_0 -> SchemaImpl_2_0(referenceManager, this, schemaCores[version]!!, isl.iterator(), schemaId)
+            IonSchemaVersion.v2_0 -> SchemaImpl_2_0(referenceManager, this, isl, schemaId)
         }
     }
 
