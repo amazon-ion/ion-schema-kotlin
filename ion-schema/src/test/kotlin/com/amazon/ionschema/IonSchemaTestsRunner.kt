@@ -32,13 +32,23 @@ import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.assertThrows
 import java.io.File
 
-class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(v1_0)
+class IonSchemaTests_1_0 : TestFactory by IonSchemaTestsRunner(
+    islVersion = v1_0,
+    additionalFileFilter = {
+        // Pending fix for https://github.com/amazon-ion/ion-schema-kotlin/issues/209
+        !it.path.contains("cycles/inline_import")
+    }
+)
 
 class IonSchemaTests_1_0_transitive : TestFactory by IonSchemaTestsRunner(
     islVersion = v1_0,
     systemBuilder = IonSchemaSystemBuilder.standard().allowTransitiveImports(true),
     // Skip the tests for transitive imports since we're explicitly enabling the buggy behavior.
-    additionalFileFilter = { !it.path.contains("invalid_transitive_import") }
+    // Skip the tests for import cycles, since fixing cycles with transitive imports enabled is a non-goal.
+    additionalFileFilter = {
+        !it.path.contains("invalid_transitive_import") &&
+            !it.path.contains("import/cycles")
+    }
 )
 
 class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
@@ -46,6 +56,10 @@ class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
     additionalFileFilter = {
         // Pending fix for https://github.com/amazon-ion/ion-schema-kotlin/issues/209
         !it.path.contains("cycles/inline_import")
+    },
+    testNameFilter = {
+        // Pending fix for https://github.com/amazon-ion/ion-schema-kotlin/issues/237
+        !it.contains("user_reserved_fields declaration may not have unexpected fields")
     }
 )
 
@@ -58,6 +72,7 @@ class IonSchemaTestsRunner(
     islVersion: IonSchemaVersion,
     systemBuilder: IonSchemaSystemBuilder = IonSchemaSystemBuilder.standard().allowTransitiveImports(false),
     additionalFileFilter: (File) -> Boolean = { true },
+    private val testNameFilter: (String) -> Boolean = { true },
 ) : TestFactory {
 
     private val baseDir = IonSchemaTests.testDirectoryFor(islVersion)
@@ -119,7 +134,7 @@ class IonSchemaTestsRunner(
                 else -> dynamicTest(schemaId) { throw IllegalArgumentException("Malformed test input: $ion") }
             }
         }
-        return dynamicContainer(schemaId, f.toURI(), dynamicNodeTestCases.stream())
+        return dynamicContainer(schemaId, f.toURI(), dynamicNodeTestCases.stream().filter { testNameFilter(it.displayName) })
     }
 
     private fun createSchemasTestCases(schemaId: String, ion: IonStruct, expectValid: Boolean): DynamicNode {

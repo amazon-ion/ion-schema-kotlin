@@ -172,8 +172,6 @@ internal class IonSchemaSystemImpl(
 
     internal fun constraintFor(ion: IonValue, schema: SchemaInternal, referenceManager: DeferredReferenceManager) = constraintFactory.constraintFor(ion, schema, referenceManager)
 
-    internal fun getSchemaImportSet() = schemaImportSet
-
     internal fun emitWarning(lazyWarning: () -> String) {
         warnCallback.invoke(lazyWarning)
     }
