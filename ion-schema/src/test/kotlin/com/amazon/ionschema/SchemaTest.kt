@@ -269,7 +269,7 @@ class SchemaTest {
 
     @Test
     fun `when there is an unresolvable cyclic import, SchemaImpl_1_0 should throw IonSchemaException`() {
-        // I.e. it should not throw a IonSchemaException instead of a StackOverflowError
+        // I.e. it should throw a IonSchemaException instead of a StackOverflowError
         assertThrows<IonSchemaException> {
             iss.loadSchema("schema/import/cycles/header_import_a.isl")
         }
