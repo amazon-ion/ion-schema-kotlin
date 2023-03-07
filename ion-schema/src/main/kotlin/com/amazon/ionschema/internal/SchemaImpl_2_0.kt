@@ -172,6 +172,7 @@ internal class SchemaImpl_2_0 internal constructor(
         userContent ?: return UserReservedFields.NONE
 
         islRequireIonTypeNotNull<IonStruct>(userContent) { "'user_reserved_fields' must be a non-null struct" }
+        userContent.islRequireOnlyExpectedFieldNames(IonSchema_2_0.TOP_LEVEL_ANNOTATION_KEYWORDS)
         islRequire(userContent.typeAnnotations.isEmpty()) { "'user_reserved_fields' may not have any annotations" }
         return UserReservedFields(
             headerWords = loadUserReservedFieldsSubfield(userContent, "schema_header"),

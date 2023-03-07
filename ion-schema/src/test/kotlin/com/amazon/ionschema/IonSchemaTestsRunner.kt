@@ -45,13 +45,7 @@ class IonSchemaTests_1_0_transitive : TestFactory by IonSchemaTestsRunner(
     }
 )
 
-class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(
-    islVersion = v2_0,
-    testNameFilter = {
-        // Pending fix for https://github.com/amazon-ion/ion-schema-kotlin/issues/237
-        !it.contains("user_reserved_fields declaration may not have unexpected fields")
-    }
-)
+class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(v2_0)
 
 /**
  * Primary test runner for the file-based test suite.
