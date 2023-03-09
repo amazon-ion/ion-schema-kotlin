@@ -40,6 +40,10 @@ class ResourceAuthority(
          * [`ion-schema-schemas`](https://github.com/amazon-ion/ion-schema-schemas/).
          */
         @JvmStatic
+        @Deprecated(
+            message = "This has been superseded by IonSchemaSchemas.authority()",
+            replaceWith = ReplaceWith(expression = "IonSchemaSchemas.authority()", imports = ["com.amazon.ionschema.IonSchemaSchemas"])
+        )
         fun forIonSchemaSchemas(): ResourceAuthority = ResourceAuthority("ion-schema-schemas", ResourceAuthority::class.java.classLoader)
     }
 }
