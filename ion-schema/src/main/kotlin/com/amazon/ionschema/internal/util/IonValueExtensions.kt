@@ -24,9 +24,9 @@ import com.amazon.ion.IonValue
  * If this value has no annotations, returns `this`;
  * otherwise, returns a clone of `this` with the annotations removed.
  */
-internal fun IonValue.withoutTypeAnnotations() =
+internal fun <T : IonValue> T.withoutTypeAnnotations(): T =
     if (typeAnnotations.isNotEmpty()) {
-        clone().apply { clearTypeAnnotations() }
+        clone().apply { clearTypeAnnotations() } as T
     } else {
         this
     }

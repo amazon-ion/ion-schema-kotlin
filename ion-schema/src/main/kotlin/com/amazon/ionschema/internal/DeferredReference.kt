@@ -73,12 +73,14 @@ internal interface DeferredReference : TypeInternal {
 
     companion object {
         private fun illegalMethodCallBeforeResolving(): Nothing {
-            throw IllegalStateException("This should be unreachable because this method should not be called before the call to DeferredReferenceManager.resolve() is complete.")
+            throw UnresolvedTypeReferenceException("This should be unreachable because this method should not be called before the call to DeferredReferenceManager.resolve() is complete.")
         }
     }
     override fun getBaseType(): TypeBuiltin = if (isResolved()) resolve().getBaseType() else illegalMethodCallBeforeResolving()
     override fun isValidForBaseType(value: IonValue): Boolean = if (isResolved()) resolve().isValidForBaseType(value) else illegalMethodCallBeforeResolving()
     override fun validate(value: IonValue, issues: Violations) = if (isResolved()) resolve().validate(value, issues) else illegalMethodCallBeforeResolving()
+
+    class UnresolvedTypeReferenceException(message: String) : IllegalStateException(message)
 }
 
 /**
