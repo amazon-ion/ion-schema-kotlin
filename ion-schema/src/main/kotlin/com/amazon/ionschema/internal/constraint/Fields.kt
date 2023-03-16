@@ -25,7 +25,6 @@ import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.Constraint
 import com.amazon.ionschema.internal.DeferredReferenceManager
 import com.amazon.ionschema.internal.SchemaInternal
-import com.amazon.ionschema.internal.constraint.Occurs.Companion.OPTIONAL
 import com.amazon.ionschema.internal.util.islRequire
 import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
 
@@ -65,7 +64,7 @@ internal class Fields(
         // Forces the field definitions to be validated
         fieldConstraints = ionStruct.associateBy(
             { it.fieldName },
-            { Occurs(it, schema, referenceManager, OPTIONAL, isField = true) }
+            { Occurs(it, schema, referenceManager, isField = true) }
         )
 
         if (schema.ionSchemaLanguageVersion >= IonSchemaVersion.v2_0) {
