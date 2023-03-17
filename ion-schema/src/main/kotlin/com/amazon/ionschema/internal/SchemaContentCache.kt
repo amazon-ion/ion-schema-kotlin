@@ -18,6 +18,7 @@ package com.amazon.ionschema.internal
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
+import com.amazon.ionschema.internal.util.withoutTypeAnnotations
 
 /**
  * A class that caches the uninterpreted content of a Schema document. This enables us to determine which types are
@@ -75,7 +76,7 @@ internal class SchemaContentCache constructor(
      * into this instance of [SchemaContentCache].
      */
     fun doesSchemaDeclareType(schemaId: String, typeId: IonSymbol): Boolean {
-        return runCatching { typeId in getSchemaContent(schemaId).declaredTypes }.getOrElse { false }
+        return runCatching { typeId.withoutTypeAnnotations() in getSchemaContent(schemaId).declaredTypes }.getOrElse { false }
     }
 
     /**

@@ -16,10 +16,8 @@
 package com.amazon.ionschema.internal.constraint
 
 import com.amazon.ion.IonStruct
-import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
-import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.Violation
 import com.amazon.ionschema.ViolationChild
 import com.amazon.ionschema.Violations
@@ -32,6 +30,7 @@ import com.amazon.ionschema.internal.constraint.Occurs.Companion.toRange
 import com.amazon.ionschema.internal.util.Range
 import com.amazon.ionschema.internal.util.RangeFactory
 import com.amazon.ionschema.internal.util.RangeType
+import com.amazon.ionschema.internal.util.islRequire
 
 /**
  * Implements a constraint to model the `occurs` field in variably occurring type references.
@@ -48,7 +47,6 @@ internal class Occurs(
     ion: IonValue,
     schema: SchemaInternal,
     referenceManager: DeferredReferenceManager,
-    defaultRange: Range<Int>,
     isField: Boolean = false
 ) {
 
@@ -64,26 +62,19 @@ internal class Occurs(
             RangeType.INT_NON_NEGATIVE
         )
 
-        private val OPTIONAL_ION = (ION.singleValue("{ occurs: optional }") as IonStruct).get("occurs")
-        private val REQUIRED_ION = (ION.singleValue("{ occurs: required }") as IonStruct).get("occurs")
+        private val OPTIONAL_ION = ION.newSymbol("optional")
+        private val REQUIRED_ION = ION.newSymbol("required")
 
-        internal fun toRange(ion: IonValue): Range<Int> {
-            if (!ion.isNullValue) {
-                return if (ion is IonSymbol) {
-                    when (ion) {
-                        OPTIONAL_ION -> OPTIONAL
-                        REQUIRED_ION -> REQUIRED
-                        else -> throw InvalidSchemaException("Invalid ion constraint '$ion'")
-                    }
-                } else {
-                    val range = RangeFactory.rangeOf<Int>(ion, RangeType.INT_NON_NEGATIVE)
-                    if (range.contains(0) && !range.contains(1)) {
-                        throw InvalidSchemaException("Occurs must allow at least one value ($ion)")
-                    }
+        internal fun IonValue.toRange(): Range<Int> {
+            return when (this) {
+                OPTIONAL_ION -> OPTIONAL
+                REQUIRED_ION -> REQUIRED
+                else -> {
+                    val range = RangeFactory.rangeOf<Int>(this, RangeType.INT_NON_NEGATIVE)
+                    islRequire(!range.contains(0) || range.contains(1)) { "Occurs must allow at least one value ($this)" }
                     range
                 }
             }
-            throw InvalidSchemaException("Invalid occurs constraint '$ion'")
         }
     }
 
@@ -92,36 +83,12 @@ internal class Occurs(
     private val typeReference: () -> TypeInternal
 
     init {
-        var occurs: IonValue? = null
-        range =
-            if (ion is IonStruct && !ion.isNullValue) {
-                occurs = ion["occurs"]
-                if (occurs != null) {
-                    toRange(occurs)
-                } else {
-                    defaultRange
-                }
-            } else {
-                defaultRange
-            }
+        val occurs: IonValue? = (ion as? IonStruct)?.takeIf { !ion.isNullValue }?.get("occurs")
 
-        val tmpIon = if (ion is IonStruct && occurs != null) {
-            ion.cloneAndRemove("occurs")
-        } else {
-            ion
-        }
-        typeReference = TypeReference.create(tmpIon, schema, referenceManager, isField, variablyOccurring = true)
+        occursIon = occurs ?: if (isField) OPTIONAL_ION else REQUIRED_ION
+        range = occurs?.toRange() ?: if (isField) OPTIONAL else REQUIRED
 
-        occursIon =
-            if (occurs != null) {
-                occurs
-            } else {
-                when (range) {
-                    OPTIONAL -> OPTIONAL_ION
-                    REQUIRED -> REQUIRED_ION
-                    else -> throw InvalidSchemaException("Invalid occurs constraint '$range'")
-                }
-            }
+        typeReference = TypeReference.create(ion, schema, referenceManager, isField, variablyOccurring = true)
     }
 
     /**
@@ -173,7 +140,7 @@ internal open class OccursNoop(
 ) : ConstraintBase(ion) {
 
     init {
-        toRange(ion)
+        ion.toRange()
     }
 
     override fun validate(value: IonValue, issues: Violations) {
