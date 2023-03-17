@@ -53,28 +53,13 @@ internal class TypeReference private constructor() {
                 throw InvalidSchemaException("Unable to resolve type reference '$ion'")
             }
 
-            if (schema.ionSchemaLanguageVersion != IonSchemaVersion.v1_0) {
-                if (!isNamePermitted) islRequire(!ion.hasTypeAnnotation("type")) {
-                    "'type::' annotation not allowed on type references: $ion"
-                }
-                val illegalAnnotations = ion.typeAnnotations.filter { it !in allowedAnnotations }
-                islRequire(illegalAnnotations.isEmpty()) { "Illegal annotations $illegalAnnotations on type reference: $ion" }
+            when (schema.ionSchemaLanguageVersion) {
+                IonSchemaVersion.v1_0 -> validateIonSchema1TypeReference(ion, variablyOccurring)
+                IonSchemaVersion.v2_0 -> validateIonSchema2TypeReference(ion, variablyOccurring, isNamePermitted, allowedAnnotations)
             }
 
             val theType = when (ion) {
                 is IonStruct -> {
-                    if (schema.ionSchemaLanguageVersion != IonSchemaVersion.v1_0) {
-                        if (!variablyOccurring) islRequire(!ion.containsKey("occurs")) {
-                            "Variably occurring type reference not permitted: $ion"
-                        }
-                        if (!isNamePermitted) islRequire(!ion.containsKey("name")) {
-                            "Illegal 'name' field in type reference: $ion"
-                        }
-                    } else {
-                        if (variablyOccurring && ion.containsKey("occurs")) islRequire(!ion.hasTypeAnnotation("nullable")) {
-                            "'nullable::' is not allowed on variably occurring types"
-                        }
-                    }
                     if (ion.containsKey("id")) {
                         handleInlineImport(ion, schema, referenceManager)
                     } else {
@@ -85,7 +70,12 @@ internal class TypeReference private constructor() {
                 else -> throw InvalidSchemaException("Unable to resolve type reference '$ion'")
             }
 
-            val maybeNullableType = handleNullable(ion, schema, theType)
+            // Handle any nullability annotations
+            val maybeNullableType = when {
+                ion.hasTypeAnnotation("nullable") -> TypeNullable(ion, theType, schema)
+                ion.hasTypeAnnotation("\$null_or") -> TypeOrNullDecorator(ion, theType, schema)
+                else -> theType
+            }
 
             return { maybeNullableType }
         }
@@ -136,16 +126,45 @@ internal class TypeReference private constructor() {
             }
         }
 
-        private fun handleNullable(ion: IonValue, schema: SchemaInternal, type: TypeInternal): TypeInternal {
-            if (ion is IonStruct && ion.containsKey("occurs")) {
-                islRequire(!ion.hasTypeAnnotation("\$null_or")) { "'\$null_or::' is not allowed on variably occurring types" }
+        /**
+         * Checks [ion] against the syntax for Ion Schema 1.0
+         */
+        private fun validateIonSchema1TypeReference(ion: IonValue, variablyOccurring: Boolean) {
+            if (variablyOccurring && ion is IonStruct && ion.containsKey("occurs")) {
                 islRequire(!ion.hasTypeAnnotation("nullable")) { "'nullable::' is not allowed on variably occurring types" }
             }
+        }
 
-            return when {
-                ion.hasTypeAnnotation("nullable") -> TypeNullable(ion, type, schema)
-                ion.hasTypeAnnotation("\$null_or") -> TypeOrNullDecorator(ion, type, schema)
-                else -> type
+        /**
+         * Checks [ion] against the syntax for Ion Schema 2.0
+         */
+        private fun validateIonSchema2TypeReference(
+            ion: IonValue,
+            variablyOccurring: Boolean,
+            isNamePermitted: Boolean,
+            allowedAnnotations: Set<String>
+        ) {
+            islRequire(isNamePermitted || !ion.hasTypeAnnotation("type")) {
+                "'type::' annotation not allowed on type references: $ion"
+            }
+
+            val illegalAnnotations = ion.typeAnnotations.filter { it !in allowedAnnotations }
+            islRequire(illegalAnnotations.isEmpty()) { "Illegal annotations $illegalAnnotations on type reference: $ion" }
+
+            if (ion is IonStruct) {
+                islRequire(isNamePermitted || !ion.containsKey("name")) {
+                    "Illegal 'name' field in type reference: $ion"
+                }
+
+                // It can only have 'occurs' if it's allowed to be a variable occurring type
+                islRequire(variablyOccurring || !ion.containsKey("occurs")) {
+                    "Variably occurring type reference not permitted: $ion"
+                }
+
+                // If it does have 'occurs' then it may not have `$null_or`
+                islRequire(!ion.containsKey("occurs") || !ion.hasTypeAnnotation("\$null_or")) {
+                    "'\$null_or::' is not allowed on variably occurring types"
+                }
             }
         }
     }
