@@ -15,7 +15,28 @@
 
 package com.amazon.ionschema
 
+import com.amazon.ionschema.reader.internal.ReadError
+
 /**
  * Thrown when an invalid schema definition is encountered.
  */
-class InvalidSchemaException(message: String) : IonSchemaException(message)
+class InvalidSchemaException(message: String) : IonSchemaException(message) {
+
+    /**
+     * Indicates whether this exception is a fail-fast exception (i.e. it should not be caught by any error collectors
+     * in an Ion Schema reader).
+     */
+    private var failFast = false
+    internal fun isFailFast() = failFast
+
+    companion object {
+        /**
+         * Factory function to create and throw a fail-fast [IonSchemaException] from a [ReadError].
+         */
+        internal fun failFast(error: ReadError): Nothing {
+            val e = InvalidSchemaException(error.message)
+            e.failFast = true
+            throw e
+        }
+    }
+}
