@@ -35,7 +35,7 @@ class IonSchemaCli : NoOpCliktCommand(
     init {
         context {
             subcommands(
-                ValidateCommand()
+                ValidateCommand(),
             )
             versionOption(getVersionString())
             helpFormatter = CliktHelpFormatter(showRequiredTag = true, showDefaultValues = true)
