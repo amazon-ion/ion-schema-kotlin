@@ -78,7 +78,7 @@ fun CliktCommand.schemaOption() = mutuallyExclusiveOptions<IonSchemaSystem.() ->
  *
  * The delegated property has type `Schema.() -> Type`.
  */
-fun CliktCommand.typeArgument() = argument(help = "An ISL type name or inline type definition.")
+fun CliktCommand.typeArgument() = argument("TYPE", help = "An ISL type name or inline type definition.")
     .convert { createTypeLambdaForArgument(it) }
 
 private fun createTypeLambdaForArgument(typeArg: String): Schema.() -> Type {

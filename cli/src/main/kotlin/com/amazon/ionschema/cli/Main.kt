@@ -15,6 +15,7 @@
 
 package com.amazon.ionschema.cli
 
+import com.amazon.ionschema.cli.commands.RepairCommand
 import com.amazon.ionschema.cli.commands.ValidateCommand
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.context
@@ -36,6 +37,7 @@ class IonSchemaCli : NoOpCliktCommand(
         context {
             subcommands(
                 ValidateCommand(),
+                RepairCommand(),
             )
             versionOption(getVersionString())
             helpFormatter = CliktHelpFormatter(showRequiredTag = true, showDefaultValues = true)

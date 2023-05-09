@@ -31,6 +31,14 @@ interface Type {
     val name: String
 
     /**
+     * The id of the [Schema] in which this [Type] was defined. Will be `null` if the schema has no id (i.e. it was
+     * created with [IonSchemaSystem.newSchema]) or if the type does not belong to any schema (i.e. it was created with
+     * [Schema.newType] but not _added_ to a schema). Any [Type] that is loaded from any [Authority] must have a
+     * non-null [schemaId].
+     */
+    val schemaId: String?
+
+    /**
      * A read-only view of the ISL for this type.
      */
     val isl: IonValue
