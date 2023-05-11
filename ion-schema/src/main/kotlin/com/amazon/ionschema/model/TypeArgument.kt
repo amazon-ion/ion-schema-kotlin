@@ -31,16 +31,16 @@ sealed class TypeArgument {
     /**
      * [TypeArgument] that is an anonymous type, defined inline.
      */
-    class InlineType(val typeDefinition: TypeDefinition, override val nullability: Nullability = Nullability.None) : TypeArgument()
+    data class InlineType(val typeDefinition: TypeDefinition, override val nullability: Nullability = Nullability.None) : TypeArgument()
 
     /**
      * A [TypeArgument] that references another type by [typeName] only.
      * This can refer to any types that are defined in the same schema, imported via the schema header, or any built-in types.
      */
-    class Reference(val typeName: String, override val nullability: Nullability = Nullability.None) : TypeArgument()
+    data class Reference(val typeName: String, override val nullability: Nullability = Nullability.None) : TypeArgument()
 
     /**
      * A [TypeArgument] that references a type from a different schema by [schemaId] and [typeName].
      */
-    class Import(val schemaId: String, val typeName: String, override val nullability: Nullability = Nullability.None) : TypeArgument()
+    data class Import(val schemaId: String, val typeName: String, override val nullability: Nullability = Nullability.None) : TypeArgument()
 }
