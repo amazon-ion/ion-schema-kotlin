@@ -20,6 +20,8 @@ class DiscreteIntRange private constructor(private val delegate: ContinuousRange
         )
     )
 
+    constructor(value: Int) : this(value, value)
+
     val start: Int?
         get() = (delegate.start as? ContinuousRange.Limit.Closed)?.value
 

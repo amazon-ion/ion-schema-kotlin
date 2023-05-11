@@ -5,7 +5,7 @@ package com.amazon.ionschema.model
  * See relevant section in [ISL 2.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#open-content).
  */
 data class UserReservedFields(
-    val type: List<String> = emptyList(),
-    val header: List<String> = emptyList(),
-    val footer: List<String> = emptyList(),
+    val type: Set<String> = emptySet(),
+    val header: Set<String> = emptySet(),
+    val footer: Set<String> = emptySet(),
 )

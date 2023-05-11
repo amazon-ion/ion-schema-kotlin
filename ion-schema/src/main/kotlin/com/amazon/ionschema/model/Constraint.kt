@@ -1,5 +1,6 @@
 package com.amazon.ionschema.model
 
+import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.internal.util.validateRegexPattern
@@ -33,7 +34,32 @@ interface Constraint {
      * Represents the `annotations` constraint from Ion Schema 2.0 onwards.
      * See relevant section in [ISL 2.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#annotations).
      */
-    data class AnnotationsV2(val type: TypeArgument) : Constraint
+    data class AnnotationsV2(val type: TypeArgument) : Constraint {
+
+        enum class Modifier { Closed, Required, ClosedAndRequired }
+        companion object {
+            /**
+             * Factory method for [AnnotationsV2] that resembles the
+             * [simple syntax](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#simple-syntax).
+             */
+            @JvmStatic
+            fun create(modifier: Modifier, annotationSymbols: List<IonSymbol>): AnnotationsV2 {
+                val annotationsConstraints = mutableSetOf<Constraint>()
+                // If closed, constrain using `valid_values`
+                if (modifier == Modifier.Closed || modifier == Modifier.ClosedAndRequired) {
+                    val validValues = annotationSymbols.map { ValidValue.Value(it) }
+                    annotationsConstraints.add(
+                        Element(TypeArgument.InlineType(TypeDefinition(setOf(ValidValues(validValues)))))
+                    )
+                }
+                // If required, constrain using `contains`
+                if (modifier == Modifier.Required || modifier == Modifier.ClosedAndRequired) {
+                    annotationsConstraints.add(Contains(annotationSymbols))
+                }
+                return AnnotationsV2(inlineType(annotationsConstraints))
+            }
+        }
+    }
 
     /**
      * Represents the `any_of` constraint.

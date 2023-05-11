@@ -17,7 +17,7 @@ class SchemaDocumentTest {
 
     @Test
     fun `test get header when no header present`() {
-        val schema = SchemaDocument("schema.isl", listOf())
+        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf())
         assertNull(schema.header)
     }
 
@@ -25,13 +25,13 @@ class SchemaDocumentTest {
     fun `test get header when header present`() {
         val header = Item.Header()
         val footer = Item.Footer()
-        val schema = SchemaDocument("schema.isl", listOf(header, footer))
+        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf(header, footer))
         assertSame(header, schema.header)
     }
 
     @Test
     fun `test get footer when no footer present`() {
-        val schema = SchemaDocument("schema.isl", listOf())
+        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf())
         assertNull(schema.footer)
     }
 
@@ -39,13 +39,13 @@ class SchemaDocumentTest {
     fun `test get footer when footer present`() {
         val header = Item.Header()
         val footer = Item.Footer()
-        val schema = SchemaDocument("schema.isl", listOf(header, footer))
+        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf(header, footer))
         assertSame(footer, schema.footer)
     }
 
     @Test
     fun `test get declaredTypes when no types present`() {
-        val schema = SchemaDocument("schema.isl", listOf())
+        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf())
         assertTrue(schema.declaredTypes.isEmpty())
     }
 
@@ -54,64 +54,25 @@ class SchemaDocumentTest {
         val type0 = NamedTypeDefinition(
             "type0",
             TypeDefinition(
-                constraints = listOf(),
+                constraints = setOf(),
             )
         )
         val type1 = NamedTypeDefinition(
             "type1",
             TypeDefinition(
-                constraints = listOf(),
+                constraints = setOf(),
             )
         )
-        val schema = SchemaDocument("schema.isl", listOf(Item.Type(type0), Item.Type(type1)))
+        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf(Item.Type(type0), Item.Type(type1)))
         assertEquals(2, schema.declaredTypes.size)
-        assertSame(type0, schema.declaredTypes[0])
-        assertSame(type1, schema.declaredTypes[1])
+        assertSame(type0, schema.declaredTypes["type0"])
+        assertSame(type1, schema.declaredTypes["type1"])
     }
 
     @Test
-    fun `test get ion schema version when version marker is present`() {
-        val schema = SchemaDocument(
-            "schema.isl",
-            listOf(
-                Item.OpenContent(ION.newNull()),
-                Item.VersionMarker(IonSchemaVersion.v2_0)
-            )
-        )
+    fun `test get ion schema version`() {
+        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf())
         assertEquals(IonSchemaVersion.v2_0, schema.ionSchemaVersion)
-    }
-
-    @Test
-    fun `test get ion schema version when header is before any version marker is present`() {
-        val schema = SchemaDocument(
-            "schema.isl",
-            listOf(
-                Item.Header(),
-                Item.VersionMarker(IonSchemaVersion.v2_0),
-                Item.Footer(),
-            )
-        )
-        // Should be ISL 1.0 since header was before version marker
-        assertEquals(IonSchemaVersion.v1_0, schema.ionSchemaVersion)
-    }
-
-    @Test
-    fun `test get ion schema version when type is before any version marker is present`() {
-        val type0 = NamedTypeDefinition(
-            "type0",
-            TypeDefinition(
-                constraints = listOf(),
-            )
-        )
-        val schema = SchemaDocument(
-            "schema.isl",
-            listOf(
-                Item.Type(type0),
-                Item.VersionMarker(IonSchemaVersion.v2_0),
-            )
-        )
-        // Should be ISL 1.0 since type was before version marker
-        assertEquals(IonSchemaVersion.v1_0, schema.ionSchemaVersion)
     }
 
     @Test
@@ -119,18 +80,17 @@ class SchemaDocumentTest {
         val type0 = NamedTypeDefinition(
             "type0",
             TypeDefinition(
-                constraints = listOf(),
+                constraints = setOf(),
             )
         )
         val type1 = NamedTypeDefinition(
             "type1",
             TypeDefinition(
-                constraints = listOf(),
+                constraints = setOf(),
             )
         )
         val schemaItems = listOf(
             Item.OpenContent(ION.newInt(1)),
-            Item.VersionMarker(IonSchemaVersion.v2_0),
             Item.OpenContent(ION.newInt(2)),
             Item.Header(),
             Item.OpenContent(ION.newInt(3)),
@@ -141,7 +101,7 @@ class SchemaDocumentTest {
             Item.Footer(),
             Item.OpenContent(ION.newInt(6)),
         )
-        val schema = SchemaDocument("schema.isl", schemaItems)
+        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, schemaItems)
         assertIterableEquals(schemaItems, schema.items)
     }
 }

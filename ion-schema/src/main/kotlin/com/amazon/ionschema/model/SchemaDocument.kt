@@ -2,6 +2,8 @@ package com.amazon.ionschema.model
 
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaVersion
+import com.amazon.ionschema.internal.util.islRequire
+import com.amazon.ionschema.util.emptyBag
 
 /**
  * Represents an Ion Schema document.
@@ -9,31 +11,33 @@ import com.amazon.ionschema.IonSchemaVersion
 @ExperimentalIonSchemaModel
 data class SchemaDocument(
     val id: String?,
+    val ionSchemaVersion: IonSchemaVersion,
     val items: List<Item>
 ) {
-    val ionSchemaVersion: IonSchemaVersion = items.firstOrNull { it !is Item.OpenContent }
-        ?.let { it as? Item.VersionMarker }
-        ?.value
-        ?: IonSchemaVersion.v1_0
     val header: Item.Header? = items.filterIsInstance<Item.Header>().singleOrNull()
     val footer: Item.Footer? = items.filterIsInstance<Item.Footer>().singleOrNull()
-    val declaredTypes: List<NamedTypeDefinition> = items.filterIsInstance<Item.Type>().map { it.value }
+    val declaredTypes: Map<String, NamedTypeDefinition> = let {
+        val typeList = items.filterIsInstance<Item.Type>().map { it.value }
+        val typeMap = typeList.associateBy { it.typeName }
+        islRequire(typeMap.size == typeList.size) {
+            "Conflicting type names in schema"
+        }
+        typeMap
+    }
 
     /**
      * Represents a top-level item in a schema document.
      */
     sealed class Item {
-        data class VersionMarker(val value: IonSchemaVersion) : Item()
-
         data class Type(val value: NamedTypeDefinition) : Item()
 
         data class Header(
             val imports: List<HeaderImport> = emptyList(),
             val userReservedFields: UserReservedFields = UserReservedFields(),
-            val openContent: OpenContentFields = emptyList()
+            val openContent: OpenContentFields = emptyBag()
         ) : Item()
 
-        data class Footer(val openContent: OpenContentFields = emptyList()) : Item()
+        data class Footer(val openContent: OpenContentFields = emptyBag()) : Item()
 
         data class OpenContent(val value: IonValue) : Item()
     }

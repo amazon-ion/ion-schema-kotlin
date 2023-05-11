@@ -13,6 +13,9 @@ package com.amazon.ionschema.model
  */
 data class ContinuousRange<T : Comparable<T>>(val start: Limit<T>, val end: Limit<T>) {
 
+    private constructor(value: Limit.Closed<T>) : this(value, value)
+    constructor(value: T) : this(Limit.Closed(value))
+
     sealed class Limit<T : Comparable<T>> {
         abstract val value: T?
 
