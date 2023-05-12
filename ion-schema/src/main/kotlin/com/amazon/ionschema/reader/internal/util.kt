@@ -28,3 +28,10 @@ internal inline fun <T : Any> readCatching(context: ReaderContext, value: IonVal
 internal inline fun <T : Any> Iterable<IonValue>.readAllCatching(context: ReaderContext, crossinline block: (IonValue) -> T?): List<T> {
     return mapNotNull { readCatching(context, it) { block(it) } }
 }
+
+/**
+ * Formats a message for an invalid constraint
+ */
+internal fun invalidConstraint(value: IonValue, reason: String, constraintName: String = value.fieldName): String {
+    return "Illegal argument for '$constraintName' constraint; $reason: $value"
+}

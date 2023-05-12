@@ -83,6 +83,17 @@ internal inline fun <T : Any> Collection<T>.islRequireZeroOrOneElements(lazyMess
 }
 
 /**
+ * Validates that this [Collection] has one or more element(s).
+ *
+ * @throws InvalidSchemaException if this [Collection] does not meet the above condition.
+ * @return [this]
+ */
+internal inline fun <reified T : Any, reified C : Collection<T>> Collection<T>.islRequireNotEmpty(containerDescription: String,): C {
+    islRequire(this.isNotEmpty()) { "$containerDescription must not be empty: $this" }
+    return this as C
+}
+
+/**
  * Validates that all elements of an [Iterable] are of Ion type [T].
  * If [allowAnnotations] is false, validates that all elements have no annotations.
  * If [allowIonNulls] is false, validates that all elements are not an Ion null value.
@@ -211,4 +222,18 @@ internal fun IonStruct.islRequireOnlyExpectedFieldNames(
     } else {
         return this
     }
+}
+
+/**
+ * Validates that a value has no unexpected annotations, and that there are no duplicated annotations.
+ * @throws InvalidSchemaException if this [value] contains any annotations not in [legalAnnotations]
+ *      or any annotations that are repeated.
+ * @return the annotations of [value]
+ */
+internal inline fun islRequireNoIllegalAnnotations(value: IonValue, vararg legalAnnotations: String, lazyMessage: () -> Any): List<String> {
+    if (legalAnnotations.isEmpty()) islRequire(value.typeAnnotations.isEmpty(), lazyMessage)
+    val distinctAnnotations = value.typeAnnotations.distinct()
+    islRequire(distinctAnnotations.all { it in legalAnnotations }, lazyMessage)
+    islRequire(distinctAnnotations.size == value.typeAnnotations.size, lazyMessage)
+    return distinctAnnotations
 }
