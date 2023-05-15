@@ -9,7 +9,7 @@ import com.amazon.ionschema.reader.internal.TypeReader
 import com.amazon.ionschema.reader.internal.invalidConstraint
 
 /**
- * Reads the `element` constraint for ISL 2.0 and higher
+ * Reads the `field_names` constraint for ISL 2.0 and higher
  */
 @ExperimentalIonSchemaModel
 internal class FieldNamesReader(private val typeReader: TypeReader) : ConstraintReader {
