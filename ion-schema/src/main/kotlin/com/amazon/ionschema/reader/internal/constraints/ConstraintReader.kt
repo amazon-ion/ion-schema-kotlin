@@ -13,10 +13,14 @@ import com.amazon.ionschema.reader.internal.ReaderContext
 internal interface ConstraintReader {
 
     /**
-     * Contract—return null if and only if:
-     * - this ConstraintReader implementation does not handle the given field name _OR_
-     * - this ConstraintReader implementation does handle the given field name, but the value was not valid in some
-     *   way AND at least one error has been added to the context.
+     * Returns true if this constraint reader can read the given constraint.
      */
-    fun readConstraint(context: ReaderContext, constraintField: IonValue): Constraint?
+    fun canRead(fieldName: String): Boolean
+
+    /**
+     * Returns a [Constraint] instance for the given field.
+     * Should only be called after checking whether the constraint is supported by calling [canRead].
+     * Must throw [IllegalStateException] if called for an unsupported field name.
+     */
+    fun readConstraint(context: ReaderContext, field: IonValue): Constraint
 }
