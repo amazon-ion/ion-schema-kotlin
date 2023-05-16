@@ -12,7 +12,10 @@ import com.amazon.ionschema.model.NamedTypeDefinition
 import com.amazon.ionschema.model.TypeArgument
 import com.amazon.ionschema.model.TypeDefinition
 import com.amazon.ionschema.model.VariablyOccurringTypeArgument
+import com.amazon.ionschema.reader.internal.constraints.ExponentReader
 import com.amazon.ionschema.reader.internal.constraints.Ieee754FloatReader
+import com.amazon.ionschema.reader.internal.constraints.LengthConstraintsReader
+import com.amazon.ionschema.reader.internal.constraints.PrecisionReader
 import com.amazon.ionschema.reader.internal.constraints.RegexReader
 import com.amazon.ionschema.util.toBag
 
@@ -20,7 +23,10 @@ import com.amazon.ionschema.util.toBag
 internal class TypeReaderV2_0 : TypeReader {
 
     private val constraintReaders = listOf(
+        ExponentReader(),
         Ieee754FloatReader(),
+        LengthConstraintsReader(),
+        PrecisionReader(),
         RegexReader(IonSchemaVersion.v2_0),
     )
 

@@ -237,3 +237,14 @@ internal inline fun islRequireNoIllegalAnnotations(value: IonValue, vararg legal
     islRequire(distinctAnnotations.size == value.typeAnnotations.size, lazyMessage)
     return distinctAnnotations
 }
+
+/**
+ * Validates that a value has no unexpected annotations, and that there are no duplicated annotations.
+ * @throws InvalidSchemaException if this [value] contains any annotations not in [annotations]
+ *      or any annotations that are repeated.
+ * @return the annotations of [value]
+ */
+internal inline fun islRequireExactAnnotations(value: IonValue, vararg annotations: String, lazyMessage: () -> Any): List<String> {
+    islRequire(annotations contentDeepEquals value.typeAnnotations, lazyMessage)
+    return value.typeAnnotations.toList()
+}
