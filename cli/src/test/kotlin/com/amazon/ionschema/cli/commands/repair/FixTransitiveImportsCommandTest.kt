@@ -74,7 +74,7 @@ class FixTransitiveImportsCommandTest {
                     val relativeFile = expectedFile.relativeTo(expectationDir)
                     val actualFile = outputDir.resolve(relativeFile)
 
-                    // This should not be brittle, and should probably not require the expected outputs to be updated.
+                    // This should be robust, and should probably not require the expected outputs to be updated.
                     testNodes.add(
                         dynamicTest("Check $relativeFile are Ion equivalent", actualFile.toURI()) {
                             Assertions.assertEquals(
@@ -83,16 +83,17 @@ class FixTransitiveImportsCommandTest {
                             )
                         }
                     )
-                    // This test could be brittle, but we need it to ensure (a) that we don't wipe out any comments in the
+                    // This test could be fragile, but we need it to ensure (a) that we don't wipe out any comments in the
                     // ISL, and (b) that we don't suddenly start making large style-related changes to the original files.
                     // For some changes this test may fail, and sometimes we might want to update the expected outputs
                     // (e.g. if there's some intended whitespace change).
+                    // This could also fail if ion-java changes e.g. the amount of whitespace emitted by the text writer.
                     // To do so, run:
                     // ./ion-schema-cli repair fix-transitive-imports -s <STRATEGY> \
                     //     cli/src/test/resources/FixTransitiveImportsCommand/input/ \
                     //     -d cli/src/test/resources/FixTransitiveImportsCommand/output-<STRATEGY>/
                     testNodes.add(
-                        dynamicTest("Check $relativeFile are text equivalent", actualFile.toURI()) {
+                        dynamicTest("⚠Fragile⚠ Check $relativeFile are text equivalent", actualFile.toURI()) {
                             Assertions.assertEquals(
                                 expectedFile.readText(),
                                 actualFile.readText(),

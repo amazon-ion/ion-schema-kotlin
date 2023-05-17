@@ -31,6 +31,7 @@ import com.amazon.ionschema.cli.util.recursivelyVisit
 import com.amazon.ionschema.cli.util.rewriteFile
 import java.io.File
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.Comparator
 
 class TransitiveImportRewriter(
@@ -54,7 +55,7 @@ class TransitiveImportRewriter(
     enum class ImportStrategy {
         /**
          * While fixing imports, rewrite all imports as `{ id: <SCHEMA_ID>, type: <TYPE_NAME> } `.
-         * You might find this style annoying, and it will possibly generate larger diff.
+         * This is more verbose than the other strategies, and it will probably generate a larger diff.
          * However, it is guaranteed to never have name conflicts unintentionally introduced by a dependency in the future.
          */
         NoWildcards,
@@ -104,6 +105,8 @@ class TransitiveImportRewriter(
      * intermediate work.
      */
     fun fixTransitiveImports(basePath: String, newBasePath: String, authorities: List<Authority>) {
+        val timestampString = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()
+
         fun newIonSchemaSystem(basePath: String, withTransitiveImports: Boolean) = IonSchemaSystemBuilder.standard()
             .allowTransitiveImports(withTransitiveImports)
             .withIonSystem(ionSystem)
@@ -117,7 +120,7 @@ class TransitiveImportRewriter(
             .also(reportErrors("validate"))
 
         echo("Phase 1: Rewrite aggregating schemas")
-        val newBasePathPhase1 = "$newBasePath/._rewriter_phase1_${Instant.now()}"
+        val newBasePathPhase1 = "$newBasePath/._rewriter_phase1_$timestampString"
         val issPhase1 = newIonSchemaSystem(basePath, withTransitiveImports = true)
         forEachSchemaInPath(basePath) { schemaId, file ->
             val patches = rewriteAggregatingSchema(schemaId, file, issPhase1)
@@ -125,7 +128,7 @@ class TransitiveImportRewriter(
         }.also(reportErrors("rewrite"))
 
         echo("Phase 2: Rewrite all other schemas")
-        val newBasePathPhase2 = "$newBasePath/._rewriter_phase2_${Instant.now()}"
+        val newBasePathPhase2 = "$newBasePath/._rewriter_phase2_$timestampString"
         val issPhase2 = newIonSchemaSystem(newBasePathPhase1, withTransitiveImports = true)
         forEachSchemaInPath(newBasePathPhase1) { schemaId, file ->
             val patches = rewriteStandardSchema(schemaId, file, issPhase2)
@@ -137,7 +140,7 @@ class TransitiveImportRewriter(
         forEachSchemaInPath(newBasePathPhase2) { id, _ -> issPhase3.loadSchema(id) }
             .also(reportErrors("validate"))
 
-        File(newBasePathPhase2).copyRecursively(File(newBasePath))
+        File(newBasePathPhase2).copyRecursively(File(newBasePath), overwrite = true)
         if (!skipCleanUp) {
             File(newBasePathPhase1).deleteRecursively()
             File(newBasePathPhase2).deleteRecursively()

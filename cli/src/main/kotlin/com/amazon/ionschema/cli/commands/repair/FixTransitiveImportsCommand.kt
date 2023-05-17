@@ -21,7 +21,12 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 class FixTransitiveImportsCommand : CliktCommand(
-    help = "Fixes schemas that are affected by the transitive import issue. See https://github.com/amzn/ion-schema/issues/39",
+    help = """Fixes schemas that are affected by the transitive import issue.
+        |
+        |Currently only fixes schemas that are Ion Text. If you need to fix an Ion Binary encoded schema, you can use
+        |the Ion CLI (https://github.com/amazon-ion/ion-cli) to convert between text and binary.
+        |
+        |See https://github.com/amzn/ion-schema/issues/39""".trimMargin(),
     epilog = """
         ```
         Example usage:   
@@ -46,8 +51,9 @@ class FixTransitiveImportsCommand : CliktCommand(
     private val destination by option(
         "-d", "--destination", metavar = "PATH",
         help = """
-        A path for the new files to be written to.
-        This must be a writeable directory.
+        A path for the new files to be written to. This must be a writeable directory. 
+        The path can be the same as the BASE_DIRECTORY, but you should only use BASE_DIRECTORY if your schemas are 
+        version controlled so that the changes can be rolled back if something goes wrong.
         """.trimIndent()
     ).file(canBeFile = false)
         .convert<File, () -> String> { it::getPath }
@@ -64,14 +70,14 @@ class FixTransitiveImportsCommand : CliktCommand(
     private val strategy by option(
         "-s", "--strategy",
         help = """
-        KeepWildcards -- While fixing imports, keeps all existing "wildcard" imports (i.e. `{id:<SCHEMA_ID>}`),
-        but all newly added imports will be type imports (i.e. `{id:<SCHEMA_ID>,type:<TYPE_NAME>}`).
-        This strategy will introduce smaller changes and will not introduce any naming conflicts.
-        However, the presence of wildcard imports means that unintentional name conflicts could happen in the future.
-        
-        NoWildcards -- While fixing imports, rewrite all imports as `{id:<SCHEMA_ID>,type:<TYPE_NAME>}`.
+        NoWildcards -- While fixing imports, rewrite all imports as `{id:<SCHEMA_ID>, type:<TYPE_NAME>}`.
         This may generate a larger diff, but it is guaranteed to never have name conflicts unintentionally 
         introduced by a dependency in the future.
+        
+        KeepWildcards -- While fixing imports, keeps all existing "wildcard" imports (i.e. `{ id:<SCHEMA_ID> }`), but 
+        all new imports it adds will be type imports (i.e. `{ id:<SCHEMA_ID>, type:<TYPE_NAME> }`). This strategy will 
+        introduce smaller changes, and will not introduce any naming conflicts. However, the presence of wildcard 
+        imports means that unintentional name conflicts could happen in the future.
         
         PreferWildcards -- This strategy will cause the rewriter to prefer wildcard imports in the schema header.
         This strategy may introduce name conflicts that result in an invalid schema. If that occurs, try again
