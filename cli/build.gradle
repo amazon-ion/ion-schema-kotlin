@@ -26,11 +26,15 @@ repositories {
 
 dependencies {
     implementation project(':ion-schema')
-    implementation "com.amazon.ion:ion-java:[1.4,)"
+    implementation 'com.amazon.ion:ion-java:1.+'
+    implementation 'com.amazon.ion:ion-element:1.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "com.github.ajalt.clikt:clikt:3.2.0"
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation 'io.kotest:kotest-assertions-core-jvm:[4.0,5.0['
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.6.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
 }
 
 application {

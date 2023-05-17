@@ -26,7 +26,7 @@ internal interface TypeInternal : Type, Constraint {
     /**
      * The name of the schemaId that this type was defined in.
      */
-    val schemaId: String?
+    override val schemaId: String?
 
     @Deprecated("Only used for Ion Schema 1.0 code paths. No new usages should be introduced.")
     fun getBaseType(): TypeBuiltin
