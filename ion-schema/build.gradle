@@ -65,12 +65,13 @@ dokkaJavadoc.configure {
 }
 
 task sourcesJar(type: Jar) {
-  classifier 'sources'
+  archiveClassifier.set("sources")
   from "src"
 }
 
 task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-  classifier 'javadoc'
+  dependsOn(dokkaJavadoc)
+  archiveClassifier.set("javadoc")
   from dokkaJavadoc.outputDirectory
 }
 

@@ -38,12 +38,12 @@ jobs:
         with:
           distribution: corretto
           java-version: 11
-      - run: ./gradlew jacocoTestReport
+      - run: ./gradlew koverXmlReport
       - name: Upload Ion Schema Code Coverage
         uses: codecov/codecov-action@v3
         with:
-          file: ion-schema/build/reports/jacoco/test/jacocoTestReport.xml
+          file: ion-schema/build/reports/kover/report.xml
       - name: Upload CLI Code Coverage
         uses: codecov/codecov-action@v3
         with:
-          file: cli/build/reports/jacoco/test/jacocoTestReport.xml
+          file: cli/build/reports/kover/report.xml
