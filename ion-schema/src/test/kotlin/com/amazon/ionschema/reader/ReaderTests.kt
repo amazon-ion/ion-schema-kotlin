@@ -27,22 +27,16 @@ class ReaderTests {
         "all_of",
         "annotations",
         "any_of",
-        "byte_length",
-        "codepoint_length",
-        "container_length",
         "contains",
         "element",
-        "exponent",
         "field_names", // This is implemented, but it requires type args, which are not implemented yet.
         "fields",
         "not",
         "one_of",
         "ordered_elements",
-        "precision",
         "timestamp_offset",
         "timestamp_precision",
         "type",
-        "utf8_byte_length",
         "valid_values",
     )
     val unimplementedConstraintsRegex = Regex("constraints/(${unimplementedConstraints.joinToString("|")})")
