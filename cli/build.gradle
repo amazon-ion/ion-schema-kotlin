@@ -38,7 +38,7 @@ dependencies {
 }
 
 application {
-    mainClassName = "com.amazon.ionschema.cli.MainKt"
+    mainClass.set("com.amazon.ionschema.cli.MainKt")
     applicationName = 'ion-schema-cli' // startup script name
 }
 
