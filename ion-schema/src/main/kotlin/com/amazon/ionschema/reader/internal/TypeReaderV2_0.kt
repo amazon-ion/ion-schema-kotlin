@@ -1,14 +1,18 @@
 package com.amazon.ionschema.reader.internal
 
+import com.amazon.ion.IonInt
+import com.amazon.ion.IonList
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaVersion
+import com.amazon.ionschema.internal.util.getIslOptionalField
 import com.amazon.ionschema.internal.util.getIslRequiredField
 import com.amazon.ionschema.internal.util.islRequire
 import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
+import com.amazon.ionschema.internal.util.islRequireNoIllegalAnnotations
 import com.amazon.ionschema.internal.util.islRequireOnlyExpectedFieldNames
 import com.amazon.ionschema.model.Constraint
 import com.amazon.ionschema.model.DiscreteIntRange
@@ -20,9 +24,11 @@ import com.amazon.ionschema.model.VariablyOccurringTypeArgument
 import com.amazon.ionschema.reader.internal.constraints.ElementV2Reader
 import com.amazon.ionschema.reader.internal.constraints.ExponentReader
 import com.amazon.ionschema.reader.internal.constraints.FieldNamesReader
+import com.amazon.ionschema.reader.internal.constraints.FieldsV2Reader
 import com.amazon.ionschema.reader.internal.constraints.Ieee754FloatReader
 import com.amazon.ionschema.reader.internal.constraints.LengthConstraintsReader
 import com.amazon.ionschema.reader.internal.constraints.LogicConstraintsReader
+import com.amazon.ionschema.reader.internal.constraints.OrderedElementsReader
 import com.amazon.ionschema.reader.internal.constraints.PrecisionReader
 import com.amazon.ionschema.reader.internal.constraints.RegexReader
 import com.amazon.ionschema.util.toBag
@@ -34,9 +40,11 @@ internal class TypeReaderV2_0 : TypeReader {
         ElementV2Reader(this),
         ExponentReader(),
         FieldNamesReader(this),
+        FieldsV2Reader(this),
         Ieee754FloatReader(),
         LengthConstraintsReader(),
         LogicConstraintsReader(this),
+        OrderedElementsReader(this),
         PrecisionReader(),
         RegexReader(IonSchemaVersion.v2_0),
     )
@@ -74,7 +82,27 @@ internal class TypeReaderV2_0 : TypeReader {
     }
 
     override fun readVariablyOccurringTypeArg(context: ReaderContext, ion: IonValue, defaultOccurs: DiscreteIntRange): VariablyOccurringTypeArgument {
-        TODO()
+        return if (ion is IonStruct && ion.containsKey("occurs")) {
+            islRequireNoIllegalAnnotations(ion) { "Variably occurring type argument may not be annotated" }
+
+            val occursField = ion.getIslOptionalField<IonValue>("occurs", allowAnnotations = true)!!
+            if (occursField !is IonList) islRequireNoIllegalAnnotations(occursField) { "Illegal annotation on 'occurs' argument: $occursField" }
+            val occurs = when (occursField) {
+                is IonSymbol -> when (occursField.stringValue()) {
+                    "optional" -> VariablyOccurringTypeArgument.OCCURS_OPTIONAL
+                    "required" -> VariablyOccurringTypeArgument.OCCURS_REQUIRED
+                    else -> null
+                }
+                is IonInt -> occursField.intValue().takeIf { it > 0 }?.let { DiscreteIntRange(it, it) }
+                is IonList -> occursField.toDiscreteIntRange().takeIf { (it.start ?: 0) >= 0 }
+                else -> null
+            } ?: throw InvalidSchemaException("Invalid 'occurs' value; must be 'optional', 'required', a positive int, or a non-negative int range: $occursField")
+
+            islRequire(!ion.containsKey("name")) { "Variably occurring type argument may not have a 'name' field" }
+            VariablyOccurringTypeArgument(occurs, TypeArgument.InlineType(privateReadTypeDefinition(context, ion)))
+        } else {
+            VariablyOccurringTypeArgument(defaultOccurs, readTypeArg(context, ion))
+        }
     }
 
     /**

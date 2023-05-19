@@ -26,8 +26,6 @@ class ReaderTests {
     val unimplementedConstraints = listOf(
         "annotations",
         "contains",
-        "fields",
-        "ordered_elements",
         "timestamp_offset",
         "timestamp_precision",
         "valid_values",
@@ -46,9 +44,7 @@ class ReaderTests {
         },
         testNameFilter = {
             // readNamedType() and readSchema() are not implemented yet
-            !it.contains("readNamedType") && !it.contains("readSchema") &&
-                // Reading variably occurring types has not been implemented yet
-                !it.contains("variably occurring type")
+            !it.contains("readNamedType") && !it.contains("readSchema")
         }
     )
 }
