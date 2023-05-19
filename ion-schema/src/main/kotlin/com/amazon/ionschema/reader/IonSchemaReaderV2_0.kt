@@ -29,6 +29,12 @@ class IonSchemaReaderV2_0 : IonSchemaReader {
     }
 
     override fun readNamedType(ion: IonValue, failFast: Boolean): IonSchemaResult<NamedTypeDefinition, List<ReadError>> {
-        TODO()
+        val context = ReaderContext(failFast = failFast)
+        val typeDefinition = typeReader.readNamedTypeDefinition(context, ion)
+        return if (context.readErrors.isEmpty()) {
+            IonSchemaResult.Ok(typeDefinition)
+        } else {
+            IonSchemaResult.Err(context.readErrors)
+        }
     }
 }
