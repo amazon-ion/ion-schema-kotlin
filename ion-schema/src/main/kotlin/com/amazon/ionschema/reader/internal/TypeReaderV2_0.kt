@@ -11,6 +11,7 @@ import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.internal.util.getIslOptionalField
 import com.amazon.ionschema.internal.util.getIslRequiredField
 import com.amazon.ionschema.internal.util.islRequire
+import com.amazon.ionschema.internal.util.islRequireExactAnnotations
 import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
 import com.amazon.ionschema.internal.util.islRequireNoIllegalAnnotations
 import com.amazon.ionschema.internal.util.islRequireOnlyExpectedFieldNames
@@ -50,7 +51,13 @@ internal class TypeReaderV2_0 : TypeReader {
     )
 
     override fun readNamedTypeDefinition(context: ReaderContext, ion: IonValue): NamedTypeDefinition {
-        TODO()
+        islRequireIonTypeNotNull<IonStruct>(ion) { "Named type definitions must be a non-null struct; was: $ion" }
+        islRequireExactAnnotations(ion, "type") { "Named type definitions must be annotated with 'type' and nothing else: $ion" }
+        islRequire(!ion.containsKey("occurs")) { "Named type definitions may not have an 'occurs' field: $ion" }
+        return NamedTypeDefinition(
+            ion.getIslRequiredField<IonSymbol>("name").stringValue(),
+            privateReadTypeDefinition(context, ion)
+        )
     }
 
     override fun readTypeArg(context: ReaderContext, ion: IonValue, checkAnnotations: Boolean): TypeArgument {

@@ -43,8 +43,8 @@ class ReaderTests {
                 !it.path.contains("open_content/")
         },
         testNameFilter = {
-            // readNamedType() and readSchema() are not implemented yet
-            !it.contains("readNamedType") && !it.contains("readSchema")
+            // readSchema() is not implemented yet
+            !it.contains("readSchema")
         }
     )
 }
