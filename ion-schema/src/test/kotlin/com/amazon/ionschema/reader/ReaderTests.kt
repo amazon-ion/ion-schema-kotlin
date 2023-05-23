@@ -28,7 +28,6 @@ class ReaderTests {
         "contains",
         "timestamp_offset",
         "timestamp_precision",
-        "valid_values",
     )
     val unimplementedConstraintsRegex = Regex("constraints/(${unimplementedConstraints.joinToString("|")})")
 
@@ -103,7 +102,7 @@ class ReaderTestsRunner(
                     val cases = (ion["invalid_types"] as IonList).mapIndexed { i, invalidType ->
                         val displayName = "[$relativeFile] $baseDescription [$i]"
                         DynamicTest.dynamicTest(displayName) {
-                            assertThrows<InvalidSchemaException> { reader.readTypeOrThrow(invalidType) }
+                            assertThrows<InvalidSchemaException>("invalid type: $invalidType") { reader.readTypeOrThrow(invalidType) }
                         }
                     }
                     DynamicContainer.dynamicContainer("[$relativeFile] $baseDescription", cases)
