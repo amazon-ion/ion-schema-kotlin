@@ -4,7 +4,6 @@ import com.amazon.ion.IonNumber
 import com.amazon.ion.IonValue
 import com.amazon.ion.Timestamp
 import com.amazon.ionschema.util.Bag
-import java.math.BigDecimal
 
 /**
  * Convenience alias for a collections of open content fields in schema headers, footers, and type definitions.
@@ -22,14 +21,14 @@ typealias OpenContentFields = Bag<Pair<String, IonValue>>
 typealias TypeArgumentList = List<TypeArgument>
 
 /**
- * A [ContinuousRange] of [Timestamp].
+ * A [ContinuousRange] of [Timestamp], represented as a [ConsistentTimestamp].
  */
-typealias TimestampRange = ContinuousRange<Timestamp>
+typealias TimestampRange = ContinuousRange<ConsistentTimestamp>
 
 /**
- * A [ContinuousRange] of [IonNumber], represented as [BigDecimal]
+ * A [ContinuousRange] of [IonNumber], represented as [ConsistentDecimal]
  */
-typealias NumberRange = ContinuousRange<BigDecimal>
+typealias NumberRange = ContinuousRange<ConsistentDecimal>
 
 /**
  * A [ContinuousRange] of [TimestampPrecisionValue].

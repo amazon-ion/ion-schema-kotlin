@@ -32,6 +32,7 @@ import com.amazon.ionschema.reader.internal.constraints.LogicConstraintsReader
 import com.amazon.ionschema.reader.internal.constraints.OrderedElementsReader
 import com.amazon.ionschema.reader.internal.constraints.PrecisionReader
 import com.amazon.ionschema.reader.internal.constraints.RegexReader
+import com.amazon.ionschema.reader.internal.constraints.ValidValuesReader
 import com.amazon.ionschema.util.toBag
 
 @ExperimentalIonSchemaModel
@@ -48,6 +49,7 @@ internal class TypeReaderV2_0 : TypeReader {
         OrderedElementsReader(this),
         PrecisionReader(),
         RegexReader(IonSchemaVersion.v2_0),
+        ValidValuesReader(),
     )
 
     override fun readNamedTypeDefinition(context: ReaderContext, ion: IonValue): NamedTypeDefinition {
