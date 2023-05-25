@@ -26,8 +26,6 @@ class ReaderTests {
     val unimplementedConstraints = listOf(
         "annotations",
         "contains",
-        "timestamp_offset",
-        "timestamp_precision",
     )
     val unimplementedConstraintsRegex = Regex("constraints/(${unimplementedConstraints.joinToString("|")})")
 

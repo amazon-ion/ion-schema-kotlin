@@ -16,6 +16,8 @@ import com.amazon.ionschema.model.ConsistentTimestamp
 import com.amazon.ionschema.model.ContinuousRange
 import com.amazon.ionschema.model.DiscreteIntRange
 import com.amazon.ionschema.model.NumberRange
+import com.amazon.ionschema.model.TimestampPrecisionRange
+import com.amazon.ionschema.model.TimestampPrecisionValue
 import com.amazon.ionschema.model.TimestampRange
 
 /**
@@ -29,6 +31,26 @@ internal fun IonValue.toTimestampRange(): TimestampRange = toContinuousRange(Con
 internal fun IonValue.toNumberRange(): NumberRange = toContinuousRange { it: IonNumber ->
     islRequire(it.isNumericValue) { "Invalid number range; range bounds must be real numbers: $this" }
     ConsistentDecimal.fromIonNumber(it)
+}
+
+/**
+ * Converts an [IonValue] to a [TimestampPrecisionRange]
+ */
+internal fun IonValue.toTimestampPrecisionRange(): TimestampPrecisionRange {
+    return when (this) {
+        is IonList -> toContinuousRange { sym: IonSymbol ->
+            TimestampPrecisionValue.fromSymbolTextOrNull(sym.stringValue())
+                ?: throw InvalidSchemaException("Invalid timestamp precision range; range bounds must be ${TimestampPrecisionValue.values().joinToString { it.symbolText }}, min, or max: $this")
+        }
+        is IonSymbol -> {
+            islRequireIonNotNull(this) { "Timestamp precision value cannot be null; was: $this" }
+            islRequireNoIllegalAnnotations(this) { "Timestamp precision value may not have annotations" }
+            val precision = TimestampPrecisionValue.fromSymbolTextOrNull(stringValue())
+                ?: throw InvalidSchemaException("Invalid timestamp precision range; range bounds must be ${TimestampPrecisionValue.values().joinToString { it.symbolText }}, min, or max: $this")
+            ContinuousRange(precision)
+        }
+        else -> throw InvalidSchemaException("Invalid range; not an ion list: $this")
+    }
 }
 
 /**
