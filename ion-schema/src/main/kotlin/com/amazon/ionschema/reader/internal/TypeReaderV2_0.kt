@@ -22,6 +22,8 @@ import com.amazon.ionschema.model.NamedTypeDefinition
 import com.amazon.ionschema.model.TypeArgument
 import com.amazon.ionschema.model.TypeDefinition
 import com.amazon.ionschema.model.VariablyOccurringTypeArgument
+import com.amazon.ionschema.reader.internal.constraints.AnnotationsV2Reader
+import com.amazon.ionschema.reader.internal.constraints.ContainsReader
 import com.amazon.ionschema.reader.internal.constraints.ElementV2Reader
 import com.amazon.ionschema.reader.internal.constraints.ExponentReader
 import com.amazon.ionschema.reader.internal.constraints.FieldNamesReader
@@ -41,6 +43,8 @@ import com.amazon.ionschema.util.toBag
 internal class TypeReaderV2_0 : TypeReader {
 
     private val constraintReaders = listOf(
+        AnnotationsV2Reader(this),
+        ContainsReader(),
         ElementV2Reader(this),
         ExponentReader(),
         FieldNamesReader(this),

@@ -23,19 +23,12 @@ import java.util.stream.Stream
 @ExperimentalIonSchemaModel
 class ReaderTests {
 
-    val unimplementedConstraints = listOf(
-        "annotations",
-        "contains",
-    )
-    val unimplementedConstraintsRegex = Regex("constraints/(${unimplementedConstraints.joinToString("|")})")
-
     @Nested
     inner class IonSchema_2_0 : TestFactory by ReaderTestsRunner(
         version = IonSchemaVersion.v2_0,
         reader = IonSchemaReaderV2_0(),
         additionalFileFilter = {
-            !it.path.contains(unimplementedConstraintsRegex) &&
-                !it.path.contains("schema/") &&
+            !it.path.contains("schema/") &&
                 !it.path.contains("imports/") &&
                 !it.path.contains("open_content/")
         },
