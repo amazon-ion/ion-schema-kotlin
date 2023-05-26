@@ -19,11 +19,11 @@ import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonSystem
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.Authority
-import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaException
 import com.amazon.ionschema.IonSchemaSystem
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.SchemaCache
+import com.amazon.ionschema.internal.util.islRequireNotNull
 
 /**
  * Implementation of [IonSchemaSystem].
@@ -157,14 +157,14 @@ internal class IonSchemaSystemImpl(
     override fun newSchema(isl: String): SchemaInternal = newSchema(ionSystem.iterate(isl))
 
     override fun newSchema(isl: Iterator<IonValue>): SchemaInternal {
-        var version = IonSchemaVersion.v1_0
-        val islList = isl.asSequence()
-            .onEach {
-                if (IonSchemaVersion.isVersionMarker(it)) {
-                    version = IonSchemaVersion.fromIonSymbolOrNull(it) ?: throw InvalidSchemaException("Unsupported Ion Schema version: $it")
-                }
+        val islList = isl.asSequence().toList()
+
+        val version = islList.firstOrNull(IonSchemaVersion::isVersionMarker)
+            ?.let {
+                islRequireNotNull(IonSchemaVersion.fromIonSymbolOrNull(it as IonSymbol)) { "Unsupported Ion Schema version: $it" }
             }
-            .toList()
+            ?: IonSchemaVersion.v1_0
+
         return usingReferenceManager { createSchema(it, version, null, islList) }
     }
 

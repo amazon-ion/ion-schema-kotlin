@@ -47,7 +47,6 @@ internal class SchemaImpl_2_0 internal constructor(
     private val schemaSystem: IonSchemaSystemImpl,
     schemaContent: Iterable<IonValue>,
     override val schemaId: String?,
-
 ) : SchemaInternal {
 
     override val isl: IonDatagram
@@ -92,6 +91,8 @@ internal class SchemaImpl_2_0 internal constructor(
         schemaContent.mapTo(isl) { it.clone() }
             .markReadOnly()
             .forEach {
+                // If we've already seen the footer, do nothing
+                if (foundFooter) return@forEach
                 when {
                     IonSchemaVersion.isVersionMarker(it) -> {
                         islRequire(it.stringValue() == IonSchemaVersion.v2_0.symbolText) { "Unsupported Ion Schema version: $it" }
@@ -100,7 +101,7 @@ internal class SchemaImpl_2_0 internal constructor(
                         foundVersionMarker = true
                     }
                     isHeader(it) -> {
-                        if (!foundVersionMarker) throw IllegalStateException("SchemaImpl_2_0 should only be instantiated for an ISL 2.0 schema.")
+                        islRequire(foundVersionMarker) { "Ion Schema version marker must come before any header, types, and footer." }
                         islRequire(!foundAnyType) { "Schema header must appear before any types." }
                         islRequire(!foundHeader) { "Only one schema header is allowed in a schema document." }
                         imports = loadHeaderImports(it, referenceManager)
@@ -109,7 +110,6 @@ internal class SchemaImpl_2_0 internal constructor(
                         foundHeader = true
                     }
                     isFooter(it) -> {
-                        islRequire(foundHeader) { "Found a schema_footer, but no schema header precedes it." }
                         islRequire(!foundFooter) { "Only one schema footer is allowed in a schema document." }
                         validateFieldNamesInFooter(it)
                         foundFooter = true
@@ -126,8 +126,6 @@ internal class SchemaImpl_2_0 internal constructor(
                     }
                 }
             }
-
-        islRequire(foundFooter || !foundHeader) { "Found a schema_header, but not a schema_footer" }
     }
 
     /**
