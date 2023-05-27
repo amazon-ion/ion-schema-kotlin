@@ -14,4 +14,8 @@ class Bag<out E>(elements: List<E>) : Collection<E> by elements {
     }
 
     override fun hashCode(): Int = this.sumBy { it.hashCode() }
+
+    override fun toString(): String {
+        return "Bag[${this.joinToString()}]"
+    }
 }

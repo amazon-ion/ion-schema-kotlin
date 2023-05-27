@@ -1,6 +1,5 @@
 package com.amazon.ionschema.reader
 
-import com.amazon.ion.IonBool
 import com.amazon.ion.IonList
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonSymbol
@@ -23,19 +22,30 @@ import java.util.stream.Stream
 @ExperimentalIonSchemaModel
 class ReaderTests {
 
+    val ISL_2_0_EXPECTED_TO_NOT_PASS = setOf(
+        // These test cases are skipped because the reader doesn't try to resolve any type references or imports
+        "[constraints/all_of.isl] all_of type references should exist",
+        "[constraints/any_of.isl] any_of type references should exist",
+        "[constraints/one_of.isl] one_of type references should exist",
+        "[constraints/annotations-standard.isl] annotations argument type must exist",
+        "[imports/diamond/inline_import_a.isl] no imported types should be available in this schema's scope",
+        "[imports/diamond/header_import_a.isl] no indirectly imported types should be available in this schema's scope",
+        "[imports/tree/inline_import_a.isl] no imported types should be available in this schema's scope",
+        "[imports/tree/header_import_a.isl] no indirectly imported types should be available in this schema's scope",
+        "[imports/invalid_imports.isl] when imported schema or type does not exist, should be an invalid schema",
+        "[imports/header_imports.isl] A schema should not be able to reference an aliased type by its original name",
+        "[imports/header_imports.isl] Two different imported types with the same name or alias should result in an error",
+        "[imports/header_imports.isl] Importing a type with the same name or alias as locally defined type should result in an error",
+        "[imports/self_import/self_import.isl] Self-imports are invalid",
+        // TODO: Remove once timestamp precision range is fixed https://github.com/amazon-ion/ion-schema-kotlin/issues/270
+        "[constraints/timestamp_precision.isl] timestamp_precision range must be satisfiable",
+    )
+
     @Nested
     inner class IonSchema_2_0 : TestFactory by ReaderTestsRunner(
         version = IonSchemaVersion.v2_0,
         reader = IonSchemaReaderV2_0(),
-        additionalFileFilter = {
-            !it.path.contains("schema/") &&
-                !it.path.contains("imports/") &&
-                !it.path.contains("open_content/")
-        },
-        testNameFilter = {
-            // readSchema() is not implemented yet
-            !it.contains("readSchema")
-        }
+        testNameFilter = { it !in ISL_2_0_EXPECTED_TO_NOT_PASS }
     )
 }
 
@@ -79,9 +89,7 @@ class ReaderTestsRunner(
             }
 
         val dynamicNodeTestCases = dg.mapNotNull { ion ->
-            // The reader is a little more sophisticated than ISL for ISL, but it cannot detect problems with
-            // duplicate type names or imports.
-            if (ion !is IonStruct || !ion.islForIslCanValidate()) return@mapNotNull null
+            if (ion !is IonStruct) return@mapNotNull null
 
             when {
                 ion.hasTypeAnnotation("type") -> {
@@ -128,9 +136,5 @@ class ReaderTestsRunner(
             }
         }
         return DynamicContainer.dynamicContainer("[$schemaId] $baseDescription", cases)
-    }
-
-    private fun IonStruct.islForIslCanValidate(): Boolean {
-        return (this["isl_for_isl_can_validate"] as? IonBool)?.booleanValue() ?: true
     }
 }

@@ -47,12 +47,12 @@ internal class ReaderContext(
         get() = _readErrors.toList()
 
     /**
-     * Reports a [ReadError] to this [ReaderContext].
-     * If [failFast] is false, adds an error to this [ReaderContext].
-     * If [failFast] is true, throws the error as an [InvalidSchemaException].
+     * Reports a [ReadError] to this [ReaderContext], adding it to [readErrors].
+     * If [failFast] is `true`, also throws the error as an [InvalidSchemaException].
      */
     fun reportError(error: ReadError) {
         if (failFast) {
+            _readErrors.add(error)
             InvalidSchemaException.failFast(error)
         } else {
             _readErrors.add(error)
