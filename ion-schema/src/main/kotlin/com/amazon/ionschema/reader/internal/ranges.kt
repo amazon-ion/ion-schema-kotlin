@@ -40,13 +40,13 @@ internal fun IonValue.toTimestampPrecisionRange(): TimestampPrecisionRange {
     return when (this) {
         is IonList -> toContinuousRange { sym: IonSymbol ->
             TimestampPrecisionValue.fromSymbolTextOrNull(sym.stringValue())
-                ?: throw InvalidSchemaException("Invalid timestamp precision range; range bounds must be ${TimestampPrecisionValue.values().joinToString { it.symbolText }}, min, or max: $this")
+                ?: throw InvalidSchemaException("Invalid timestamp precision range; range bounds must be ${TimestampPrecisionValue.valueSymbolTexts().joinToString() }, min, or max: $this")
         }
         is IonSymbol -> {
             islRequireIonNotNull(this) { "Timestamp precision value cannot be null; was: $this" }
             islRequireNoIllegalAnnotations(this) { "Timestamp precision value may not have annotations" }
             val precision = TimestampPrecisionValue.fromSymbolTextOrNull(stringValue())
-                ?: throw InvalidSchemaException("Invalid timestamp precision range; range bounds must be ${TimestampPrecisionValue.values().joinToString { it.symbolText }}, min, or max: $this")
+                ?: throw InvalidSchemaException("Invalid timestamp precision range; range bounds must be ${TimestampPrecisionValue.valueSymbolTexts().joinToString() }, min, or max: $this")
             ContinuousRange(precision)
         }
         else -> throw InvalidSchemaException("Invalid range; not an ion list: $this")
