@@ -12,7 +12,7 @@ import com.amazon.ionschema.model.SchemaDocument
 import com.amazon.ionschema.model.TypeArgument
 import com.amazon.ionschema.model.TypeDefinition
 import com.amazon.ionschema.model.UserReservedFields
-import org.junit.jupiter.api.Assertions.assertFalse
+import com.amazon.ionschema.util.emptyBag
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -96,9 +96,8 @@ class IonSchemaReaderV2_0Tests {
                     )
                 )
             ),
-            result.unwrap().first
+            result.unwrap()
         )
-        assertFalse(result.unwrap().second.hasNext())
     }
 
     @Test
@@ -131,35 +130,8 @@ class IonSchemaReaderV2_0Tests {
                     ),
                 )
             ),
-            result.unwrap().first
+            result.unwrap()
         )
-        assertFalse(result.unwrap().second.hasNext())
-    }
-
-    @Test
-    fun `readSchema can read a schema with a footer and returns an iterator with all of the content after the footer`() {
-        val ionStream = ION.loader.load(
-            """
-            ${'$'}ion_schema_2_0
-            schema_footer::{}
-            abc
-            def
-            ${'$'}ion_schema_1_0
-        """
-        )
-
-        val result = reader.readSchema(ionStream)
-
-        assertTrue(result.isOk())
-        assertEquals(
-            SchemaDocument(null, IonSchemaVersion.v2_0, listOf(SchemaDocument.Item.Footer())),
-            result.unwrap().first
-        )
-        val iterator = result.unwrap().second
-        assertEquals(ION.singleValue("abc"), iterator.next())
-        assertEquals(ION.singleValue("def"), iterator.next())
-        assertEquals(ION.singleValue("\$ion_schema_1_0"), iterator.next())
-        assertFalse(iterator.hasNext())
     }
 
     @Test
@@ -167,8 +139,13 @@ class IonSchemaReaderV2_0Tests {
         val ionStream = ION.loader.load(
             """
             foo
+            // Only bar{N} is open content. Both 'foo' and 'baz' are outside the schema. 
             ${'$'}ion_schema_2_0
-            bar // Only bar is open content. Both 'foo' and 'baz' are outside the schema. 
+            bar1
+            schema_header::{}
+            bar2
+            type::{ name: foo }
+            bar3
             schema_footer::{}
             baz
         """
@@ -182,15 +159,16 @@ class IonSchemaReaderV2_0Tests {
                 id = null,
                 ionSchemaVersion = IonSchemaVersion.v2_0,
                 items = listOf(
-                    SchemaDocument.Item.OpenContent(ION.singleValue("bar")),
+                    SchemaDocument.Item.OpenContent(ION.singleValue("bar1")),
+                    SchemaDocument.Item.Header(),
+                    SchemaDocument.Item.OpenContent(ION.singleValue("bar2")),
+                    SchemaDocument.Item.Type(NamedTypeDefinition("foo", TypeDefinition(emptySet(), emptyBag()))),
+                    SchemaDocument.Item.OpenContent(ION.singleValue("bar3")),
                     SchemaDocument.Item.Footer(),
                 )
             ),
-            result.unwrap().first
+            result.unwrap()
         )
-        val iterator = result.unwrap().second
-        assertEquals(ION.singleValue("baz"), iterator.next())
-        assertFalse(iterator.hasNext())
     }
 
     @Test

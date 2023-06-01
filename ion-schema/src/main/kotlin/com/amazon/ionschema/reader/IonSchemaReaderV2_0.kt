@@ -33,7 +33,7 @@ class IonSchemaReaderV2_0 : IonSchemaReader {
         ReadingTypes("while reading types"),
     }
 
-    override fun readSchema(document: Iterable<IonValue>, failFast: Boolean): IonSchemaResult<Pair<SchemaDocument, Iterator<IonValue>>, List<ReadError>> {
+    override fun readSchema(document: Iterable<IonValue>, failFast: Boolean): IonSchemaResult<SchemaDocument, List<ReadError>> {
         val context = ReaderContext(failFast = failFast)
 
         val documentIterator = document.iterator()
@@ -41,7 +41,7 @@ class IonSchemaReaderV2_0 : IonSchemaReader {
         val schemaDocument = try { iterateSchema(documentIterator, context) } catch (e: InvalidSchemaException) { null }
 
         return if (schemaDocument != null && context.readErrors.isEmpty()) {
-            IonSchemaResult.Ok(schemaDocument to documentIterator)
+            IonSchemaResult.Ok(schemaDocument)
         } else {
             IonSchemaResult.Err(context.readErrors) { InvalidSchemaException("$it") }
         }
