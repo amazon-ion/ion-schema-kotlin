@@ -21,7 +21,7 @@ interface IonSchemaReader {
      * the given Ion. Reporting all errors is a best-effort attempt because the presence of one error can mask other
      * errors.
      */
-    fun readSchema(document: List<IonValue>, failFast: Boolean = false): IonSchemaResult<SchemaDocument, List<ReadError>>
+    fun readSchema(document: Iterable<IonValue>, failFast: Boolean = false): IonSchemaResult<SchemaDocument, List<ReadError>>
 
     /**
      * Reads a [SchemaDocument], throwing an [InvalidSchemaException][com.amazon.ionschema.InvalidSchemaException]

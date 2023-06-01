@@ -8,6 +8,7 @@ import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaVersion
+import com.amazon.ionschema.internal.util.IonSchema_2_0
 import com.amazon.ionschema.internal.util.getIslOptionalField
 import com.amazon.ionschema.internal.util.getIslRequiredField
 import com.amazon.ionschema.internal.util.islRequire
@@ -150,7 +151,8 @@ internal class TypeReaderV2_0 : TypeReader {
                 if (readerForThisConstraint != null) {
                     constraints.add(readerForThisConstraint.readConstraint(context, field))
                 } else {
-                    // TODO: Make sure that it's a legal field name for open content
+                    val isLegalOpenContentFieldName = !IonSchema_2_0.RESERVED_WORDS_REGEX.matches(fieldName) || fieldName in context.userReservedFields.type
+                    islRequire(isLegalOpenContentFieldName) { "illegal use of field name '$fieldName'" }
                     openContent.add(fieldName to field)
                 }
             }

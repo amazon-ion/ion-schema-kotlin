@@ -47,6 +47,11 @@ internal fun <T : IonValue> T.markReadOnly(): T {
 }
 
 /**
+ * Guarantees that the returned value is read-only, creating a read-only clone if this value is not already read-only.
+ */
+internal fun <T : IonValue> T.getReadOnlyClone(): T = if (this.isReadOnly) this else this.clone().markReadOnly() as T
+
+/**
  * Returns the Ion Schema type name for an IonType.
  * TLDR; "DATAGRAM" is "document" and every other name is simply converted to lowercase.
  */
