@@ -15,8 +15,8 @@ class DiscreteIntRange private constructor(private val delegate: ContinuousRange
     // Because we never construct Open bounds, we cannot accidentally create an empty range.
     constructor(start: Int?, endInclusive: Int?) : this(
         ContinuousRange(
-            start?.let { ContinuousRange.Limit.Closed(it) } ?: ContinuousRange.Limit.Unbounded(),
-            endInclusive?.let { ContinuousRange.Limit.Closed(it) } ?: ContinuousRange.Limit.Unbounded()
+            start?.let { ContinuousRange.Limit.Closed(it) } ?: ContinuousRange.Limit.Unbounded,
+            endInclusive?.let { ContinuousRange.Limit.Closed(it) } ?: ContinuousRange.Limit.Unbounded
         )
     )
 
