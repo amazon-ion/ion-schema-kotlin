@@ -86,9 +86,9 @@ internal class HeaderReader(private val ionSchemaVersion: IonSchemaVersion) {
             ?: emptySet()
     }
 
-    private fun loadHeaderImports(context: ReaderContext, header: IonStruct): List<HeaderImport> {
+    private fun loadHeaderImports(context: ReaderContext, header: IonStruct): Set<HeaderImport> {
         // If there's no imports field, then there's nothing to do
-        val imports = header.getIslOptionalField<IonList>("imports") ?: return emptyList()
+        val imports = header.getIslOptionalField<IonList>("imports") ?: return emptySet()
 
         islRequireNoIllegalAnnotations(imports) { "'imports' list may not be annotated" }
 
@@ -109,7 +109,7 @@ internal class HeaderReader(private val ionSchemaVersion: IonSchemaVersion) {
                 typeField != null -> HeaderImport.Type(schemaId, typeField.stringValue())
                 else -> HeaderImport.Wildcard(schemaId)
             }
-        }
+        }.toSet()
     }
 
     private fun validateFieldNamesInHeader(context: ReaderContext, header: IonStruct) {

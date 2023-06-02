@@ -125,7 +125,7 @@ class IonSchemaReaderV2_0Tests {
                 ionSchemaVersion = IonSchemaVersion.v2_0,
                 items = listOf(
                     SchemaDocument.Item.Header(
-                        imports = listOf(HeaderImport.Wildcard("foo.isl")),
+                        imports = setOf(HeaderImport.Wildcard("foo.isl")),
                         userReservedFields = UserReservedFields(type = setOf("foo"))
                     ),
                 )

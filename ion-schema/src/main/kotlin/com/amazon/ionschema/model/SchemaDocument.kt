@@ -32,7 +32,7 @@ data class SchemaDocument(
         data class Type(val value: NamedTypeDefinition) : Item()
 
         data class Header(
-            val imports: List<HeaderImport> = emptyList(),
+            val imports: Set<HeaderImport> = emptySet(),
             val userReservedFields: UserReservedFields = UserReservedFields(),
             val openContent: OpenContentFields = emptyBag()
         ) : Item()

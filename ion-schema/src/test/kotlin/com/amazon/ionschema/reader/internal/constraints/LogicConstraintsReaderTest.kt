@@ -67,12 +67,12 @@ class LogicConstraintsReaderTest {
         val mockType1 = mockk<TypeArgument>()
         val mockType2 = mockk<TypeArgument>()
 
-        every { typeReader.readTypeArgumentList(any(), any()) } returns listOf(mockType1, mockType2)
+        every { typeReader.readTypeArgumentList(any(), any()) } returns setOf(mockType1, mockType2)
 
         val struct = ION.singleValue("""{ any_of: [symbol, string] }""") as IonStruct
         val context = ReaderContext()
 
-        val expected = Constraint.AnyOf(listOf(mockType1, mockType2))
+        val expected = Constraint.AnyOf(setOf(mockType1, mockType2))
         val actual = reader.readConstraint(context, struct["any_of"])
         assertEquals(expected, actual)
     }

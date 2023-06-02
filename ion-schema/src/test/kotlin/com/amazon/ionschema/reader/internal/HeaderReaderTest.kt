@@ -28,7 +28,7 @@ class HeaderReaderTest {
     fun `readHeader can read a wildcard import`() {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("""schema_header::{ imports: [ { id: "foo.isl" } ] }"""))
-        val expected = SchemaDocument.Item.Header(imports = listOf(HeaderImport.Wildcard("foo.isl")))
+        val expected = SchemaDocument.Item.Header(imports = setOf(HeaderImport.Wildcard("foo.isl")))
         assertEquals(expected, header)
     }
 
@@ -36,7 +36,7 @@ class HeaderReaderTest {
     fun `readHeader can read a type import`() {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("""schema_header::{ imports: [ { id: "foo.isl", type: bar } ] }"""))
-        val expected = SchemaDocument.Item.Header(imports = listOf(HeaderImport.Type("foo.isl", "bar")))
+        val expected = SchemaDocument.Item.Header(imports = setOf(HeaderImport.Type("foo.isl", "bar")))
         assertEquals(expected, header)
     }
 
@@ -44,7 +44,7 @@ class HeaderReaderTest {
     fun `readHeader can read an aliased import`() {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("""schema_header::{ imports: [ { id: "foo.isl", type: bar, as: baz } ] }"""))
-        val expected = SchemaDocument.Item.Header(imports = listOf(HeaderImport.Type("foo.isl", "bar", "baz")))
+        val expected = SchemaDocument.Item.Header(imports = setOf(HeaderImport.Type("foo.isl", "bar", "baz")))
         assertEquals(expected, header)
     }
 

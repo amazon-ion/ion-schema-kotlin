@@ -45,7 +45,7 @@ class ContainsReaderTest {
         val actual = reader.readConstraint(context, struct["contains"])
         assertEquals(
             Constraint.Contains(
-                listOf(
+                setOf(
                     ION.newSymbol("a"),
                     ION.newInt(1),
                     ION.newBool(true),
