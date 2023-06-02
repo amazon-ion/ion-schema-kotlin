@@ -3,7 +3,6 @@ package com.amazon.ionschema.model
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.internal.util.islRequire
-import com.amazon.ionschema.util.emptyBag
 
 /**
  * Represents an Ion Schema document.
@@ -12,12 +11,12 @@ import com.amazon.ionschema.util.emptyBag
 data class SchemaDocument(
     val id: String?,
     val ionSchemaVersion: IonSchemaVersion,
-    val items: List<Item>
+    val items: List<Content>
 ) {
-    val header: Item.Header? = items.filterIsInstance<Item.Header>().singleOrNull()
-    val footer: Item.Footer? = items.filterIsInstance<Item.Footer>().singleOrNull()
+    val header: SchemaHeader? = items.filterIsInstance<SchemaHeader>().singleOrNull()
+    val footer: SchemaFooter? = items.filterIsInstance<SchemaFooter>().singleOrNull()
     val declaredTypes: Map<String, NamedTypeDefinition> = let {
-        val typeList = items.filterIsInstance<Item.Type>().map { it.value }
+        val typeList = items.filterIsInstance<NamedTypeDefinition>()
         val typeMap = typeList.associateBy { it.typeName }
         islRequire(typeMap.size == typeList.size) {
             "Conflicting type names in schema"
@@ -26,19 +25,14 @@ data class SchemaDocument(
     }
 
     /**
-     * Represents a top-level item in a schema document.
+     * Represents a top-level values in a schema document.
+     * Implemented by [NamedTypeDefinition], [SchemaHeader], [SchemaFooter], and [OpenContent].
+     * This interface is not intended to be implemented by users of the library.
      */
-    sealed class Item {
-        data class Type(val value: NamedTypeDefinition) : Item()
+    interface Content
 
-        data class Header(
-            val imports: Set<HeaderImport> = emptySet(),
-            val userReservedFields: UserReservedFields = UserReservedFields(),
-            val openContent: OpenContentFields = emptyBag()
-        ) : Item()
-
-        data class Footer(val openContent: OpenContentFields = emptyBag()) : Item()
-
-        data class OpenContent(val value: IonValue) : Item()
-    }
+    /**
+     * Represents top-level open content in a SchemaDocument.
+     */
+    data class OpenContent(val value: IonValue) : Content
 }

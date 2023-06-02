@@ -19,7 +19,7 @@ import com.amazon.ionschema.internal.util.islRequireOnlyExpectedFieldNames
 import com.amazon.ionschema.internal.util.islRequireZeroOrOneElements
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
 import com.amazon.ionschema.model.HeaderImport
-import com.amazon.ionschema.model.SchemaDocument
+import com.amazon.ionschema.model.SchemaHeader
 import com.amazon.ionschema.model.UserReservedFields
 import com.amazon.ionschema.util.toBag
 
@@ -29,7 +29,7 @@ internal class HeaderReader(private val ionSchemaVersion: IonSchemaVersion) {
     /**
      * Reads the header
      */
-    fun readHeader(context: ReaderContext, headerValue: IonValue): SchemaDocument.Item.Header {
+    fun readHeader(context: ReaderContext, headerValue: IonValue): SchemaHeader {
         islRequire(!context.foundHeader) { "Only one schema header is allowed in a schema document." }
         islRequire(!context.foundAnyType) { "Schema header must appear before any types." }
         context.foundHeader = true
@@ -52,7 +52,7 @@ internal class HeaderReader(private val ionSchemaVersion: IonSchemaVersion) {
             .map { it.fieldName to it }
             .toBag()
 
-        return SchemaDocument.Item.Header(imports, context.userReservedFields, openContent)
+        return SchemaHeader(imports, context.userReservedFields, openContent)
     }
 
     /**

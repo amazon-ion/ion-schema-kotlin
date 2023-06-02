@@ -5,7 +5,7 @@ import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
 import com.amazon.ionschema.model.HeaderImport
-import com.amazon.ionschema.model.SchemaDocument
+import com.amazon.ionschema.model.SchemaHeader
 import com.amazon.ionschema.model.UserReservedFields
 import com.amazon.ionschema.util.bagOf
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,14 +21,14 @@ class HeaderReaderTest {
     fun `readHeader can read an empty header`() {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("schema_header::{}"))
-        assertEquals(SchemaDocument.Item.Header(), header)
+        assertEquals(SchemaHeader(), header)
     }
 
     @Test
     fun `readHeader can read a wildcard import`() {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("""schema_header::{ imports: [ { id: "foo.isl" } ] }"""))
-        val expected = SchemaDocument.Item.Header(imports = setOf(HeaderImport.Wildcard("foo.isl")))
+        val expected = SchemaHeader(imports = setOf(HeaderImport.Wildcard("foo.isl")))
         assertEquals(expected, header)
     }
 
@@ -36,7 +36,7 @@ class HeaderReaderTest {
     fun `readHeader can read a type import`() {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("""schema_header::{ imports: [ { id: "foo.isl", type: bar } ] }"""))
-        val expected = SchemaDocument.Item.Header(imports = setOf(HeaderImport.Type("foo.isl", "bar")))
+        val expected = SchemaHeader(imports = setOf(HeaderImport.Type("foo.isl", "bar")))
         assertEquals(expected, header)
     }
 
@@ -44,7 +44,7 @@ class HeaderReaderTest {
     fun `readHeader can read an aliased import`() {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("""schema_header::{ imports: [ { id: "foo.isl", type: bar, as: baz } ] }"""))
-        val expected = SchemaDocument.Item.Header(imports = setOf(HeaderImport.Type("foo.isl", "bar", "baz")))
+        val expected = SchemaHeader(imports = setOf(HeaderImport.Type("foo.isl", "bar", "baz")))
         assertEquals(expected, header)
     }
 
@@ -53,7 +53,7 @@ class HeaderReaderTest {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("""schema_header::{ user_reserved_fields: { schema_header: [foo] } }"""))
         val expectedUserReservedFields = UserReservedFields(header = setOf("foo"))
-        val expectedHeader = SchemaDocument.Item.Header(userReservedFields = expectedUserReservedFields)
+        val expectedHeader = SchemaHeader(userReservedFields = expectedUserReservedFields)
         assertEquals(expectedHeader, header)
         assertEquals(expectedUserReservedFields, context.userReservedFields)
     }
@@ -63,7 +63,7 @@ class HeaderReaderTest {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("""schema_header::{ user_reserved_fields: { schema_footer: [foo] } }"""))
         val expectedUserReservedFields = UserReservedFields(footer = setOf("foo"))
-        val expectedHeader = SchemaDocument.Item.Header(userReservedFields = expectedUserReservedFields)
+        val expectedHeader = SchemaHeader(userReservedFields = expectedUserReservedFields)
         assertEquals(expectedHeader, header)
         assertEquals(expectedUserReservedFields, context.userReservedFields)
     }
@@ -73,7 +73,7 @@ class HeaderReaderTest {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("""schema_header::{ user_reserved_fields: { type: [foo] } }"""))
         val expectedUserReservedFields = UserReservedFields(type = setOf("foo"))
-        val expectedHeader = SchemaDocument.Item.Header(userReservedFields = expectedUserReservedFields)
+        val expectedHeader = SchemaHeader(userReservedFields = expectedUserReservedFields)
         assertEquals(expectedHeader, header)
         assertEquals(expectedUserReservedFields, context.userReservedFields)
     }
@@ -83,7 +83,7 @@ class HeaderReaderTest {
         val context = ReaderContext()
         val header = headerReader.readHeader(context, ION.singleValue("schema_header::{_foo:1,_bar:2}"))
 
-        val expected = SchemaDocument.Item.Header(
+        val expected = SchemaHeader(
             openContent = bagOf(
                 "_foo" to ION.newInt(1),
                 "_bar" to ION.newInt(2),
@@ -98,7 +98,7 @@ class HeaderReaderTest {
         context.userReservedFields = UserReservedFields(footer = setOf("foo", "bar"))
         val header = headerReader.readHeader(context, ION.singleValue("schema_header::{foo:1,bar:2,user_reserved_fields:{schema_header:[foo,bar]}}"))
         val expectedUserReservedFields = UserReservedFields(header = setOf("foo", "bar"))
-        val expectedHeader = SchemaDocument.Item.Header(
+        val expectedHeader = SchemaHeader(
             userReservedFields = expectedUserReservedFields,
             openContent = bagOf(
                 "foo" to ION.newInt(1),
@@ -121,7 +121,7 @@ class HeaderReaderTest {
         val context = ReaderContext()
         val header = reader.readHeader(context, ION.singleValue("schema_header::{type:1,foo:2}"))
 
-        val expected = SchemaDocument.Item.Header(
+        val expected = SchemaHeader(
             openContent = bagOf(
                 "type" to ION.newInt(1),
                 "foo" to ION.newInt(2),
@@ -136,7 +136,7 @@ class HeaderReaderTest {
         val context = ReaderContext()
         val header = reader.readHeader(context, ION.singleValue("schema_header::{user_reserved_fields:{ type: [a, b, c] }}"))
 
-        val expected = SchemaDocument.Item.Header(
+        val expected = SchemaHeader(
             openContent = bagOf(
                 "user_reserved_fields" to ION.singleValue("{type: [a, b, c]}"),
             )

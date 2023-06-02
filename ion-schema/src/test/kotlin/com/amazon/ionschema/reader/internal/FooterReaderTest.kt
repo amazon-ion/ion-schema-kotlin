@@ -4,7 +4,7 @@ import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.internal.util.IonSchema_2_0
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
-import com.amazon.ionschema.model.SchemaDocument
+import com.amazon.ionschema.model.SchemaFooter
 import com.amazon.ionschema.model.UserReservedFields
 import com.amazon.ionschema.util.bagOf
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,7 +21,7 @@ class FooterReaderTest {
     fun `readFooter can read an empty footer`() {
         val context = ReaderContext()
         val footer = footerReader.readFooter(context, ION.singleValue("schema_footer::{}"))
-        assertEquals(SchemaDocument.Item.Footer(), footer)
+        assertEquals(SchemaFooter(), footer)
     }
 
     @Test
@@ -29,7 +29,7 @@ class FooterReaderTest {
         val context = ReaderContext()
         val footer = footerReader.readFooter(context, ION.singleValue("schema_footer::{_foo:1,_bar:2}"))
 
-        val expected = SchemaDocument.Item.Footer(
+        val expected = SchemaFooter(
             openContent = bagOf(
                 "_foo" to ION.newInt(1),
                 "_bar" to ION.newInt(2),
@@ -44,7 +44,7 @@ class FooterReaderTest {
         val context = ReaderContext()
         context.userReservedFields = UserReservedFields(footer = setOf("foo", "bar"))
         val footer = footerReader.readFooter(context, ION.singleValue("schema_footer::{foo:1,bar:2}"))
-        val expected = SchemaDocument.Item.Footer(
+        val expected = SchemaFooter(
             openContent = bagOf(
                 "foo" to ION.newInt(1),
                 "bar" to ION.newInt(2),
