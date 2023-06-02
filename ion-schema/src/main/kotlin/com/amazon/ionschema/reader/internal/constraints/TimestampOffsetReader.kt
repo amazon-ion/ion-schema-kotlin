@@ -11,6 +11,7 @@ import com.amazon.ionschema.internal.util.islRequireNotEmpty
 import com.amazon.ionschema.model.Constraint
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
 import com.amazon.ionschema.model.TimestampOffsetValue
+import com.amazon.ionschema.model.mapToSet
 import com.amazon.ionschema.reader.internal.ReaderContext
 import com.amazon.ionschema.reader.internal.invalidConstraint
 
@@ -28,7 +29,7 @@ internal class TimestampOffsetReader : ConstraintReader {
         return Constraint.TimestampOffset(
             field.islRequireElementType<IonString>("timestamp offset list")
                 .islRequireNotEmpty("timestamp offset list")
-                .map { TimestampOffsetValue.parse(it.stringValue()) }
+                .mapToSet { TimestampOffsetValue.parse(it.stringValue()) }
         )
     }
 }

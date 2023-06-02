@@ -6,6 +6,7 @@ import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
 import com.amazon.ionschema.internal.util.islRequireNoIllegalAnnotations
 import com.amazon.ionschema.model.Constraint
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
+import com.amazon.ionschema.model.mapToSet
 import com.amazon.ionschema.reader.internal.ReaderContext
 import com.amazon.ionschema.reader.internal.invalidConstraint
 
@@ -19,6 +20,6 @@ internal class ContainsReader : ConstraintReader {
 
         islRequireIonTypeNotNull<IonList>(field) { invalidConstraint(field, "must be a non-null list") }
         islRequireNoIllegalAnnotations(field) { invalidConstraint(field, "must not have annotations") }
-        return Constraint.Contains(field.map { it.clone() })
+        return Constraint.Contains(field.mapToSet { it.clone() })
     }
 }

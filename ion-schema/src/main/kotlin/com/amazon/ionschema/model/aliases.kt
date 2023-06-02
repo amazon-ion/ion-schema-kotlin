@@ -15,10 +15,10 @@ import com.amazon.ionschema.util.Bag
 typealias OpenContentFields = Bag<Pair<String, IonValue>>
 
 /**
- * Convenience alias for a list of [TypeArgument].
+ * Convenience alias for a set of [TypeArgument].
  */
 @ExperimentalIonSchemaModel
-typealias TypeArgumentList = List<TypeArgument>
+typealias TypeArguments = Set<TypeArgument>
 
 /**
  * A [ContinuousRange] of [Timestamp], represented as a [ConsistentTimestamp].

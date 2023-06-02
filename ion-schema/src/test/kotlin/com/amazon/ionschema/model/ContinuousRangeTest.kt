@@ -115,7 +115,7 @@ class ContinuousRangeTest {
 
         fun closed(d: Double) = d.let { ContinuousRange.Limit.Closed(d) }
         fun open(d: Double) = d.let { ContinuousRange.Limit.Open(d) }
-        fun unbounded() = ContinuousRange.Limit.Unbounded<Double>()
+        fun unbounded() = ContinuousRange.Limit.Unbounded
 
         /** case for `testContains` */
         private fun case(range: ContinuousRange<Double>, value: Double, isContained: Boolean) = Triple(range, value, isContained)

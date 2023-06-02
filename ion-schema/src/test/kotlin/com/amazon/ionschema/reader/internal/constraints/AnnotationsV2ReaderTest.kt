@@ -8,6 +8,7 @@ import com.amazon.ionschema.model.ExperimentalIonSchemaModel
 import com.amazon.ionschema.model.TypeArgument
 import com.amazon.ionschema.model.TypeDefinition
 import com.amazon.ionschema.model.ValidValue
+import com.amazon.ionschema.model.mapToSet
 import com.amazon.ionschema.reader.internal.ReaderContext
 import com.amazon.ionschema.reader.internal.TypeReader
 import io.mockk.every
@@ -76,7 +77,7 @@ class AnnotationsV2ReaderTest {
             TypeArgument.InlineType(
                 TypeDefinition(
                     setOf(
-                        Constraint.Contains(setOf("a", "b", "c").map(ION::newSymbol))
+                        Constraint.Contains(setOf("a", "b", "c").mapToSet(ION::newSymbol))
                     )
                 )
             )
@@ -101,7 +102,7 @@ class AnnotationsV2ReaderTest {
                             TypeArgument.InlineType(
                                 TypeDefinition(
                                     setOf(
-                                        Constraint.ValidValues(setOf("a", "b", "c").map { ValidValue.Value(ION.newSymbol(it)) })
+                                        Constraint.ValidValues(setOf("a", "b", "c").mapToSet { ValidValue.Value(ION.newSymbol(it)) })
                                     )
                                 )
                             )
@@ -126,12 +127,12 @@ class AnnotationsV2ReaderTest {
             TypeArgument.InlineType(
                 TypeDefinition(
                     setOf(
-                        Constraint.Contains(setOf("a", "b", "c").map(ION::newSymbol)),
+                        Constraint.Contains(setOf("a", "b", "c").mapToSet(ION::newSymbol)),
                         Constraint.Element(
                             TypeArgument.InlineType(
                                 TypeDefinition(
                                     setOf(
-                                        Constraint.ValidValues(setOf("a", "b", "c").map { ValidValue.Value(ION.newSymbol(it)) })
+                                        Constraint.ValidValues(setOf("a", "b", "c").mapToSet { ValidValue.Value(ION.newSymbol(it)) })
                                     )
                                 )
                             )

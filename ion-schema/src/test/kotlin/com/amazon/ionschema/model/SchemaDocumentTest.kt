@@ -2,7 +2,6 @@ package com.amazon.ionschema.model
 
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.IonSchemaVersion
-import com.amazon.ionschema.model.SchemaDocument.Item
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -23,8 +22,8 @@ class SchemaDocumentTest {
 
     @Test
     fun `test get header when header present`() {
-        val header = Item.Header()
-        val footer = Item.Footer()
+        val header = SchemaHeader()
+        val footer = SchemaFooter()
         val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf(header, footer))
         assertSame(header, schema.header)
     }
@@ -37,8 +36,8 @@ class SchemaDocumentTest {
 
     @Test
     fun `test get footer when footer present`() {
-        val header = Item.Header()
-        val footer = Item.Footer()
+        val header = SchemaHeader()
+        val footer = SchemaFooter()
         val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf(header, footer))
         assertSame(footer, schema.footer)
     }
@@ -63,7 +62,7 @@ class SchemaDocumentTest {
                 constraints = setOf(),
             )
         )
-        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf(Item.Type(type0), Item.Type(type1)))
+        val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, listOf(type0, type1))
         assertEquals(2, schema.declaredTypes.size)
         assertSame(type0, schema.declaredTypes["type0"])
         assertSame(type1, schema.declaredTypes["type1"])
@@ -90,16 +89,16 @@ class SchemaDocumentTest {
             )
         )
         val schemaItems = listOf(
-            Item.OpenContent(ION.newInt(1)),
-            Item.OpenContent(ION.newInt(2)),
-            Item.Header(),
-            Item.OpenContent(ION.newInt(3)),
-            Item.Type(type0),
-            Item.OpenContent(ION.newInt(4)),
-            Item.Type(type1),
-            Item.OpenContent(ION.newInt(5)),
-            Item.Footer(),
-            Item.OpenContent(ION.newInt(6)),
+            SchemaDocument.OpenContent(ION.newInt(1)),
+            SchemaDocument.OpenContent(ION.newInt(2)),
+            SchemaHeader(),
+            SchemaDocument.OpenContent(ION.newInt(3)),
+            type0,
+            SchemaDocument.OpenContent(ION.newInt(4)),
+            type1,
+            SchemaDocument.OpenContent(ION.newInt(5)),
+            SchemaFooter(),
+            SchemaDocument.OpenContent(ION.newInt(6)),
         )
         val schema = SchemaDocument("schema.isl", IonSchemaVersion.v2_0, schemaItems)
         assertIterableEquals(schemaItems, schema.items)

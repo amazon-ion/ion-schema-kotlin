@@ -73,7 +73,7 @@ class TimestampPrecisionReaderTest {
         val expected = Constraint.TimestampPrecision(
             TimestampPrecisionRange(
                 ContinuousRange.Limit.Closed(TimestampPrecisionValue.Minute),
-                ContinuousRange.Limit.Unbounded(),
+                ContinuousRange.Limit.Unbounded,
             )
         )
         val result = reader.readConstraint(context, struct["timestamp_precision"])
@@ -87,7 +87,7 @@ class TimestampPrecisionReaderTest {
         val context = ReaderContext()
         val expected = Constraint.TimestampPrecision(
             TimestampPrecisionRange(
-                ContinuousRange.Limit.Unbounded(),
+                ContinuousRange.Limit.Unbounded,
                 ContinuousRange.Limit.Closed(TimestampPrecisionValue.Second),
             )
         )

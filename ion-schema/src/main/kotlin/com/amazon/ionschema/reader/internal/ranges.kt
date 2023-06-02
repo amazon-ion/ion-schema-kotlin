@@ -120,7 +120,7 @@ private inline fun <T : Comparable<T>, reified IV : IonValue> IonList.readContin
     val b = get(boundaryPosition.idx) ?: throw InvalidSchemaException("Invalid range; missing $boundaryPosition boundary value: $this")
     return if (b is IonSymbol && b.stringValue() == boundaryPosition.symbol) {
         islRequire(b.typeAnnotations.isEmpty()) { "Invalid range; min/max may not be annotated: $this" }
-        ContinuousRange.Limit.Unbounded()
+        ContinuousRange.Limit.Unbounded
     } else {
         val value = islRequireIonTypeNotNull<IV>(b) { "Invalid range; $boundaryPosition boundary of range must be '${boundaryPosition.symbol}' or a non-null ${IV::class.simpleName}" }.let(valueFn)
         val exclusive = readBoundaryExclusivity(boundaryPosition)

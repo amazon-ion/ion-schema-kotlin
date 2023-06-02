@@ -68,7 +68,7 @@ class IonSchemaReaderV2_0 : IonSchemaReader {
     }
 
     private fun iterateSchema(documentIterator: Iterator<IonValue>, context: ReaderContext): SchemaDocument? {
-        val items = mutableListOf<SchemaDocument.Item>()
+        val items = mutableListOf<SchemaDocument.Content>()
         var state = ReaderState.Init
         while (documentIterator.hasNext()) {
             val value = documentIterator.next()
@@ -91,7 +91,7 @@ class IonSchemaReaderV2_0 : IonSchemaReader {
                 isType(value) -> {
                     if (state > ReaderState.Init) {
                         readCatching(context, value) { typeReader.readNamedTypeDefinition(context, value) }
-                            ?.let { items.add(SchemaDocument.Item.Type(it)) }
+                            ?.let { items.add(it) }
                         state = ReaderState.ReadingTypes
                     } else {
                         context.reportError(ReadError(value, "type definition encountered ${state.location}"))
@@ -108,7 +108,7 @@ class IonSchemaReaderV2_0 : IonSchemaReader {
                 state > ReaderState.Init -> {
                     // If we've already seen the version marker, then handle open content
                     if (isTopLevelOpenContent(value)) {
-                        items.add(SchemaDocument.Item.OpenContent(value.getReadOnlyClone()))
+                        items.add(SchemaDocument.OpenContent(value.getReadOnlyClone()))
                     } else {
                         context.reportError(ReadError(value, "invalid top level value ${state.location}"))
                     }

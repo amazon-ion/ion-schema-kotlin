@@ -6,13 +6,13 @@ import com.amazon.ionschema.internal.util.islRequire
 import com.amazon.ionschema.internal.util.islRequireExactAnnotations
 import com.amazon.ionschema.internal.util.islRequireIonTypeNotNull
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
-import com.amazon.ionschema.model.SchemaDocument
+import com.amazon.ionschema.model.SchemaFooter
 import com.amazon.ionschema.util.toBag
 
 @ExperimentalIonSchemaModel
 internal class FooterReader(private val isValidOpenContentField: ReaderContext.(String) -> Boolean) {
 
-    fun readFooter(context: ReaderContext, footerValue: IonValue): SchemaDocument.Item.Footer {
+    fun readFooter(context: ReaderContext, footerValue: IonValue): SchemaFooter {
         islRequireIonTypeNotNull<IonStruct>(footerValue) { "schema_footer must be a non-null struct; was: $footerValue" }
         islRequireExactAnnotations(footerValue, "schema_footer") { "schema_footer may not have extra annotations" }
 
@@ -21,6 +21,6 @@ internal class FooterReader(private val isValidOpenContentField: ReaderContext.(
         islRequire(unexpectedFieldNames.isEmpty()) { "Found illegal field names $unexpectedFieldNames in schema footer: $footerValue" }
 
         val openContent = footerValue.map { it.fieldName to it }.toBag()
-        return SchemaDocument.Item.Footer(openContent)
+        return SchemaFooter(openContent)
     }
 }

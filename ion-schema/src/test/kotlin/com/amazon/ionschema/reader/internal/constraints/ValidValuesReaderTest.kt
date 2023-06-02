@@ -51,7 +51,7 @@ class ValidValuesReaderTest {
         val reader = ValidValuesReader()
         val context = ReaderContext()
         val expected = Constraint.ValidValues(
-            listOf(
+            setOf(
                 ValidValue.Value(ION.newInt(3)),
                 ValidValue.IonNumberRange(
                     NumberRange(
@@ -78,7 +78,7 @@ class ValidValuesReaderTest {
         val reader = ValidValuesReader()
         val context = ReaderContext()
         val expected = Constraint.ValidValues(
-            listOf(
+            setOf(
                 ValidValue.IonNumberRange(
                     NumberRange(
                         ContinuousRange.Limit.Closed(ConsistentDecimal(BigDecimal.ONE)),

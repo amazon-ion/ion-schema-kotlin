@@ -9,6 +9,8 @@ import com.amazon.ionschema.model.ExperimentalIonSchemaModel
 import com.amazon.ionschema.model.HeaderImport
 import com.amazon.ionschema.model.NamedTypeDefinition
 import com.amazon.ionschema.model.SchemaDocument
+import com.amazon.ionschema.model.SchemaFooter
+import com.amazon.ionschema.model.SchemaHeader
 import com.amazon.ionschema.model.TypeArgument
 import com.amazon.ionschema.model.TypeDefinition
 import com.amazon.ionschema.model.UserReservedFields
@@ -72,27 +74,23 @@ class IonSchemaReaderV2_0Tests {
                 id = null,
                 ionSchemaVersion = IonSchemaVersion.v2_0,
                 items = listOf(
-                    SchemaDocument.Item.Type(
-                        NamedTypeDefinition(
-                            typeName = "type1",
-                            typeDefinition = TypeDefinition(
-                                constraints = setOf(
-                                    Constraint.Type(TypeArgument.Reference("string")),
-                                    Constraint.CodepointLength(DiscreteIntRange(3))
-                                )
-                            ),
-                        )
+                    NamedTypeDefinition(
+                        typeName = "type1",
+                        typeDefinition = TypeDefinition(
+                            constraints = setOf(
+                                Constraint.Type(TypeArgument.Reference("string")),
+                                Constraint.CodepointLength(DiscreteIntRange(3))
+                            )
+                        ),
                     ),
-                    SchemaDocument.Item.Type(
-                        NamedTypeDefinition(
-                            typeName = "type2",
-                            typeDefinition = TypeDefinition(
-                                constraints = setOf(
-                                    Constraint.Type(TypeArgument.Reference("symbol")),
-                                    Constraint.Utf8ByteLength(DiscreteIntRange(5))
-                                )
-                            ),
-                        )
+                    NamedTypeDefinition(
+                        typeName = "type2",
+                        typeDefinition = TypeDefinition(
+                            constraints = setOf(
+                                Constraint.Type(TypeArgument.Reference("symbol")),
+                                Constraint.Utf8ByteLength(DiscreteIntRange(5))
+                            )
+                        ),
                     )
                 )
             ),
@@ -124,8 +122,8 @@ class IonSchemaReaderV2_0Tests {
                 id = null,
                 ionSchemaVersion = IonSchemaVersion.v2_0,
                 items = listOf(
-                    SchemaDocument.Item.Header(
-                        imports = listOf(HeaderImport.Wildcard("foo.isl")),
+                    SchemaHeader(
+                        imports = setOf(HeaderImport.Wildcard("foo.isl")),
                         userReservedFields = UserReservedFields(type = setOf("foo"))
                     ),
                 )
@@ -159,12 +157,12 @@ class IonSchemaReaderV2_0Tests {
                 id = null,
                 ionSchemaVersion = IonSchemaVersion.v2_0,
                 items = listOf(
-                    SchemaDocument.Item.OpenContent(ION.singleValue("bar1")),
-                    SchemaDocument.Item.Header(),
-                    SchemaDocument.Item.OpenContent(ION.singleValue("bar2")),
-                    SchemaDocument.Item.Type(NamedTypeDefinition("foo", TypeDefinition(emptySet(), emptyBag()))),
-                    SchemaDocument.Item.OpenContent(ION.singleValue("bar3")),
-                    SchemaDocument.Item.Footer(),
+                    SchemaDocument.OpenContent(ION.singleValue("bar1")),
+                    SchemaHeader(),
+                    SchemaDocument.OpenContent(ION.singleValue("bar2")),
+                    NamedTypeDefinition("foo", TypeDefinition(emptySet(), emptyBag())),
+                    SchemaDocument.OpenContent(ION.singleValue("bar3")),
+                    SchemaFooter(),
                 )
             ),
             result.unwrap()

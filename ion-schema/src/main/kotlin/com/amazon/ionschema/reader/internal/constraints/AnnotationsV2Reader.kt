@@ -40,7 +40,7 @@ internal class AnnotationsV2Reader(private val typeReader: TypeReader) : Constra
                 } else {
                     Constraint.AnnotationsV2.Modifier.Closed
                 }
-                Constraint.AnnotationsV2.create(modifier, field.filterIsInstance<IonSymbol>())
+                Constraint.AnnotationsV2.create(modifier, field.filterIsInstance<IonSymbol>().toSet())
             }
             is IonStruct, is IonSymbol -> Constraint.AnnotationsV2(typeReader.readTypeArg(context, field))
             else -> throw InvalidSchemaException(invalidConstraint(field, "must be a type argument (symbol or struct) or a list of valid annotations"))

@@ -16,16 +16,16 @@ data class ContinuousRange<T : Comparable<T>>(val start: Limit<T>, val end: Limi
     private constructor(value: Limit.Closed<T>) : this(value, value)
     constructor(value: T) : this(Limit.Closed(value))
 
-    sealed class Limit<T : Comparable<T>> {
+    sealed class Limit<out T> {
         abstract val value: T?
 
         interface Bounded<T> { val value: T }
         data class Closed<T : Comparable<T>>(override val value: T) : Limit<T>(), Bounded<T>
         data class Open<T : Comparable<T>>(override val value: T) : Limit<T>(), Bounded<T>
-        class Unbounded<T : Comparable<T>> : Limit<T>() {
+        object Unbounded : Limit<Nothing>() {
             override val value: Nothing? get() = null
 
-            override fun equals(other: Any?) = other is Unbounded<*>
+            override fun equals(other: Any?) = other is Unbounded
             override fun hashCode() = 0
         }
     }

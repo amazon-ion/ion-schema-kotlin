@@ -44,7 +44,7 @@ class TimestampOffsetReaderTest {
         val reader = TimestampOffsetReader()
         val context = ReaderContext()
         val expected = Constraint.TimestampOffset(
-            listOf(
+            setOf(
                 TimestampOffsetValue.fromMinutes(30),
                 TimestampOffsetValue.fromMinutes(90),
             )

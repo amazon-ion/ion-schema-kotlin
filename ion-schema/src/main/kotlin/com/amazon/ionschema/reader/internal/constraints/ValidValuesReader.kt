@@ -10,6 +10,7 @@ import com.amazon.ionschema.internal.util.islRequireNoIllegalAnnotations
 import com.amazon.ionschema.model.Constraint
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
 import com.amazon.ionschema.model.ValidValue
+import com.amazon.ionschema.model.mapToSet
 import com.amazon.ionschema.reader.internal.ReaderContext
 import com.amazon.ionschema.reader.internal.invalidConstraint
 import com.amazon.ionschema.reader.internal.toNumberRange
@@ -27,7 +28,7 @@ internal class ValidValuesReader : ConstraintReader {
         islRequireNoIllegalAnnotations(field, "range") { invalidConstraint(field, "must be a range or an unannotated list of values ") }
         val theList = if (field.hasTypeAnnotation("range")) listOf(field) else field
 
-        val theValidValues = theList.map {
+        val theValidValues = theList.mapToSet {
             if (it.hasTypeAnnotation("range") && it is IonList) {
                 when {
                     it.any { x -> x is IonTimestamp } -> ValidValue.IonTimestampRange(it.toTimestampRange())
