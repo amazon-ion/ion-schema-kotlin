@@ -25,7 +25,7 @@ data class SchemaDocument(
     }
 
     /**
-     * Represents a top-level values in a schema document.
+     * Represents a top-level value in a schema document.
      * Implemented by [NamedTypeDefinition], [SchemaHeader], [SchemaFooter], and [OpenContent].
      * This interface is not intended to be implemented by users of the library.
      */
