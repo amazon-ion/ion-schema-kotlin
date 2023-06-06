@@ -37,12 +37,7 @@ dependencies {
 }
 
 processResources {
-  from('../ion-schema-schemas/isl/') {
-    into 'ion-schema-schemas/isl/'
-  }
-  from('../ion-schema-schemas/json/') {
-    into 'ion-schema-schemas/json/'
-  }
+  includes = ["ion-schema-schemas/**/*.isl"]
 }
 
 compileKotlin{
