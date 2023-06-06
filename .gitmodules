@@ -2,5 +2,5 @@
 	path = ion-schema-tests
 	url = https://github.com/amazon-ion/ion-schema-tests.git
 [submodule "ion-schema-schemas"]
-	path = ion-schema-schemas
+	path = ion-schema/src/main/resources/ion-schema-schemas
 	url = https://github.com/amazon-ion/ion-schema-schemas.git
