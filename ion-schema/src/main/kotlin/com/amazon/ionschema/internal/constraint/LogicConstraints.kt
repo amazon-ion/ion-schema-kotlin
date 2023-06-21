@@ -23,6 +23,7 @@ import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.DeferredReferenceManager
 import com.amazon.ionschema.internal.SchemaInternal
+import com.amazon.ionschema.internal.TypeInternal
 import com.amazon.ionschema.internal.TypeReference
 
 /**
@@ -108,7 +109,7 @@ internal class OneOf(ion: IonValue, schema: SchemaInternal, referenceManager: De
                 oneOfViolation.message = "value matches %s types, expected 1".format(validTypes.size)
 
                 validTypes.forEach {
-                    val typeDef = (it as ConstraintBase).ion
+                    val typeDef = (it as TypeInternal).isl
                     oneOfViolation.add(
                         Violation(
                             typeDef, "type_matched",
