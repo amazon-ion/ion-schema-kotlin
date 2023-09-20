@@ -185,5 +185,9 @@ internal class IonSchemaSystemImpl(
         // for backwards compatibility with v1.1
         // Default is to keep the backward compatible behavior
         object ALLOW_TRANSITIVE_IMPORTS : Param<Boolean>(true)
+        // Introduced in v1.7.0.
+        // This is a performance improvement that skips all other constraints if the
+        // annotation doesn't match, regardless of whether the fail-fast was called.
+        object SHORT_CIRCUIT_ON_INVALID_ANNOTATIONS : Param<Boolean>(false)
     }
 }

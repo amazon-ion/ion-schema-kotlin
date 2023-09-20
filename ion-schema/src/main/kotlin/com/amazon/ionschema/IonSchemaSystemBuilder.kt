@@ -122,8 +122,62 @@ class IonSchemaSystemBuilder private constructor() {
     }
 
     /**
+     * Causes the evaluation of a value against a type definition to return early if the value is
+     * invalid for the given `annotations` constraint, if one is present. If unset, this option
+     * defaults to `false`.
+     *
+     * ### Rationale
+     *
+     * If you use annotations as application-defined type tags on Ion values, this option can benefit
+     * you in two ways—it will reduce noise in the [Violations] data when calling [Type.validate],
+     * and it can result in performance improvements, especially in cases where the type definition
+     * includes constraints such as `element`, `fields` and `ordered_elements` which constrain child
+     * values of a container.
+     *
+     * ### Example
+     *
+     * Consider the following type definitions (which are functionally equivalent for Ion Schema 1.0 and 2.0).
+     * ```
+     * type::{
+     *   name: foo_struct,
+     *   annotations: closed::required::[foo],
+     *   fields: {
+     *     id: { occurs: required, type: string, regex: "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$" }
+     *     a: int,
+     *     b: bool,
+     *   }
+     * }
+     * type::{
+     *   name: bar_struct,
+     *   annotations: closed::required::[foo],
+     *   fields: {
+     *     id: { occurs: required, type: string, regex: "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$" }
+     *     b: int,
+     *     c: timestamp,
+     *   }
+     * }
+     * type::{
+     *   name: foobar,
+     *   one_of: [foo_struct, bar_struct],
+     * }
+     * ```
+     * With this feature enabled, when validating a value such as `bar::{ id: "qwerty" }` against
+     * the `foobar` type, the comparison with the `foo_struct` as part of the `one_of` constraint
+     * will not check all the fields in the struct because the struct does not match the annotations
+     * of the `foo_struct` type. If you were to validate a value such as `quux::{ id: "qwerty" }`,
+     * there would be no validation of the fields at all because the annotation `quux` does not match
+     * the annotations of `foo_struct` or `bar_struct`.
+     *
+     * @since 1.7
+     */
+    fun failFastOnInvalidAnnotations(boolean: Boolean): IonSchemaSystemBuilder {
+        params[IonSchemaSystemImpl.Param.SHORT_CIRCUIT_ON_INVALID_ANNOTATIONS] = boolean
+        return this
+    }
+
+    /**
      * Provides a callback for the IonSchemaSystem to send a warning message about
-     * things that are not fatal (ie. will not result in an exception being thrown).
+     * things that are not fatal (i.e. will not result in an exception being thrown).
      * Content of the messages may include information about possible errors in
      * schemas, and usage of features that may be deprecated in future versions of
      * the Ion Schema Language or the `ion-schema-kotlin` library.
@@ -143,7 +197,7 @@ class IonSchemaSystemBuilder private constructor() {
 
     /**
      * Provides a callback for the IonSchemaSystem to send a warning message about
-     * things that are not fatal (ie. will not result in an exception being thrown).
+     * things that are not fatal (i.e. will not result in an exception being thrown).
      * Content of the messages may include information about possible errors in
      * schemas, and usage of features that may be deprecated in future versions of
      * the Ion Schema Language or the `ion-schema-kotlin` library.
