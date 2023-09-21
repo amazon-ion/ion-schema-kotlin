@@ -64,7 +64,6 @@ class TypeTest {
         val iter = violations.iterator()
         val violation = iter.next()
         assertEquals("type_mismatch", violation.code)
-        assertEquals("type", violation.constraint?.fieldName)
         assertEquals(ION.singleValue("string"), violation.constraint)
     }
 

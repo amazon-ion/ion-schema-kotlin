@@ -36,7 +36,7 @@ internal class TypeNullable(
         islRequire(schema.ionSchemaLanguageVersion == v1_0) { "'nullable::' is not supported beyond Ion Schema 1.0" }
         // Best effort attempt to validate that `nullable::` is not applied to any document.
         try {
-            islRequire(type.getBaseType() != schema.getType("document")) { "The 'document' type is not nullable" }
+            islRequire(type.getBaseType().name != "document") { "The 'document' type is not nullable" }
         } catch (e: @OptIn(DeferredReferenceManagerImplementationDetails::class) DeferredReference.UnresolvedTypeReferenceException) {
             // This can happen if `nullable::` is on an unresolved imported type or any type derived from an unresolved
             // imported type. There is yet no known reasonable way to handle getBaseType for types that may be

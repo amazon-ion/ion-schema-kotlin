@@ -18,8 +18,6 @@ package com.amazon.ionschema
 import com.amazon.ion.IonStruct
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.IonSchemaVersion.v1_0
-import com.amazon.ionschema.internal.IonSchemaSystemImpl
-import com.amazon.ionschema.internal.SchemaCore
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -257,14 +255,6 @@ class SchemaTest {
         assertEquals(ION.newLoader().load(newIsl), newSchema.isl)
         assertTrue(newSchema.isl.isReadOnly)
         assertNull(schema.getType("two")!!.isl.container)
-    }
-
-    @Test
-    fun isl_SchemaCore() {
-        val schemaCore = SchemaCore(iss as IonSchemaSystemImpl, v1_0)
-        assertEquals(ION.newDatagram(), schemaCore.isl)
-        assertTrue(schemaCore.isl.isReadOnly)
-        assertNull(schemaCore.isl.container)
     }
 
     @Test

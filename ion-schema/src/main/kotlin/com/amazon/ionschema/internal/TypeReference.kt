@@ -116,14 +116,9 @@ internal class TypeReference private constructor() {
         }
 
         private fun handleSymbol(ion: IonSymbol, schema: SchemaInternal, referenceManager: DeferredReferenceManager): TypeInternal {
-            val t = schema.getInScopeType(ion.stringValue())
-
-            return if (t != null) {
-                t as? TypeBuiltin ?: TypeNamed(ion, t)
-            } else {
-                // type can't be resolved yet;  ask the schema to try again later
-                referenceManager.createDeferredLocalReference(schema, ion)
-            }
+            return BuiltInTypes[ion.stringValue()]
+                ?: schema.getInScopeType(ion.stringValue())?.let { it as? TypeNamed ?: TypeNamed(ion, it) }
+                ?: referenceManager.createDeferredLocalReference(schema, ion) // type can't be resolved yet
         }
 
         /**

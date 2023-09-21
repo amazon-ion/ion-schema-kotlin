@@ -77,7 +77,7 @@ internal class TypeImpl(
                 return parentType.getBaseType()
             }
         }
-        return schema.getType("any")!! as TypeBuiltin
+        return BuiltInTypes["any"]!!
     }
 
     @Deprecated("Only used for Ion Schema 1.0 code paths. No new usages should be introduced.")
