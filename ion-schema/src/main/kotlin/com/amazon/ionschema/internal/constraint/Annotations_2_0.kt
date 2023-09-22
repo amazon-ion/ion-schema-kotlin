@@ -41,17 +41,20 @@ internal class Annotations_2_0 constructor(
     referenceManager: DeferredReferenceManager,
 ) : ConstraintBase(ion) {
 
+    // For standard syntax
     private val type: () -> TypeInternal
+
+    // For simplified syntax -- if either closed or required is true, then this constraint is using the simplified syntax
+    private val closed: Boolean
+    private val required: Boolean
+    private val constraintAnnotations: Set<String>
 
     companion object {
         private val ALLOWED_MODIFIERS = setOf("closed", "required")
     }
 
     init {
-        type = if (ion is IonList) {
-            // This is the "simplified" syntax. In order to keep the validation from being complex, we convert
-            // from the "simplified" syntax to the standard syntax.
-
+        if (ion is IonList) {
             islRequireIonNotNull(ion) { "annotations list may not be null" }
             islRequire(ion.typeAnnotations.isNotEmpty() && ion.typeAnnotations.all { it in ALLOWED_MODIFIERS }) {
                 "annotations list must be annotated only with one or both of 'closed', 'required'"
@@ -62,25 +65,15 @@ internal class Annotations_2_0 constructor(
                 islRequire(it.typeAnnotations.isEmpty()) { "annotations list values may not be annotated" }
             }
 
-            val annotationListTypeIon = ion.system.newEmptyStruct().apply {
-                if (ion.hasTypeAnnotation("closed")) {
-                    // May only contain...
-                    add(
-                        "element",
-                        ion.system.newEmptyStruct().apply {
-                            add("valid_values", ion.clone().apply { clearTypeAnnotations() })
-                        }
-                    )
-                }
-                if (ion.hasTypeAnnotation("required")) {
-                    // Must contain...
-                    add("contains", ion.clone().apply { clearTypeAnnotations() })
-                }
-            }
-
-            TypeReference.create(annotationListTypeIon, schema, referenceManager)
+            constraintAnnotations = ion.map { (it as IonSymbol).stringValue() }.toSet()
+            closed = ion.hasTypeAnnotation("closed")
+            required = ion.hasTypeAnnotation("required")
+            type = { TODO("Simplified Syntax -- this should be unreachable!") }
         } else {
-            TypeReference.create(ion, schema, referenceManager, isField = true)
+            constraintAnnotations = emptySet()
+            closed = false
+            required = false
+            type = TypeReference.create(ion, schema, referenceManager, isField = true)
         }
     }
 
@@ -90,10 +83,29 @@ internal class Annotations_2_0 constructor(
             issues.add(CommonViolations.INVALID_TYPE(ion, value))
             return
         }
-        val annotationIssues = Violation(ion, "invalid_annotations", "annotations on value do not meet expectations")
-        type().validate(value.typeAnnotations.toIonSymbolList(), annotationIssues)
-        if (!annotationIssues.isValid()) {
-            issues.add(annotationIssues)
+        if (closed || required) {
+            if (required) {
+                for (a in constraintAnnotations) {
+                    if (a !in value.typeAnnotations) {
+                        issues.add(Violation(ion, "missing_annotation", "missing one or more required annotations: $constraintAnnotations"))
+                        break
+                    }
+                }
+            }
+            if (closed) {
+                for (a in value.typeAnnotations) {
+                    if (a !in constraintAnnotations) {
+                        issues.add(Violation(ion, "unexpected_annotation", "found one or more unexpected annotations"))
+                        break
+                    }
+                }
+            }
+        } else {
+            val annotationIssues = Violation(ion, "invalid_annotations", "annotations on value do not meet expectations")
+            type().validate(value.typeAnnotations.toIonSymbolList(), annotationIssues)
+            if (!annotationIssues.isValid()) {
+                issues.add(annotationIssues)
+            }
         }
     }
 
