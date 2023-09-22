@@ -34,15 +34,15 @@ internal class AnnotationsV2Reader(private val typeReader: TypeReader) : Constra
                 field.islRequireElementType<IonSymbol>("list of annotations")
 
                 val modifier = if (field.hasTypeAnnotation("closed") && field.hasTypeAnnotation("required")) {
-                    Constraint.AnnotationsV2.Modifier.ClosedAndRequired
+                    Constraint.AnnotationsV2.Modifier.Exact
                 } else if (field.hasTypeAnnotation("required")) {
                     Constraint.AnnotationsV2.Modifier.Required
                 } else {
                     Constraint.AnnotationsV2.Modifier.Closed
                 }
-                Constraint.AnnotationsV2.create(modifier, field.filterIsInstance<IonSymbol>().toSet())
+                Constraint.AnnotationsV2.Simplified(modifier, field.mapTo(mutableSetOf()) { (it as IonSymbol).stringValue() })
             }
-            is IonStruct, is IonSymbol -> Constraint.AnnotationsV2(typeReader.readTypeArg(context, field))
+            is IonStruct, is IonSymbol -> Constraint.AnnotationsV2.Standard(typeReader.readTypeArg(context, field))
             else -> throw InvalidSchemaException(invalidConstraint(field, "must be a type argument (symbol or struct) or a list of valid annotations"))
         }
     }

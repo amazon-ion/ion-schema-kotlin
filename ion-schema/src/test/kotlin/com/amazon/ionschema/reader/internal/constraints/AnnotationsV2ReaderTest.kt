@@ -4,11 +4,9 @@ import com.amazon.ion.IonStruct
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.InvalidSchemaException
 import com.amazon.ionschema.model.Constraint
+import com.amazon.ionschema.model.Constraint.AnnotationsV2.Modifier
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
 import com.amazon.ionschema.model.TypeArgument
-import com.amazon.ionschema.model.TypeDefinition
-import com.amazon.ionschema.model.ValidValue
-import com.amazon.ionschema.model.mapToSet
 import com.amazon.ionschema.reader.internal.ReaderContext
 import com.amazon.ionschema.reader.internal.TypeReader
 import io.mockk.every
@@ -50,7 +48,7 @@ class AnnotationsV2ReaderTest {
     }
 
     @Test
-    fun `reading an annotations constraint with a type argument should return an AnnotationsV2 instance`() {
+    fun `reading an annotations constraint with a type argument should return an AnnotationsV2 Standard instance`() {
         val typeReader = mockk<TypeReader>()
         val reader = AnnotationsV2Reader(typeReader)
         val mockType = mockk<TypeArgument>()
@@ -60,28 +58,20 @@ class AnnotationsV2ReaderTest {
         val struct = ION.singleValue("""{ annotations: { valid_values: [[a, b, c]] } }""") as IonStruct
         val context = ReaderContext()
 
-        val expected = Constraint.AnnotationsV2(mockType)
+        val expected = Constraint.AnnotationsV2.Standard(mockType)
         val actual = reader.readConstraint(context, struct["annotations"])
         assertEquals(expected, actual)
     }
 
     @Test
-    fun `reading an annotations constraint with a list of required annotations should return an AnnotationsV2 instance`() {
+    fun `reading an annotations constraint with a list of required annotations should return an AnnotationsV2 Simplified instance`() {
         val typeReader = mockk<TypeReader>()
         val reader = AnnotationsV2Reader(typeReader)
 
         val struct = ION.singleValue("""{ annotations: required::[a, b, c] }""") as IonStruct
         val context = ReaderContext()
 
-        val expected = Constraint.AnnotationsV2(
-            TypeArgument.InlineType(
-                TypeDefinition(
-                    setOf(
-                        Constraint.Contains(setOf("a", "b", "c").mapToSet(ION::newSymbol))
-                    )
-                )
-            )
-        )
+        val expected = Constraint.AnnotationsV2.Simplified(Modifier.Required, setOf("a", "b", "c"))
         val actual = reader.readConstraint(context, struct["annotations"])
         assertEquals(expected, actual)
     }
@@ -94,23 +84,7 @@ class AnnotationsV2ReaderTest {
         val struct = ION.singleValue("""{ annotations: closed::[a, b, c] }""") as IonStruct
         val context = ReaderContext()
 
-        val expected = Constraint.AnnotationsV2(
-            TypeArgument.InlineType(
-                TypeDefinition(
-                    setOf(
-                        Constraint.Element(
-                            TypeArgument.InlineType(
-                                TypeDefinition(
-                                    setOf(
-                                        Constraint.ValidValues(setOf("a", "b", "c").mapToSet { ValidValue.Value(ION.newSymbol(it)) })
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
+        val expected = Constraint.AnnotationsV2.Simplified(Modifier.Closed, setOf("a", "b", "c"))
         val actual = reader.readConstraint(context, struct["annotations"])
         assertEquals(expected, actual)
     }
@@ -123,24 +97,7 @@ class AnnotationsV2ReaderTest {
         val struct = ION.singleValue("""{ annotations: closed::required::[a, b, c] }""") as IonStruct
         val context = ReaderContext()
 
-        val expected = Constraint.AnnotationsV2(
-            TypeArgument.InlineType(
-                TypeDefinition(
-                    setOf(
-                        Constraint.Contains(setOf("a", "b", "c").mapToSet(ION::newSymbol)),
-                        Constraint.Element(
-                            TypeArgument.InlineType(
-                                TypeDefinition(
-                                    setOf(
-                                        Constraint.ValidValues(setOf("a", "b", "c").mapToSet { ValidValue.Value(ION.newSymbol(it)) })
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
+        val expected = Constraint.AnnotationsV2.Simplified(Modifier.Exact, setOf("a", "b", "c"))
         val actual = reader.readConstraint(context, struct["annotations"])
         assertEquals(expected, actual)
     }
