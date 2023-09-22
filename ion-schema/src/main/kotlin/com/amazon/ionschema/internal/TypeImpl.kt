@@ -45,12 +45,12 @@ internal class TypeImpl(
         /**
          * Order in which constraints should be evaluated. Lower is first.
          *
-         * The [validate] function in this class has
+         * The [validate] function in this class has optional short-circuit logic for the `annotations` constraint, so
+         * `annotations` gets special treatment and will be evaluated first.
          */
         private val CONSTRAINT_EVALUATION_ORDER = mapOf(
             "annotations" to -1,
             // By default, all constraints are priority 0
-            "ordered_elements" to 1,
         )
         private val CONSTRAINT_PRIORITY_COMPARATOR = Comparator<Constraint> {
             a, b ->
