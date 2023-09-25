@@ -83,10 +83,7 @@ internal class SchemaImpl_2_0 internal constructor(
         var foundFooter = false
         var foundAnyType = false
 
-        importedTypes += schemaSystem.getBuiltInTypesSchema(ionSchemaLanguageVersion)
-            .getDeclaredTypes()
-            .asSequence()
-            .associateBy { it.name }
+        importedTypes += BuiltInTypes.asMap()
 
         schemaContent.mapTo(isl) { it.clone() }
             .markReadOnly()

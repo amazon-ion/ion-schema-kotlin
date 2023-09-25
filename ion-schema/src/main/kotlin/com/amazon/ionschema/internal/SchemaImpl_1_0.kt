@@ -36,7 +36,6 @@ import com.amazon.ionschema.internal.util.markReadOnly
 internal class SchemaImpl_1_0 private constructor(
     referenceManager: DeferredReferenceManager,
     private val schemaSystem: IonSchemaSystemImpl,
-    private val schemaCore: SchemaCore,
     schemaContent: Iterator<IonValue>,
     override val schemaId: String?,
     preloadedImports: Map<String, Import>,
@@ -52,10 +51,9 @@ internal class SchemaImpl_1_0 private constructor(
     internal constructor(
         referenceManager: DeferredReferenceManager,
         schemaSystem: IonSchemaSystemImpl,
-        schemaCore: SchemaCore,
         schemaContent: Iterator<IonValue>,
         schemaId: String?
-    ) : this(referenceManager, schemaSystem, schemaCore, schemaContent, schemaId, emptyMap(), mutableMapOf())
+    ) : this(referenceManager, schemaSystem, schemaContent, schemaId, emptyMap(), mutableMapOf())
 
     override val isl: IonDatagram
 
@@ -255,16 +253,16 @@ internal class SchemaImpl_1_0 private constructor(
         typeMap[type.name] = type
     }
 
-    override fun getType(name: String) = schemaCore.getType(name) ?: types[name]
+    override fun getType(name: String) = BuiltInTypes[name] ?: types[name]
 
-    override fun getInScopeType(name: String) = (schemaCore.getType(name) ?: types[name])
+    override fun getInScopeType(name: String) = BuiltInTypes[name] ?: types[name]
 
     override fun getDeclaredType(name: String) = declaredTypes[name]
 
     override fun getDeclaredTypes(): Iterator<TypeInternal> = declaredTypes.values.iterator()
 
     override fun getTypes(): Iterator<TypeInternal> =
-        (schemaCore.getTypes().asSequence() + types.values.asSequence())
+        (BuiltInTypes.asSequence() + types.values.asSequence())
             .filter { it is ImportedType || it is TypeImpl }
             .iterator()
 
