@@ -54,7 +54,9 @@ class IonSchemaTests_2_0 : TestFactory by IonSchemaTestsRunner(v2_0)
  */
 class IonSchemaTestsRunner(
     islVersion: IonSchemaVersion,
-    systemBuilder: IonSchemaSystemBuilder = IonSchemaSystemBuilder.standard().allowTransitiveImports(false),
+    systemBuilder: IonSchemaSystemBuilder = IonSchemaSystemBuilder.standard()
+        .allowTransitiveImports(false)
+        .failFastOnInvalidAnnotations(true),
     additionalFileFilter: (File) -> Boolean = { true },
     private val testNameFilter: (String) -> Boolean = { true },
 ) : TestFactory {

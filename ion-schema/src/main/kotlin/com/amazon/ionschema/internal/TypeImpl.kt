@@ -21,6 +21,7 @@ import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.Violations
+import com.amazon.ionschema.internal.IonSchemaSystemImpl.Param.SHORT_CIRCUIT_ON_INVALID_ANNOTATIONS
 import com.amazon.ionschema.internal.constraint.ConstraintBase
 import com.amazon.ionschema.internal.util.markReadOnly
 
@@ -40,6 +41,22 @@ internal class TypeImpl(
     private companion object {
         private val ION = IonSystemBuilder.standard().build()
         private val ANY = ION.newSymbol("any")
+
+        /**
+         * Order in which constraints should be evaluated. Lower is first.
+         *
+         * The [validate] function in this class has optional short-circuit logic for the `annotations` constraint, so
+         * `annotations` gets special treatment and will be evaluated first.
+         */
+        private val CONSTRAINT_EVALUATION_ORDER = mapOf(
+            "annotations" to -1,
+            // By default, all constraints are priority 0
+        )
+        private val CONSTRAINT_PRIORITY_COMPARATOR = Comparator<Constraint> {
+            a, b ->
+            CONSTRAINT_EVALUATION_ORDER.getOrDefault(a.name, 0)
+                .compareTo(CONSTRAINT_EVALUATION_ORDER.getOrDefault(b.name, 0))
+        }
     }
 
     override val isl = ionStruct.markReadOnly()
@@ -60,6 +77,8 @@ internal class TypeImpl(
                 constraints.add(TypeReference.create(ANY, schema, referenceManager)())
             }
         }
+
+        constraints.sortWith(CONSTRAINT_PRIORITY_COMPARATOR)
 
         if (schema is SchemaImpl_2_0) schema.validateFieldNamesInType(ionStruct)
     }
@@ -84,7 +103,27 @@ internal class TypeImpl(
     override fun isValidForBaseType(value: IonValue) = getBaseType().isValidForBaseType(value)
 
     override fun validate(value: IonValue, issues: Violations) {
-        constraints.forEach {
+        val constraintIterator = constraints.iterator()
+
+        // Handle short-circuit returns for `annotations`, if enabled
+        if (schema.getSchemaSystem().getParam(SHORT_CIRCUIT_ON_INVALID_ANNOTATIONS)) {
+            // To avoid adding unnecessary branches for all the constraints that are not "annotations",
+            // this short circuit logic will run until there is a constraint that is not named "annotations"
+            // and then fall back to the default logic for the remaining constraints.
+            while (constraintIterator.hasNext()) {
+                val c = constraintIterator.next()
+                if (c.name == "annotations") {
+                    val checkpoint = issues.checkpoint()
+                    c.validate(value, issues)
+                    if (!checkpoint.isValid()) return
+                } else {
+                    // No more "annotations", so handle normally and then exit the loop
+                    c.validate(value, issues)
+                    break
+                }
+            }
+        }
+        constraintIterator.forEach {
             it.validate(value, issues)
         }
     }
