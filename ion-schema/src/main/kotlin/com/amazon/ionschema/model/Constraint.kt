@@ -1,9 +1,10 @@
 package com.amazon.ionschema.model
 
-import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.internal.util.validateRegexPattern
+import com.amazon.ionschema.model.VariablyOccurringTypeArgument.Companion.OCCURS_OPTIONAL
+import com.amazon.ionschema.model.VariablyOccurringTypeArgument.Companion.OCCURS_REQUIRED
 import kotlin.text.Regex as KRegex
 
 /**
@@ -34,30 +35,17 @@ interface Constraint {
      * Represents the `annotations` constraint from Ion Schema 2.0 onwards.
      * See relevant section in [ISL 2.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#annotations).
      */
-    data class AnnotationsV2(val type: TypeArgument) : Constraint {
+    sealed class AnnotationsV2 : Constraint {
+        data class Standard(val type: TypeArgument) : AnnotationsV2()
+        data class Simplified(val modifier: Modifier, val annotations: Set<String>) : AnnotationsV2()
 
-        enum class Modifier { Closed, Required, ClosedAndRequired }
-        companion object {
-            /**
-             * Factory method for [AnnotationsV2] that resembles the
-             * [simple syntax](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#simple-syntax).
-             */
-            @JvmStatic
-            fun create(modifier: Modifier, annotationSymbols: Set<IonSymbol>): AnnotationsV2 {
-                val annotationsConstraints = mutableSetOf<Constraint>()
-                // If closed, constrain using `valid_values`
-                if (modifier == Modifier.Closed || modifier == Modifier.ClosedAndRequired) {
-                    val validValues = annotationSymbols.mapToSet { ValidValue.Value(it) }
-                    annotationsConstraints.add(
-                        Element(TypeArgument.InlineType(TypeDefinition(setOf(ValidValues(validValues)))))
-                    )
-                }
-                // If required, constrain using `contains`
-                if (modifier == Modifier.Required || modifier == Modifier.ClosedAndRequired) {
-                    annotationsConstraints.add(Contains(annotationSymbols))
-                }
-                return AnnotationsV2(inlineType(annotationsConstraints))
-            }
+        enum class Modifier {
+            /** Only the annotations provided are allowed to be present. They are not required. */
+            Closed,
+            /** The annotations provided are required to be present. Other values may also be present. */
+            Required,
+            /** Value must have exactly the annotations provided, regardless of order. (Equivalent to Closed + Required.) */
+            Exact
         }
     }
 
@@ -135,7 +123,16 @@ interface Constraint {
      * See relevant section in [ISL 1.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-1-0/spec#fields) and
      * [ISL 2.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#fields).
      */
-    data class Fields(val fields: Map<String, VariablyOccurringTypeArgument>, val closed: Boolean) : Constraint
+    data class Fields(val fields: Map<String, VariablyOccurringTypeArgument>, val closed: Boolean) : Constraint {
+        companion object {
+            @JvmStatic
+            fun allRequired(fields: Map<String, TypeArgument>, closed: Boolean) =
+                Fields(fields.mapValues { (_, t) -> VariablyOccurringTypeArgument(OCCURS_REQUIRED, t) }, closed)
+            @JvmStatic
+            fun allOptional(fields: Map<String, TypeArgument>, closed: Boolean) =
+                Fields(fields.mapValues { (_, t) -> VariablyOccurringTypeArgument(OCCURS_OPTIONAL, t) }, closed)
+        }
+    }
 
     /**
      * Represents the `ieee754_float` constraint, introduced in Ion Schema 2.0.

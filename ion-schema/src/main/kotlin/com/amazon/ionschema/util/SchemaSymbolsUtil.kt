@@ -102,7 +102,8 @@ object SchemaSymbolsUtil {
                     .forEach { symbolText.addAll(it.value.getAllSymbolTexts()) }
                 is Constraint.Contains -> c.values.forEach { symbolText.addAll(it.getAllSymbolTexts()) }
                 is Constraint.AnnotationsV1 -> symbolText.addAll(c.annotations.map { it.text })
-                is Constraint.AnnotationsV2 -> symbolText.addAll(c.type.getAllSymbolsText())
+                is Constraint.AnnotationsV2.Standard -> symbolText.addAll(c.type.getAllSymbolsText())
+                is Constraint.AnnotationsV2.Simplified -> symbolText.addAll(c.annotations)
                 is Constraint.FieldNames -> symbolText.addAll(c.type.getAllSymbolsText())
                 is Constraint.Type -> symbolText.addAll(c.type.getAllSymbolsText())
                 is Constraint.Not -> symbolText.addAll(c.type.getAllSymbolsText())

@@ -92,7 +92,7 @@ data class ContinuousRange<T : Comparable<T>>(val start: Limit<T>, val end: Limi
         val lowerBrace = if (start is Limit.Closed) '[' else '('
         val lowerValue = start.value ?: "  "
         val upperValue = end.value ?: "  "
-        val upperBrace = if (end is Limit.Closed) ')' else ')'
+        val upperBrace = if (end is Limit.Closed) ']' else ')'
         return "$lowerBrace$lowerValue,$upperValue$upperBrace"
     }
 }
