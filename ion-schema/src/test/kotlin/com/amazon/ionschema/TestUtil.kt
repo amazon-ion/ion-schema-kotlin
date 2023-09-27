@@ -21,7 +21,9 @@ import com.amazon.ion.IonString
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonText
 import com.amazon.ion.IonValue
+import com.amazon.ion.IonWriter
 import com.amazon.ion.system.IonSystemBuilder
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 
@@ -76,3 +78,18 @@ fun Type.assertValidity(expectIsValid: Boolean, value: IonValue) {
 }
 
 internal fun IonStruct.getTextField(fieldName: String) = (get(fieldName) as IonText).stringValue()
+
+/**
+ * Asserts that the values written to an [IonWriter] match the expected Ion.
+ */
+fun assertEqualIon(expected: String, block: (IonWriter) -> Unit) = assertEqualIon(ION.loader.load(expected), block)
+
+/**
+ * Asserts that the values written to an [IonWriter] match the expected Ion.
+ */
+fun assertEqualIon(expected: IonDatagram, block: (IonWriter) -> Unit) {
+    val newDg = ION.newDatagram()
+    val ionWriter = ION.newWriter(newDg)
+    ionWriter.apply(block)
+    Assertions.assertEquals(expected, newDg)
+}
