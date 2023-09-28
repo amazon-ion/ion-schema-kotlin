@@ -16,26 +16,10 @@ object HeaderWriter {
         ionWriter.writeStruct {
             if (schemaHeader.imports.isNotEmpty()) {
                 setFieldName("imports")
-                writeList {
-                    schemaHeader.imports.forEach { it.writeTo(ionWriter) }
-                }
+                writeToList(schemaHeader.imports) { writeImport(it) }
             }
-            if (schemaHeader.userReservedFields != UserReservedFields()) {
-                setFieldName("user_reserved_fields")
-                writeStruct {
-                    if (schemaHeader.userReservedFields.header.isNotEmpty()) {
-                        setFieldName("schema_header")
-                        writeList { schemaHeader.userReservedFields.header.forEach { writeSymbol(it) } }
-                    }
-                    if (schemaHeader.userReservedFields.type.isNotEmpty()) {
-                        setFieldName("type")
-                        writeList { schemaHeader.userReservedFields.type.forEach { writeSymbol(it) } }
-                    }
-                    if (schemaHeader.userReservedFields.footer.isNotEmpty()) {
-                        setFieldName("schema_footer")
-                        writeList { schemaHeader.userReservedFields.footer.forEach { writeSymbol(it) } }
-                    }
-                }
+            if (schemaHeader.userReservedFields != UserReservedFields.EMPTY) {
+                ionWriter.writeUserReservedFields(schemaHeader.userReservedFields)
             }
 
             for ((fieldName, fieldValue) in schemaHeader.openContent) {
@@ -45,22 +29,40 @@ object HeaderWriter {
         }
     }
 
-    private fun HeaderImport.writeTo(ionWriter: IonWriter) {
-        ionWriter.writeStruct {
-            when (this@writeTo) {
+    private fun IonWriter.writeUserReservedFields(userReservedFields: UserReservedFields) {
+        setFieldName("user_reserved_fields")
+        writeStruct {
+            if (userReservedFields.header.isNotEmpty()) {
+                setFieldName("schema_header")
+                writeToList(userReservedFields.header) { writeSymbol(it) }
+            }
+            if (userReservedFields.type.isNotEmpty()) {
+                setFieldName("type")
+                writeToList(userReservedFields.type) { writeSymbol(it) }
+            }
+            if (userReservedFields.footer.isNotEmpty()) {
+                setFieldName("schema_footer")
+                writeToList(userReservedFields.footer) { writeSymbol(it) }
+            }
+        }
+    }
+
+    private fun IonWriter.writeImport(import: HeaderImport) {
+        writeStruct {
+            when (import) {
                 is HeaderImport.Type -> {
                     setFieldName("id")
-                    writeString(id)
+                    writeString(import.id)
                     setFieldName("type")
-                    writeSymbol(targetType)
-                    if (asType != null) {
+                    writeSymbol(import.targetType)
+                    import.asType?.let {
                         setFieldName("as")
-                        writeSymbol(asType)
+                        writeSymbol(it)
                     }
                 }
                 is HeaderImport.Wildcard -> {
                     setFieldName("id")
-                    writeString(id)
+                    writeString(import.id)
                 }
             }
         }

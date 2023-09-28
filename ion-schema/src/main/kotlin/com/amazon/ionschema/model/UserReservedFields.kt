@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package com.amazon.ionschema.model
 
 /**
@@ -8,4 +11,9 @@ data class UserReservedFields(
     val type: Set<String> = emptySet(),
     val header: Set<String> = emptySet(),
     val footer: Set<String> = emptySet(),
-)
+) {
+    companion object {
+        @JvmStatic
+        val EMPTY = UserReservedFields()
+    }
+}

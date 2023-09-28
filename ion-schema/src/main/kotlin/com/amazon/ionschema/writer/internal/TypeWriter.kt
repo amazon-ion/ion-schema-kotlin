@@ -33,6 +33,6 @@ internal interface TypeWriter {
      * Writes a [TypeArguments] to the given [IonWriter].
      */
     fun writeTypeArguments(ionWriter: IonWriter, typeArgs: TypeArguments) {
-        ionWriter.writeList { typeArgs.forEach { writeTypeArg(ionWriter, it) } }
+        ionWriter.writeToList(typeArgs) { writeTypeArg(ionWriter, it) }
     }
 }

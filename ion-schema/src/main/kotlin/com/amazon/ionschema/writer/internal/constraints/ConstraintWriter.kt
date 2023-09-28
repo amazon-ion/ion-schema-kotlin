@@ -6,6 +6,7 @@ package com.amazon.ionschema.writer.internal.constraints
 import com.amazon.ion.IonWriter
 import com.amazon.ionschema.model.Constraint
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
+import kotlin.reflect.KClass
 
 /**
  * Allows us to compose TypeWriters out of different combinations of constraint writers to enable code reuse across
@@ -14,14 +15,21 @@ import com.amazon.ionschema.model.ExperimentalIonSchemaModel
 @ExperimentalIonSchemaModel
 internal interface ConstraintWriter {
     /**
-     * Returns true if this constraint reader can read the given constraint.
+     * Returns the constraint types that can be written by this constraint writer.
      */
-    fun canWrite(constraint: Constraint): Boolean
+    val supportedClasses: Set<KClass<out Constraint>>
 
     /**
      * Writes a [Constraint] instance to the given IonWriter.
-     * Should only be called after checking whether the constraint is supported by calling [canWrite].
      * Must throw [IllegalStateException] if called for an unsupported constraint type.
+     * Equivalent to [write], but more convenient for callers.
      */
-    fun Constraint.writeTo(ionWriter: IonWriter)
+    fun writeTo(ionWriter: IonWriter, constraint: Constraint) = ionWriter.write(constraint)
+
+    /**
+     * Writes a [Constraint] instance to the given IonWriter.
+     * Must throw [IllegalStateException] if called for an unsupported constraint type.
+     * Equivalent to [writeTo], but more convenient for implementers.
+     */
+    fun IonWriter.write(c: Constraint)
 }
