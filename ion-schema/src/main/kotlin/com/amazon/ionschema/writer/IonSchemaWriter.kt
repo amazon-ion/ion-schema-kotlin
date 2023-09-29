@@ -4,28 +4,26 @@
 package com.amazon.ionschema.writer
 
 import com.amazon.ion.IonWriter
+import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
-import com.amazon.ionschema.model.NamedTypeDefinition
 import com.amazon.ionschema.model.SchemaDocument
-import com.amazon.ionschema.model.TypeDefinition
+import com.amazon.ionschema.writer.internal.IonSchemaWriterV2_0
+import com.amazon.ionschema.writer.internal.VersionedIonSchemaWriter
 
 /**
  * Writes Ion Schema model to an IonWriter.
  */
 @ExperimentalIonSchemaModel
-interface IonSchemaWriter {
+object IonSchemaWriter {
     /**
      * Writes a [SchemaDocument].
      */
-    fun writeSchema(ionWriter: IonWriter, schemaDocument: SchemaDocument)
-
-    /**
-     * Writes an orphaned [TypeDefinition]—that is an anonymous type definition that does not belong to any schema.
-     */
-    fun writeType(ionWriter: IonWriter, typeDefinition: TypeDefinition)
-
-    /**
-     * Writes a [NamedTypeDefinition].
-     */
-    fun writeNamedType(ionWriter: IonWriter, namedTypeDefinition: NamedTypeDefinition)
+    @JvmStatic
+    fun writeSchema(ionWriter: IonWriter, schemaDocument: SchemaDocument) {
+        val delegate: VersionedIonSchemaWriter = when (schemaDocument.ionSchemaVersion) {
+            IonSchemaVersion.v1_0 -> TODO("IonSchemaWriter does not support ISL 1.0")
+            IonSchemaVersion.v2_0 -> IonSchemaWriterV2_0
+        }
+        delegate.writeSchema(ionWriter, schemaDocument)
+    }
 }
