@@ -12,5 +12,23 @@ data class VariablyOccurringTypeArgument(val occurs: DiscreteIntRange, val typeA
         val OCCURS_OPTIONAL = DiscreteIntRange(0, 1)
         @JvmStatic
         val OCCURS_REQUIRED = DiscreteIntRange(1, 1)
+
+        @JvmStatic
+        fun optional(arg: TypeArgument) = VariablyOccurringTypeArgument(OCCURS_OPTIONAL, arg)
+
+        @JvmStatic
+        fun required(arg: TypeArgument) = VariablyOccurringTypeArgument(OCCURS_REQUIRED, arg)
     }
 }
+
+@ExperimentalIonSchemaModel
+fun TypeArgument.optional() = VariablyOccurringTypeArgument.optional(this)
+
+@ExperimentalIonSchemaModel
+fun TypeArgument.required() = VariablyOccurringTypeArgument.required(this)
+
+@ExperimentalIonSchemaModel
+fun TypeArgument.occurs(n: Int) = VariablyOccurringTypeArgument(DiscreteIntRange(n), this)
+
+@ExperimentalIonSchemaModel
+fun TypeArgument.occurs(min: Int?, max: Int?) = VariablyOccurringTypeArgument(DiscreteIntRange(min, max), this)

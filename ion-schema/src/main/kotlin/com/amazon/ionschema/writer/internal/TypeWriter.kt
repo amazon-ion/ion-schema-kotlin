@@ -28,11 +28,12 @@ internal interface TypeWriter {
      * Writes a [VariablyOccurringTypeArgument] to the given [IonWriter].
      */
     fun writeVariablyOccurringTypeArg(ionWriter: IonWriter, varTypeArg: VariablyOccurringTypeArgument, elideOccursValue: DiscreteIntRange)
+}
 
-    /**
-     * Writes a [TypeArguments] to the given [IonWriter].
-     */
-    fun writeTypeArguments(ionWriter: IonWriter, typeArgs: TypeArguments) {
-        ionWriter.writeToList(typeArgs) { writeTypeArg(ionWriter, it) }
-    }
+/**
+ * Writes a [TypeArguments] to the given [IonWriter].
+ */
+@ExperimentalIonSchemaModel
+internal fun TypeWriter.writeTypeArguments(ionWriter: IonWriter, typeArgs: TypeArguments) {
+    ionWriter.writeToList(typeArgs) { writeTypeArg(ionWriter, it) }
 }
