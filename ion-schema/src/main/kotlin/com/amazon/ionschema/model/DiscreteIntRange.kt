@@ -39,7 +39,7 @@ class DiscreteIntRange private constructor(private val delegate: ContinuousRange
      * ```
      */
     fun negate() = DiscreteIntRange(delegate.end.value?.let { it * -1 }, delegate.start.value?.let { it * -1 })
-    fun intersect(other: DiscreteIntRange): DiscreteIntRange? = delegate.intersect(other.delegate)?.let { DiscreteIntRange(it) }
+    fun intersect(other: DiscreteIntRange): DiscreteIntRange? = delegate.intersect(other.delegate)?.let { (a, b) -> DiscreteIntRange(ContinuousRange(a, b)) }
 
     operator fun contains(value: Int): Boolean = delegate.contains(value)
     override fun toString() = delegate.toString()

@@ -1,8 +1,6 @@
 package com.amazon.ionschema.model
 
-import com.amazon.ion.IonNumber
 import com.amazon.ion.IonValue
-import com.amazon.ion.Timestamp
 import com.amazon.ionschema.util.Bag
 
 /**
@@ -19,22 +17,3 @@ typealias OpenContentFields = Bag<Pair<String, IonValue>>
  */
 @ExperimentalIonSchemaModel
 typealias TypeArguments = Set<TypeArgument>
-
-/**
- * A [ContinuousRange] of [Timestamp], represented as a [ConsistentTimestamp].
- */
-typealias TimestampRange = ContinuousRange<ConsistentTimestamp>
-
-/**
- * A [ContinuousRange] of [IonNumber], represented as [ConsistentDecimal]
- */
-typealias NumberRange = ContinuousRange<ConsistentDecimal>
-
-/**
- * A [ContinuousRange] of [TimestampPrecisionValue].
- * `TimestampPrecision` is a discrete measurement (i.e. there is no fractional number of digits of precision).
- * However, because Ion Schema models timestamp precision as an enum, there are possible precisions that exist between
- * the available enum values. For example, `timestamp_precision: range::[exclusive::second, exclusive::millisecond]`
- * allows 1 or 2 digits of precision for the fractional seconds of a timestamp.
- */
-typealias TimestampPrecisionRange = ContinuousRange<TimestampPrecisionValue>

@@ -31,8 +31,8 @@ internal class ValidValuesReader : ConstraintReader {
         val theValidValues = theList.mapToSet {
             if (it.hasTypeAnnotation("range") && it is IonList) {
                 when {
-                    it.any { x -> x is IonTimestamp } -> ValidValue.IonTimestampRange(it.toTimestampRange())
-                    it.any { x -> x is IonNumber } -> ValidValue.IonNumberRange(it.toNumberRange())
+                    it.any { x -> x is IonTimestamp } -> it.toTimestampRange()
+                    it.any { x -> x is IonNumber } -> it.toNumberRange()
                     else -> throw InvalidSchemaException("Not a valid range: $it")
                 }
             } else {

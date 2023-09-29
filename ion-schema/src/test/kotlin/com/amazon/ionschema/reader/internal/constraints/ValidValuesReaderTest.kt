@@ -8,8 +8,6 @@ import com.amazon.ionschema.model.ConsistentTimestamp
 import com.amazon.ionschema.model.Constraint
 import com.amazon.ionschema.model.ContinuousRange
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
-import com.amazon.ionschema.model.NumberRange
-import com.amazon.ionschema.model.TimestampRange
 import com.amazon.ionschema.model.ValidValue
 import com.amazon.ionschema.reader.internal.ReaderContext
 import org.junit.jupiter.api.Assertions
@@ -53,17 +51,13 @@ class ValidValuesReaderTest {
         val expected = Constraint.ValidValues(
             setOf(
                 ValidValue.Value(ION.newInt(3)),
-                ValidValue.IonNumberRange(
-                    NumberRange(
-                        ContinuousRange.Limit.Closed(ConsistentDecimal(BigDecimal.ONE)),
-                        ContinuousRange.Limit.Closed(ConsistentDecimal(BigDecimal.TEN)),
-                    )
+                ValidValue.NumberRange(
+                    ContinuousRange.Limit.Closed(ConsistentDecimal(BigDecimal.ONE)),
+                    ContinuousRange.Limit.Closed(ConsistentDecimal(BigDecimal.TEN)),
                 ),
-                ValidValue.IonTimestampRange(
-                    TimestampRange(
-                        ContinuousRange.Limit.Closed(ConsistentTimestamp(Timestamp.forDay(2022, 1, 1))),
-                        ContinuousRange.Limit.Closed(ConsistentTimestamp(Timestamp.forDay(2024, 1, 1))),
-                    )
+                ValidValue.TimestampRange(
+                    ContinuousRange.Limit.Closed(ConsistentTimestamp(Timestamp.forDay(2022, 1, 1))),
+                    ContinuousRange.Limit.Closed(ConsistentTimestamp(Timestamp.forDay(2024, 1, 1))),
                 ),
             )
         )
@@ -79,11 +73,9 @@ class ValidValuesReaderTest {
         val context = ReaderContext()
         val expected = Constraint.ValidValues(
             setOf(
-                ValidValue.IonNumberRange(
-                    NumberRange(
-                        ContinuousRange.Limit.Closed(ConsistentDecimal(BigDecimal.ONE)),
-                        ContinuousRange.Limit.Closed(ConsistentDecimal(BigDecimal.TEN)),
-                    )
+                ValidValue.NumberRange(
+                    ContinuousRange.Limit.Closed(ConsistentDecimal(BigDecimal.ONE)),
+                    ContinuousRange.Limit.Closed(ConsistentDecimal(BigDecimal.TEN)),
                 )
             )
         )
