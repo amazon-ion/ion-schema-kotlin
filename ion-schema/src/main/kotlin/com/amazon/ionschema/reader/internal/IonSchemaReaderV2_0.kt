@@ -1,4 +1,7 @@
-package com.amazon.ionschema.reader
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+package com.amazon.ionschema.reader.internal
 
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.InvalidSchemaException
@@ -9,20 +12,10 @@ import com.amazon.ionschema.model.ExperimentalIonSchemaModel
 import com.amazon.ionschema.model.NamedTypeDefinition
 import com.amazon.ionschema.model.SchemaDocument
 import com.amazon.ionschema.model.TypeDefinition
-import com.amazon.ionschema.reader.internal.FooterReader
-import com.amazon.ionschema.reader.internal.HeaderReader
-import com.amazon.ionschema.reader.internal.ReadError
-import com.amazon.ionschema.reader.internal.ReaderContext
-import com.amazon.ionschema.reader.internal.TypeReaderV2_0
-import com.amazon.ionschema.reader.internal.isFooter
-import com.amazon.ionschema.reader.internal.isHeader
-import com.amazon.ionschema.reader.internal.isTopLevelOpenContent
-import com.amazon.ionschema.reader.internal.isType
-import com.amazon.ionschema.reader.internal.readCatching
 import com.amazon.ionschema.util.IonSchemaResult
 
 @OptIn(ExperimentalIonSchemaModel::class)
-class IonSchemaReaderV2_0 : IonSchemaReader {
+internal object IonSchemaReaderV2_0 : VersionedIonSchemaReader {
     private val typeReader = TypeReaderV2_0()
     private val headerReader = HeaderReader(IonSchemaVersion.v2_0)
     private val footerReader = FooterReader { it in userReservedFields.footer || !IonSchema_2_0.RESERVED_WORDS_REGEX.matches(it) }
