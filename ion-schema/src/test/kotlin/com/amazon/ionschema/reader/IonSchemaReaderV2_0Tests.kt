@@ -14,6 +14,7 @@ import com.amazon.ionschema.model.SchemaHeader
 import com.amazon.ionschema.model.TypeArgument
 import com.amazon.ionschema.model.TypeDefinition
 import com.amazon.ionschema.model.UserReservedFields
+import com.amazon.ionschema.reader.internal.IonSchemaReaderV2_0
 import com.amazon.ionschema.util.emptyBag
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -24,7 +25,7 @@ import kotlin.test.assertEquals
 class IonSchemaReaderV2_0Tests {
 
     val ION = IonSystemBuilder.standard().build()
-    val reader = IonSchemaReaderV2_0()
+    private val reader = IonSchemaReaderV2_0
     val typeTextWithMultipleErrors = """
             type::{
               valid_values: until_recently::["Ni!"],

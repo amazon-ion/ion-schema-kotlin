@@ -11,6 +11,8 @@ import com.amazon.ionschema.TestFactory
 import com.amazon.ionschema.asDocument
 import com.amazon.ionschema.getTextField
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
+import com.amazon.ionschema.reader.internal.IonSchemaReaderV2_0
+import com.amazon.ionschema.reader.internal.VersionedIonSchemaReader
 import org.junit.jupiter.api.DynamicContainer
 import org.junit.jupiter.api.DynamicNode
 import org.junit.jupiter.api.DynamicTest
@@ -44,7 +46,7 @@ class ReaderTests {
     @Nested
     inner class IonSchema_2_0 : TestFactory by ReaderTestsRunner(
         version = IonSchemaVersion.v2_0,
-        reader = IonSchemaReaderV2_0(),
+        reader = IonSchemaReaderV2_0,
         testNameFilter = { it !in ISL_2_0_EXPECTED_TO_NOT_PASS }
     )
 }
@@ -52,7 +54,7 @@ class ReaderTests {
 @ExperimentalIonSchemaModel
 class ReaderTestsRunner(
     val version: IonSchemaVersion,
-    val reader: IonSchemaReader,
+    val reader: VersionedIonSchemaReader,
     additionalFileFilter: (File) -> Boolean = { true },
     private val testNameFilter: (String) -> Boolean = { true },
 ) : TestFactory {

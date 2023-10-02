@@ -14,8 +14,8 @@ import com.amazon.ionschema.TestFactory
 import com.amazon.ionschema.asDocument
 import com.amazon.ionschema.getTextField
 import com.amazon.ionschema.model.ExperimentalIonSchemaModel
-import com.amazon.ionschema.reader.IonSchemaReader
-import com.amazon.ionschema.reader.IonSchemaReaderV2_0
+import com.amazon.ionschema.reader.internal.IonSchemaReaderV2_0
+import com.amazon.ionschema.reader.internal.VersionedIonSchemaReader
 import com.amazon.ionschema.writer.internal.IonSchemaWriterV2_0
 import com.amazon.ionschema.writer.internal.VersionedIonSchemaWriter
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,7 +32,7 @@ class WriterTests {
     @Nested
     inner class IonSchema_2_0 : TestFactory by WriterTestsRunner(
         version = IonSchemaVersion.v2_0,
-        reader = IonSchemaReaderV2_0(),
+        reader = IonSchemaReaderV2_0,
         writer = IonSchemaWriterV2_0,
     )
 }
@@ -40,7 +40,7 @@ class WriterTests {
 @ExperimentalIonSchemaModel
 class WriterTestsRunner(
     val version: IonSchemaVersion,
-    val reader: IonSchemaReader,
+    val reader: VersionedIonSchemaReader,
     val writer: VersionedIonSchemaWriter,
     additionalFileFilter: (File) -> Boolean = { true },
     private val testNameFilter: (String) -> Boolean = { true },

@@ -13,7 +13,7 @@ import com.amazon.ionschema.model.SchemaDocument
 import com.amazon.ionschema.model.TypeArgument
 import com.amazon.ionschema.model.TypeDefinition
 import com.amazon.ionschema.model.ValidValue
-import com.amazon.ionschema.reader.IonSchemaReaderV2_0
+import com.amazon.ionschema.reader.internal.IonSchemaReaderV2_0
 import java.io.File
 
 /**
@@ -66,7 +66,7 @@ object SchemaSymbolsUtil {
     @JvmStatic
     @OptIn(ExperimentalIonSchemaModel::class)
     fun getSymbolsTextForSchema(schema: Schema): Set<String> {
-        return IonSchemaReaderV2_0().readSchemaOrThrow(schema.isl).getAllSymbolsText()
+        return IonSchemaReaderV2_0.readSchemaOrThrow(schema.isl).getAllSymbolsText()
     }
 
     /**
