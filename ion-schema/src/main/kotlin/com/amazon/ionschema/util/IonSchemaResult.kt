@@ -14,7 +14,7 @@ sealed class IonSchemaResult<T, E : Any> {
     /**
      * Gets the [Ok] value or `null` if not [Ok].
      */
-    fun okValueOrNull(): E? = (this as? Err)?.err
+    fun okValueOrNull(): T? = (this as? Ok)?.value
 
     /**
      * Gets the [Err] value or `null` if not an [Err].
