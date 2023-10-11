@@ -1,5 +1,14 @@
 package com.amazon.ionschema.model
 
+import com.amazon.ionschema.model.ContinuousRange.Limit
+
+interface IContinuousRange<T> where T : Comparable<T>, T : Any {
+    val start: Limit<T>
+    val end: Limit<T>
+    operator fun contains(value: T): Boolean
+    fun intersect(that: ContinuousRange<T>): Pair<Limit<T>, Limit<T>>?
+}
+
 /**
  * A range over a type that is an uncountably infinite set.
  *
@@ -11,10 +20,10 @@ package com.amazon.ionschema.model
  * A `ContinuousRange` is allowed to be a _degenerate interval_ (i.e. `start == end` when both limits are closed),
  * but it may not be an empty interval (i.e. `start == end` when either limit is open, or `start > end`).
  */
-data class ContinuousRange<T : Comparable<T>>(val start: Limit<T>, val end: Limit<T>) {
+open class ContinuousRange<T : Comparable<T>> internal constructor(final override val start: Limit<T>, final override val end: Limit<T>) : IContinuousRange<T> {
 
     private constructor(value: Limit.Closed<T>) : this(value, value)
-    constructor(value: T) : this(Limit.Closed(value))
+    internal constructor(value: T) : this(Limit.Closed(value))
 
     sealed class Limit<out T> {
         abstract val value: T?
@@ -39,7 +48,7 @@ data class ContinuousRange<T : Comparable<T>>(val start: Limit<T>, val end: Limi
      * Returns the intersection of `this` `DiscreteRange` with [other].
      * If the two ranges do not intersect, returns `null`.
      */
-    fun intersect(that: ContinuousRange<T>): ContinuousRange<T>? {
+    final override fun intersect(that: ContinuousRange<T>): Pair<Limit<T>, Limit<T>>? {
         val newStart = when {
             this.start is Limit.Unbounded -> that.start
             that.start is Limit.Unbounded -> this.start
@@ -58,13 +67,13 @@ data class ContinuousRange<T : Comparable<T>>(val start: Limit<T>, val end: Limi
             that.end is Limit.Open -> that.end
             else -> this.end // They are both closed and equal
         }
-        return if (isEmpty(newStart, newEnd)) null else ContinuousRange(newStart, newEnd)
+        return if (isEmpty(newStart, newEnd)) null else newStart to newEnd
     }
 
     /**
      * Checks whether the given value is contained within this range.
      */
-    operator fun contains(value: T): Boolean = start.isBelow(value) && end.isAbove(value)
+    final override operator fun contains(value: T): Boolean = start.isBelow(value) && end.isAbove(value)
 
     private fun Limit<T>.isAbove(other: T) = when (this) {
         is Limit.Closed -> value >= other
@@ -88,11 +97,23 @@ data class ContinuousRange<T : Comparable<T>>(val start: Limit<T>, val end: Limi
         return if (exclusive) start.value!! >= end.value!! else start.value!! > end.value!!
     }
 
-    override fun toString(): String {
+    final override fun toString(): String {
         val lowerBrace = if (start is Limit.Closed) '[' else '('
         val lowerValue = start.value ?: "  "
         val upperValue = end.value ?: "  "
         val upperBrace = if (end is Limit.Closed) ']' else ')'
         return "$lowerBrace$lowerValue,$upperValue$upperBrace"
+    }
+
+    final override fun equals(other: Any?): Boolean {
+        return other is ContinuousRange<*> &&
+            other.start == start &&
+            other.end == end
+    }
+
+    override fun hashCode(): Int {
+        var result = start.hashCode()
+        result = 31 * result + end.hashCode()
+        return result
     }
 }

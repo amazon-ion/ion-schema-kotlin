@@ -105,8 +105,8 @@ class ContinuousRangeTest {
         },
     ).flatten().map { (a, b, expected) ->
         "[intersect] intersection of $a and $b should be $expected" {
-            assertEquals(expected, a.intersect(b))
-            assertEquals(expected, b.intersect(a))
+            assertEquals(expected, a.intersect(b)?.let { (start, end) -> ContinuousRange(start, end) })
+            assertEquals(expected, b.intersect(a)?.let { (start, end) -> ContinuousRange(start, end) })
         }
     }
 

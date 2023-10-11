@@ -27,5 +27,14 @@ class ConsistentTimestamp(val timestampValue: Timestamp) : Comparable<Consistent
          */
         @JvmStatic
         fun fromIonTimestamp(ionTimestamp: IonTimestamp) = ConsistentTimestamp(ionTimestamp.timestampValue())
+
+        /**
+         * Returns a new [ConsistentTimestamp] that represents the point in time, precision and local offset defined in
+         * Ion format by the [CharSequence].
+         *
+         * @see Timestamp.valueOf
+         */
+        @JvmStatic
+        fun valueOf(ionFormattedTimestamp: CharSequence) = ConsistentTimestamp(Timestamp.valueOf(ionFormattedTimestamp))
     }
 }

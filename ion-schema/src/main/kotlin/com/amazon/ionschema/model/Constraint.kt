@@ -254,5 +254,7 @@ interface Constraint {
      *
      * @see ValidValue
      */
-    data class ValidValues(val values: Set<ValidValue>) : Constraint
+    data class ValidValues(val values: Set<ValidValue>) : Constraint {
+        constructor(vararg values: ValidValue) : this(values.toSet())
+    }
 }

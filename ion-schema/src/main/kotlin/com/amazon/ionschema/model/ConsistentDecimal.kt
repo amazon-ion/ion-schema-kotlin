@@ -26,5 +26,18 @@ class ConsistentDecimal(val bigDecimalValue: BigDecimal) : Comparable<Consistent
          */
         @JvmStatic
         fun fromIonNumber(ionNumber: IonNumber) = ConsistentDecimal(ionNumber.bigDecimalValue())
+
+        /**
+         * Translates a long value into a [ConsistentDecimal] with a scale of zero.
+         */
+        @JvmStatic
+        fun valueOf(long: Long) = ConsistentDecimal(BigDecimal.valueOf(long))
+
+        /**
+         * Translates a [Double] into a [ConsistentDecimal], using the [Double]'s canonical string representation
+         * provided by the [Double.toString] method.
+         */
+        @JvmStatic
+        fun valueOf(double: Double) = ConsistentDecimal(BigDecimal.valueOf(double))
     }
 }
