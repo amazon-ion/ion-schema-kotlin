@@ -20,7 +20,9 @@ interface Constraint {
      * See relevant section in [ISL 1.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-1-0/spec#all_of) and
      * [ISL 2.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#all_of).
      */
-    data class AllOf(val types: TypeArguments) : Constraint
+    data class AllOf(val types: TypeArguments) : Constraint {
+        constructor(vararg types: TypeArgument) : this(types.toSet())
+    }
 
     /**
      * Represents the `annotations` constraint for Ion Schema 1.0.
@@ -54,7 +56,9 @@ interface Constraint {
      * See relevant section in [ISL 1.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-1-0/spec#any_of) and
      * [ISL 2.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#any_of).
      */
-    data class AnyOf(val types: TypeArguments) : Constraint
+    data class AnyOf(val types: TypeArguments) : Constraint {
+        constructor(vararg types: TypeArgument) : this(types.toSet())
+    }
 
     /**
      * Represents the `byte_length` constraint.
@@ -152,14 +156,18 @@ interface Constraint {
      * See relevant section in [ISL 1.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-1-0/spec#one_of) and
      * [ISL 2.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#one_of).
      */
-    data class OneOf(val types: TypeArguments) : Constraint
+    data class OneOf(val types: TypeArguments) : Constraint {
+        constructor(vararg types: TypeArgument) : this(types.toSet())
+    }
 
     /**
      * Represents the `ordered_elements` constraint.
      * See relevant section in [ISL 1.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-1-0/spec#ordered_elements) and
      * [ISL 2.0 spec](https://amazon-ion.github.io/ion-schema/docs/isl-2-0/spec#ordered_elements).
      */
-    data class OrderedElements(val types: List<VariablyOccurringTypeArgument>) : Constraint
+    data class OrderedElements(val types: List<VariablyOccurringTypeArgument>) : Constraint {
+        constructor(vararg types: VariablyOccurringTypeArgument) : this(types.toList())
+    }
 
     /**
      * Represents the `precision` constraint.
