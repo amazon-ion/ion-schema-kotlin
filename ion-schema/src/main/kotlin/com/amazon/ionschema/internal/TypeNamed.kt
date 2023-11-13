@@ -30,9 +30,7 @@ internal class TypeNamed(
 ) : TypeInternal by type, ConstraintBase(ion) {
 
     override fun validate(value: IonValue, issues: Violations) {
-        val struct = ion.system.newEmptyStruct()
-        struct.put("type", ion.clone())
-        val violation = Violation(struct, "type_mismatch")
+        val violation = Violation(ion, "type_mismatch")
         type.validate(value, violation)
         if (!violation.isValid()) {
             violation.message = "expected type %s".format(name)
