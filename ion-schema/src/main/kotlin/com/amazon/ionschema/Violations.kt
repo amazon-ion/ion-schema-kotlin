@@ -15,7 +15,6 @@
 
 package com.amazon.ionschema
 
-import com.amazon.ion.IonStruct
 import com.amazon.ion.IonValue
 import com.amazon.ionschema.internal.util.truncate
 
@@ -99,11 +98,16 @@ open class Violations internal constructor (
             sb.append("- ")
             it.fieldName?.let { sb.append(it) }
             it.index?.let { sb.append("[").append(it).append("]") }
-            it.value?.let { sb.append(": ").append(it.toString().truncate(20)) }
+            it.values.joinToStringOrNull()?.let { sb.append(": ").append(it.truncate(20)) }
             sb.appendln()
             (it as Violations).appendTo(sb, depth + 1)
         }
     }
+
+    /**
+     * Private helper function that returns a string if the list is not empty, and null if the list is empty.
+     */
+    private fun List<IonValue>.joinToStringOrNull() = if (isEmpty()) null else joinToString(",")
 }
 
 /**
@@ -125,28 +129,26 @@ class Violation(
  *
  * @property[fieldName] Within a struct, the name of the field this object corresponds to.
  * @property[index] Within a sequence, the index of the element this object corresponds to.
- * @property[value] The child value this object corresponds to.
+ * @property[values] The child values this object corresponds to.
  */
 class ViolationChild internal constructor (
     val fieldName: String? = null,
     val index: Int? = null,
-    var value: IonValue? = null
+    value: IonValue? = null,
+    val values: MutableList<IonValue> = value?.let { mutableListOf(it) } ?: mutableListOf()
 ) : Violations() {
 
     internal fun addValue(v: IonValue) {
-        if (value == null) {
-            value = v
-        } else {
-            if (v.fieldName != null) {
-                if (value !is IonStruct) {
-                    val tmp = value
-                    value = tmp!!.system.newEmptyStruct()
-                    (value as IonStruct).add(tmp.fieldName, tmp.clone())
-                }
-                (value as IonStruct).add(v.fieldName, v.clone())
-            }
-        }
+        values.add(v)
     }
+
+    // Maintains backwards compatibility with the implementation in 1.6.0 and earlier.
+    val value: IonValue?
+        get() = when (values.size) {
+            0 -> null
+            1 -> values.single()
+            else -> values.mapTo(values.first().system.newEmptyList()) { it.clone() }
+        }
 }
 
 /**
