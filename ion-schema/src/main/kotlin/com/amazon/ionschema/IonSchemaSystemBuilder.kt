@@ -233,7 +233,7 @@ class IonSchemaSystemBuilder private constructor() {
      * for an example of how one might implement [RegexImplementation] using a linear-time regex library.
      *
      * **WARNING**—if you supply your own [RegexImplementation] that differs from the ECMA standard, it may result in
-     * unexpected behavior when validation Ion data.
+     * unexpected behavior when validating Ion data.
      */
     fun withRegexImplementation(regexImplementation: RegexImplementation): IonSchemaSystemBuilder {
         this.regexImplementation = regexImplementation
