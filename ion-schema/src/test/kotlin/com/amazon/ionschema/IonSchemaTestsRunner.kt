@@ -100,7 +100,7 @@ class IonSchemaTestsRunner(
                         .map { createValueTestCase(schemaId, type, it, expectValid = true) }
                     val shouldNotMatch = (ion["should_reject_as_invalid"] as IonList? ?: emptyList<IonValue>())
                         .map { createValueTestCase(schemaId, type, it, expectValid = false) }
-                    dynamicContainer(schemaId, shouldMatch + shouldNotMatch)
+                    dynamicContainer(schemaId, (shouldMatch + shouldNotMatch).filter { testNameFilter(it.displayName) })
                 }
 
                 isInvalidSchemasTestCase(ion) -> createSchemasTestCases(schemaId, ion, expectValid = false)
@@ -114,13 +114,13 @@ class IonSchemaTestsRunner(
                             assertThrows<InvalidSchemaException> { schema.newType(it as IonStruct) }
                         }
                     }
-                    dynamicContainer("[$schemaId] $baseDescription", cases)
+                    dynamicContainer("[$schemaId] $baseDescription", cases.filter { testNameFilter(it.displayName) })
                 }
 
                 else -> dynamicTest(schemaId) { throw IllegalArgumentException("Malformed test input: $ion") }
             }
         }
-        return dynamicContainer(schemaId, f.toURI(), dynamicNodeTestCases.stream().filter { testNameFilter(it.displayName) })
+        return dynamicContainer(schemaId, f.toURI(), dynamicNodeTestCases.stream())
     }
 
     private fun createSchemasTestCases(schemaId: String, ion: IonStruct, expectValid: Boolean): DynamicNode {
@@ -134,7 +134,7 @@ class IonSchemaTestsRunner(
                     assertThrows<InvalidSchemaException> { schemaSystem.newSchema(it.asDocument().iterator()) }
             }
         }
-        return dynamicContainer("[$schemaId] $baseDescription", cases)
+        return dynamicContainer("[$schemaId] $baseDescription", cases.filter { testNameFilter(it.displayName) })
     }
 
     private fun createValueTestCase(schemaId: String, testType: Type, value: IonValue, expectValid: Boolean): DynamicNode {
