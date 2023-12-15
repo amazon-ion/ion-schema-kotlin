@@ -20,6 +20,8 @@ import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.internal.ConstraintFactoryDefault
 import com.amazon.ionschema.internal.IonSchemaSystemImpl
 import com.amazon.ionschema.internal.WarningType
+import com.amazon.ionschema.util.DefaultRegexImplementation
+import com.amazon.ionschema.util.RegexImplementation
 import java.util.function.Consumer
 
 /**
@@ -43,6 +45,7 @@ class IonSchemaSystemBuilder private constructor() {
     private var schemaCache: SchemaCache? = null
     private var params = mutableMapOf<IonSchemaSystemImpl.Param<*>, Any>()
     private var warningCallback: ((() -> String) -> Unit)? = null
+    private var regexImplementation: RegexImplementation = DefaultRegexImplementation
 
     /**
      * Adds the provided authority to the list of [Authority]s.
@@ -216,6 +219,28 @@ class IonSchemaSystemBuilder private constructor() {
     }
 
     /**
+     * Sets the regex implementation to be used by the [IonSchemaSystem].
+     *
+     * This can be used to replace the regex implementation in the Java standard library with an implementation of your
+     * own choosing. You might want to provide your own [RegexImplementation] in order to be able to set a timeout for
+     * evaluating inputs against a pattern, or to use an algorithm with different time or space complexity.
+     *
+     * For example, if you are accepting input from untrusted sources, you may choose to use a linear time algorithm for
+     * finding matches in order to protect against potential ReDoS attacks using
+     * [catastrophic backtracking](https://www.regular-expressions.info/catastrophic.html).
+     *
+     * See [AlternateRegexImplementationTest.kt](https://github.com/amazon-ion/ion-schema-kotlin/blob/master/ion-schema/src/test/kotlin/com/amazon/ionschema/AlternateRegexImplementationTest.kt)
+     * for an example of how one might implement [RegexImplementation] using a linear-time regex library.
+     *
+     * **WARNING**—if you supply your own [RegexImplementation] that differs from the ECMA standard, it may result in
+     * unexpected behavior when validating Ion data.
+     */
+    fun withRegexImplementation(regexImplementation: RegexImplementation): IonSchemaSystemBuilder {
+        this.regexImplementation = regexImplementation
+        return this
+    }
+
+    /**
      * Instantiates an [IonSchemaSystem] using the provided [Authority](s)
      * and IonSystem.
      */
@@ -225,6 +250,7 @@ class IonSchemaSystemBuilder private constructor() {
         constraintFactory,
         schemaCache ?: SchemaCacheDefault(),
         params,
-        (warningCallback ?: { })
+        (warningCallback ?: { }),
+        regexImplementation,
     )
 }

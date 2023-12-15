@@ -24,7 +24,7 @@ import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.util.islRequire
 import com.amazon.ionschema.internal.util.validateRegexPattern
-import java.util.regex.Pattern
+import com.amazon.ionschema.util.RegexImplementation
 
 /**
  * Implements the regex constraint.  This implementation translates
@@ -39,38 +39,39 @@ import java.util.regex.Pattern
  */
 internal class Regex(
     ion: IonValue,
-    private val islVersion: IonSchemaVersion
+    islVersion: IonSchemaVersion,
+    regexImplementation: RegexImplementation,
 ) : ConstraintBase(ion) {
 
-    private val pattern: Pattern
+    private val pattern: RegexImplementation.Pattern
 
     init {
         islRequire(ion is IonString && !ion.isNullValue && ion.stringValue().isNotEmpty()) {
             "Regex must be a non-empty string; but was: $ion"
         }
 
-        var flags = 0
+        var multiline = false
+        var caseInsensitive = false
         ion.typeAnnotations.forEach {
-            val flag = when (it) {
-                "i" -> Pattern.CASE_INSENSITIVE
-                "m" -> Pattern.MULTILINE
+            when (it) {
+                "i" -> caseInsensitive = true
+                "m" -> multiline = true
                 else -> throw InvalidSchemaException(
                     "Unrecognized flags for regex ($ion)"
                 )
             }
-            flags = flags.or(flag)
         }
         val patternString = validateRegexPattern(ion.stringValue(), islVersion)
-        pattern = Pattern.compile(patternString, flags)
+        pattern = regexImplementation.compile(patternString, multiline, caseInsensitive)
     }
 
     override fun validate(value: IonValue, issues: Violations) {
         validateAs<IonText>(value, issues) { v ->
-            if (!pattern.matcher(v.stringValue()).find()) {
+            if (!pattern.test(v.stringValue())) {
                 issues.add(
                     Violation(
                         ion, "regex_mismatch",
-                        "'${v.stringValue()}' doesn't match regex '${pattern.pattern()}'"
+                        "'${v.stringValue()}' doesn't match regex '${pattern.pattern}'"
                     )
                 )
             }

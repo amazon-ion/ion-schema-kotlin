@@ -24,6 +24,7 @@ import com.amazon.ionschema.IonSchemaSystem
 import com.amazon.ionschema.IonSchemaVersion
 import com.amazon.ionschema.SchemaCache
 import com.amazon.ionschema.internal.util.islRequireNotNull
+import com.amazon.ionschema.util.RegexImplementation
 
 /**
  * Implementation of [IonSchemaSystem].
@@ -34,7 +35,8 @@ internal class IonSchemaSystemImpl(
     private val constraintFactory: ConstraintFactory,
     private val schemaCache: SchemaCache,
     private val params: Map<Param<out Any>, Any>,
-    private val warnCallback: (() -> String) -> Unit
+    private val warnCallback: (() -> String) -> Unit,
+    internal val regexImplementation: RegexImplementation,
 ) : IonSchemaSystem {
 
     private val schemaContentCache = SchemaContentCache(this::loadSchemaContent)
