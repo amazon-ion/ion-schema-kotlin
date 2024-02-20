@@ -2,6 +2,7 @@ package com.amazon.ionschema.internal
 
 import com.amazon.ion.IonStruct
 import com.amazon.ion.IonValue
+import com.amazon.ionschema.ION
 import com.amazon.ionschema.IonSchemaSystemBuilder
 import com.amazon.ionschema.IonSchemaTests
 import com.amazon.ionschema.IonSchemaVersion
@@ -63,6 +64,73 @@ class SchemaImpl_2_0_Test {
         val newFooTypeIsl = newSchema.getType("foo")?.isl
         val expectedNewFooTypeIsl = ionStruct("type::{ name: foo, type: string }")
         assertEquals(expectedNewFooTypeIsl, newFooTypeIsl)
+    }
+
+    @Test
+    fun `plusType(type) should correctly insert new type when a schema footer is present`() {
+        val schema = ISS.newSchema(
+            """
+            ${'$'}ion_schema_2_0
+            schema_header::{}
+            type::{ name: foo }
+            schema_footer::{}
+        """
+        )
+        val newType = schema.newType("type::{ name: bar }")
+        val newSchema = schema.plusType(newType)
+
+        val oldSchemaTypes = schema.getDeclaredTypes().asSequence().map { it.name }.toSet()
+        assertEquals(setOf("foo"), oldSchemaTypes, "The original schema should not be modified.")
+
+        val newSchemaTypes = newSchema.getDeclaredTypes().asSequence().map { it.name }.toSet()
+        val expectedNewSchemaTypes = setOf("foo", "bar")
+        assertEquals(expectedNewSchemaTypes, newSchemaTypes)
+    }
+
+    @Test
+    fun `plusType(type) should correctly insert a new type into a schema that is empty aside from its version marker`() {
+        val schema = ISS.newSchema("\$ion_schema_2_0")
+        val newType = schema.newType("type::{ name: bar }")
+        val newSchema = schema.plusType(newType)
+
+        val oldSchemaTypes = schema.getDeclaredTypes().asSequence().map { it.name }.toSet()
+        assertEquals(emptySet<Nothing>(), oldSchemaTypes, "The original schema should not be modified.")
+
+        val newSchemaTypes = newSchema.getDeclaredTypes().asSequence().map { it.name }.toSet()
+        val expectedNewSchemaTypes = setOf("bar")
+        assertEquals(expectedNewSchemaTypes, newSchemaTypes)
+    }
+
+    @Test
+    fun `plusType(type) should preserve top-level open content in a schema`() {
+        val schema = ISS.newSchema(
+            """
+            ${'$'}ion_schema_2_0
+            abc
+            type::{ name: foo }
+            def
+        """
+        )
+        val newType = schema.newType("type::{ name: bar }")
+        val newSchema = schema.plusType(newType)
+
+        val oldSchemaTypes = schema.getDeclaredTypes().asSequence().map { it.name }.toSet()
+        assertEquals(setOf("foo"), oldSchemaTypes, "The original schema should not be modified.")
+
+        val newSchemaTypes = newSchema.getDeclaredTypes().asSequence().map { it.name }.toSet()
+        val expectedNewSchemaTypes = setOf("foo", "bar")
+        assertEquals(expectedNewSchemaTypes, newSchemaTypes)
+
+        val expectedNewSchemaIsl = ION.loader.load(
+            """
+            ${'$'}ion_schema_2_0
+            abc
+            type::{ name: foo }
+            def
+            type::{ name: bar }
+        """
+        )
+        assertEquals(newSchema.isl, expectedNewSchemaIsl)
     }
 
     @Test
