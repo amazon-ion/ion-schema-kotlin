@@ -327,14 +327,15 @@ internal class SchemaImpl_2_0 internal constructor(
 
         val newIsl = mutableListOf<IonValue>()
         var newTypeAdded = false
-        isl.forEachIndexed { idx, value ->
+        isl.forEach { value ->
             if (!newTypeAdded) {
                 if (isType(value) && (value["name"] as? IonSymbol)?.stringValue() == type.name) {
                     // new type replaces existing type of the same name
                     newIsl.add(type.isl.clone())
                     newTypeAdded = true
-                    return@forEachIndexed
-                } else if (value.hasTypeAnnotation("schema_footer") || idx == isl.lastIndex) {
+                    return@forEach
+                } else if (value.hasTypeAnnotation("schema_footer")) {
+                    // Insert the new type right before the footer
                     newIsl.add(type.isl.clone())
                     newTypeAdded = true
                 }
