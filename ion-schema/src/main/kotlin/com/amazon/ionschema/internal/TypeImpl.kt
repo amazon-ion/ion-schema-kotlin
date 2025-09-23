@@ -142,9 +142,9 @@ internal class TypeImpl(
                 } else {
                     // No more "annotations", so handle normally and then exit the loop
                     if (typeWantsToAcceptNull) {
-                        constraintIterator.forEach { validateConstraintAndSeparateNullViolations(it) }
+                        validateConstraintAndSeparateNullViolations(c)
                     } else {
-                        constraintIterator.forEach { it.validate(value, issues) }
+                        c.validate(value, issues)
                     }
                     break
                 }
