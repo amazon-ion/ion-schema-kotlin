@@ -20,6 +20,7 @@ import com.amazon.ion.IonSymbol
 import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ionschema.IonSchemaVersion
+import com.amazon.ionschema.Violation
 import com.amazon.ionschema.Violations
 import com.amazon.ionschema.internal.IonSchemaSystemImpl.Param.SHORT_CIRCUIT_ON_INVALID_ANNOTATIONS
 import com.amazon.ionschema.internal.constraint.ConstraintBase
@@ -104,6 +105,28 @@ internal class TypeImpl(
 
     override fun validate(value: IonValue, issues: Violations) {
         val constraintIterator = constraints.iterator()
+        val typeWantsToAcceptNull = isl.get("type")?.hasTypeAnnotation("\$null_or") == true
+        val incompatibleConstraintsWithNullOrIssues = Violation(
+            isl,
+            "null_value",
+            "type cannot accept null. note: type attempts to accept null via \$null_or but defines one or more constraints which are only valid for non-null values - did you mean to use \$null_or on the type definition itself?"
+        )
+
+        fun validateConstraintAndSeparateNullViolations(constraint: Constraint) {
+            val constraintIssues = Violations()
+            val constraintNullValueIssues = Violation(message = "constraint \"${constraint.name}\" is not compatible with type: \$null_or")
+            constraint.validate(value, constraintIssues)
+            constraintIssues.forEach {
+                if (it.code == "null_value") {
+                    constraintNullValueIssues.add(it)
+                } else {
+                    issues.add(it)
+                }
+            }
+            if (!constraintNullValueIssues.isValid()) {
+                incompatibleConstraintsWithNullOrIssues.add(constraintNullValueIssues)
+            }
+        }
 
         // Handle short-circuit returns for `annotations`, if enabled
         if (schema.getSchemaSystem().getParam(SHORT_CIRCUIT_ON_INVALID_ANNOTATIONS)) {
@@ -118,13 +141,32 @@ internal class TypeImpl(
                     if (!checkpoint.isValid()) return
                 } else {
                     // No more "annotations", so handle normally and then exit the loop
-                    c.validate(value, issues)
+                    if (typeWantsToAcceptNull) {
+                        constraintIterator.forEach { validateConstraintAndSeparateNullViolations(it) }
+                    } else {
+                        constraintIterator.forEach { it.validate(value, issues) }
+                    }
                     break
                 }
             }
         }
-        constraintIterator.forEach {
-            it.validate(value, issues)
+
+        if (typeWantsToAcceptNull) {
+            // If this type wants to accept null, buffer in the violations for this type so we can check if any of them
+            // are a null_value violation. If there are null_value violations, we can present a more helpful error to
+            // the user.
+            constraintIterator.forEach {
+                validateConstraintAndSeparateNullViolations(it)
+            }
+
+            if (!incompatibleConstraintsWithNullOrIssues.isValid()) {
+                issues.add(incompatibleConstraintsWithNullOrIssues)
+            }
+        } else {
+            // We do not need to buffer the violations into another list if the type definition doesn't use $null_or
+            constraintIterator.forEach {
+                it.validate(value, issues)
+            }
         }
     }
 }
