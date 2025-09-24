@@ -108,23 +108,20 @@ internal class TypeImpl(
         val typeWantsToAcceptNull = isl.get("type")?.hasTypeAnnotation("\$null_or") == true
         val incompatibleConstraintsWithNullOrIssues = Violation(
             isl,
-            "null_value",
-            "type cannot accept null. note: type attempts to accept null via \$null_or but defines one or more constraints which are only valid for non-null values - did you mean to use \$null_or on the type definition itself?"
+            "constraints_incompatible",
+            "type cannot accept null. note: type attempts to accept null via \$null_or but defines one or more constraints for which null are never valid - did you mean to use \$null_or on the type definition itself?"
         )
 
         fun validateConstraintAndSeparateNullViolations(constraint: Constraint) {
             val constraintIssues = Violations()
-            val constraintNullValueIssues = Violation(message = "constraint \"${constraint.name}\" is not compatible with type: \$null_or")
+            val constraintNotApplicableForNullViolation = Violation(message = "constraint \"${constraint.name}\" is not applicable for null values")
             constraint.validate(value, constraintIssues)
             constraintIssues.forEach {
                 if (it.code == "null_value") {
-                    constraintNullValueIssues.add(it)
+                    incompatibleConstraintsWithNullOrIssues.add(constraintNotApplicableForNullViolation)
                 } else {
                     issues.add(it)
                 }
-            }
-            if (!constraintNullValueIssues.isValid()) {
-                incompatibleConstraintsWithNullOrIssues.add(constraintNullValueIssues)
             }
         }
 
@@ -163,7 +160,7 @@ internal class TypeImpl(
                 issues.add(incompatibleConstraintsWithNullOrIssues)
             }
         } else {
-            // We do not need to buffer the violations into another list if the type definition doesn't use $null_or
+            // We do not need to buffer the violations into another list if the type definition doesn't use $null_or.
             constraintIterator.forEach {
                 it.validate(value, issues)
             }
