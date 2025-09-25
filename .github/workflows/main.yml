@@ -40,10 +40,10 @@ jobs:
           java-version: 11
       - run: ./gradlew koverXmlReport
       - name: Upload Ion Schema Code Coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
-          file: ion-schema/build/reports/kover/report.xml
+          files: ion-schema/build/reports/kover/report.xml
       - name: Upload CLI Code Coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
-          file: cli/build/reports/kover/report.xml
+          files: cli/build/reports/kover/report.xml
