@@ -26,12 +26,12 @@ internal object CommonViolations {
     fun INVALID_TYPE(constraint: IonValue, value: IonValue) = Violation(
         constraint,
         "invalid_type",
-        "not applicable for type %s".format(value.type.toString().toLowerCase())
+        "values of type %s are never valid for types defining %s constraints".format(value.type.toString().toLowerCase(), constraint.fieldName)
     )
 
     fun NULL_VALUE(constraint: IonValue) = Violation(
         constraint,
         "null_value",
-        "not applicable for null values"
+        "null values are never valid for types defining %s constraints".format(constraint.fieldName)
     )
 }

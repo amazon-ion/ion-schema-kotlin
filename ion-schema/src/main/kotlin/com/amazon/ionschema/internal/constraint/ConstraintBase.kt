@@ -34,9 +34,8 @@ internal abstract class ConstraintBase(
 
     internal fun <T> validateAs(expectedClass: Class<T>, value: IonValue, issues: Violations, customValidation: (T) -> Unit) {
         when {
-            // Null check needs to be first, since Class.isInstance returns false for null values
-            value.isNullValue -> issues.add(CommonViolations.NULL_VALUE(ion))
             !expectedClass.isInstance(value) -> issues.add(CommonViolations.INVALID_TYPE(ion, value))
+            value.isNullValue -> issues.add(CommonViolations.NULL_VALUE(ion))
             else ->
                 @Suppress("UNCHECKED_CAST")
                 customValidation(value as T)
